@@ -93,7 +93,7 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .score.warm{color:var(--cream)}
 .score.cool{color:var(--muted)}
 /* compact rows */
-.lrow{padding:0;overflow:hidden;cursor:pointer}
+.lrow{padding:0;overflow:hidden;cursor:pointer;touch-action:pan-y}
 .lr{display:flex;align-items:center;gap:9px;padding:11px 12px;transition:transform .15s ease}
 .lr-cb{display:flex;align-items:center}
 .lr-cb input{width:17px;height:17px;accent-color:#B37922}
@@ -162,6 +162,19 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
   .l-time{display:none}
 }
 @media(max-width:640px){.inp,select.inp,input.inp{font-size:16px}}
+/* door-outcome chips, inline editors, follow-up row, undo toast */
+.l-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.chips-lbl{font-size:9px;letter-spacing:.14em;color:var(--taupe);margin-right:2px}
+.l-fu{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.l-edit{margin-top:8px;display:none;flex-direction:column;gap:8px;padding:10px;border:2px dashed var(--gold)}
+.l-edit.open{display:flex}
+.l-edit-f{display:flex;flex-direction:column;gap:3px}
+.l-edit-f span{font-size:9px;letter-spacing:.14em;color:var(--taupe)}
+.l-more{border-top:1px dashed var(--line);padding-top:10px}
+#undoToast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:120;background:var(--cream);color:var(--bg);padding:10px 14px;gap:14px;align-items:center;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
+#undoToast button{background:var(--gold);border:0;color:#221B0E;font-weight:700;padding:8px 14px;cursor:pointer;min-height:40px;font-size:13px}
+#funnel{font-size:10.5px;letter-spacing:.04em;color:var(--muted);padding:2px 0 6px;line-height:1.7}
+#funnel b{color:var(--cream)}
 </style>
 </head>
 <body>
@@ -185,7 +198,8 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
       <div class="hdr-actions"><button class="refresh" id="btnTheme" title="Light / dark" aria-label="Toggle dark mode">◐</button><button class="refresh" id="btnOps">Ops</button><button class="refresh" id="btnMap">Map</button><button class="refresh" id="btnBlitz">Blitz</button>
       <a class="refresh" href="wrap-studio.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Wrap Studio</a>
       <button class="refresh" id="btnExport">Export CSV</button>
-      <button class="refresh" id="btnRefresh">Refresh</button></div>
+      <button class="refresh" id="btnRefresh">Refresh</button>
+      <button class="refresh" id="btnLock" title="Sign out and wipe this phone's copy of the pipeline">Lock</button></div>
     </div>
   </div>
 </header>
@@ -193,6 +207,7 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
 <main class="wrap">
   <div id="offBanner" style="display:none;background:var(--red);color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 12px;border-radius:8px;margin-bottom:10px"></div>
   <div class="stats" id="stats"></div>
+  <div id="funnel" class="mono"></div>
   <div class="filters" id="filters"></div>
   <div class="search">
     <input class="inp" id="q" placeholder="Search name, business, city, notes…" style="width:100%">
@@ -787,6 +802,19 @@ $('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey()});
 /* ---------- data ---------- */
 let LAST_ERR='';let LAST_ERR_MSG='';let TRAFFIC=null;let SORT='new';let FCITY='';let FVENUE='';const ROUTE=new Set();const PHOTOS=new Set();let PHOTO_ID=null;let SHOWN=80;let FTIER='';
 /* multiple photos per lead: extras stored under suffixed ids (id:2, id:3, …) — same backend, no changes needed */
+const PHOTO_URLS=new Map();
+/* photos load through the key header into object URLs so the key never sits in an <img src>, the tab bar or server logs.
+   If the function only honours ?k= for GETs, the one fallback below keeps photos working (fix server-side, then remove). */
+function photoSrc(pid){
+  if(PHOTO_URLS.has(pid))return PHOTO_URLS.get(pid);
+  PHOTO_URLS.set(pid,'');
+  const apply=u=>{PHOTO_URLS.set(pid,u);document.querySelectorAll('[data-pid]').forEach(el=>{if(el.dataset.pid!==pid)return;if(el.tagName==='IMG')el.src=u;else el.href=u;});};
+  fetch(FN+'/photo?id='+encodeURIComponent(pid),{headers:{'X-Dash-Key':KEY}})
+    .then(r=>r.ok?r.blob():Promise.reject(r.status))
+    .then(b=>apply(URL.createObjectURL(b)))
+    .catch(st=>{if(st===401||st===403)apply(`${FN}/photo?id=${encodeURIComponent(pid)}&k=${encodeURIComponent(KEY)}`);else PHOTO_URLS.delete(pid);});
+  return '';
+}
 function photosOf(id){return [...PHOTOS].filter(p=>p===id||p.startsWith(id+':')).sort((a,b)=>(a.length-b.length)||a.localeCompare(b))}
 function nextPhotoId(id){if(!PHOTOS.has(id))return id;let n=2;while(PHOTOS.has(id+':'+n))n++;return id+':'+n}
 try{
@@ -814,7 +842,7 @@ async function load(silent){
     try{localStorage.setItem('w_cache',JSON.stringify({j:{leads:j.leads||[],meta:j.meta||{}},t:Date.now()}));}catch(e){}
     OFFLINE=false;buildFrom(j);applyQueuedLocally();updateBanner();flushQueue();
     fetch(FN+'/track',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(t=>{if(t){TRAFFIC=t;renderStats();}}).catch(()=>{});
-    fetch(FN+'/photo?list=1',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ids){PHOTOS.clear();j.ids.forEach(i=>PHOTOS.add(i));render();}}).catch(()=>{});
+    fetch(FN+'/photo?list=1',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ids){const before=[...PHOTOS].sort().join();PHOTOS.clear();j.ids.forEach(i=>PHOTOS.add(i));if([...PHOTOS].sort().join()!==before)render();}}).catch(()=>{});
     render();
     return true;
   }catch(e){
@@ -883,6 +911,12 @@ async function flushQueue(){
 }
 window.addEventListener('online',()=>{flushQueue().then(()=>load(true));});
 $('btnRefresh').addEventListener('click',()=>load());
+$('btnLock').addEventListener('click',()=>{
+  const q=getQ().length;
+  if(!confirm((q?q+' update'+(q>1?'s':'')+' haven\'t synced yet and will be lost. ':'')+'Lock Command and wipe the pipeline from this phone?'))return;
+  try{['w_key','w_cache','w_q','w_ops_mileage','w_ops_expenses','w_trip','w_view'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('w_route');}catch(e){}
+  location.reload();
+});
 
 function forgetKey(){
   KEY='';
@@ -915,13 +949,13 @@ async function saveMeta(id,patch,hintEl){
 }
 
 /* ---------- location & distance ---------- */
-let MYLOC=null;
+let MYLOC=null,LOC_FAIL=false;
 function locate(cb){
-  if(!navigator.geolocation){cb&&cb();return}
+  if(!navigator.geolocation){LOC_FAIL=true;cb&&cb();return}
   navigator.geolocation.getCurrentPosition(
-    p=>{MYLOC=[p.coords.latitude,p.coords.longitude];cb&&cb()},
-    ()=>{cb&&cb()},
-    {enableHighAccuracy:true,timeout:8000,maximumAge:120000});
+    p=>{MYLOC=[p.coords.latitude,p.coords.longitude];LOC_FAIL=false;cb&&cb()},
+    ()=>{LOC_FAIL=true;cb&&cb()},
+    {enableHighAccuracy:false,timeout:8000,maximumAge:300000}); // sorting only; trips use high accuracy
 }
 function distMi(a,b,c,d){const R=3958.8,r=x=>x*Math.PI/180,h=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function distOf(l){return (MYLOC&&l.lat)?distMi(MYLOC[0],MYLOC[1],l.lat,l.lng):null}
@@ -982,6 +1016,29 @@ function renderStats(){
     if(n>0){try{localStorage.setItem('w_goal',n)}catch(e){};renderStats();}
   });
 }
+/* the Friday review: door outcomes stamped in notes over the last 7 days */
+function weekFunnel(){
+  const now=new Date(),keys=['No answer','Left card','Interested','Come back','NOT NOW'];
+  const c={doors:0};keys.forEach(k=>c[k]=0);const why={};
+  LEADS.forEach(l=>{
+    [...(l.note||'').matchAll(/\[(\d{1,2})\/(\d{1,2})[^\]]*\] ([^\n]*)/g)].forEach(m=>{
+      let d=new Date(now.getFullYear(),+m[1]-1,+m[2]);if(d>now)d=new Date(now.getFullYear()-1,+m[1]-1,+m[2]);
+      if(now-d>=7*864e5)return;
+      const k=keys.find(x=>m[3].startsWith(x));if(!k)return;
+      c.doors++;c[k]++;
+      if(k==='NOT NOW'){const r=m[3].replace(/^NOT NOW\s*[—-]\s*/,'').trim();why[r]=(why[r]||0)+1;}
+    });
+  });
+  const signed=LEADS.filter(l=>l.signed_at&&now-new Date(l.signed_at)<7*864e5).length;
+  const inProp=LEADS.filter(l=>l.status==='proposal').length;
+  return {c,why,signed,inProp};
+}
+function renderFunnel(){
+  const {c,why,signed,inProp}=weekFunnel(),el=$('funnel');
+  if(!c.doors){el.innerHTML='';return;}
+  const whyTxt=Object.entries(why).sort((a,b)=>b[1]-a[1]).map(([r,n])=>`${esc(r.toLowerCase())} ${n}`).join(', ');
+  el.innerHTML=`THIS WEEK: <b>${c.doors}</b> doors · ${c['No answer']} no answer · ${c['Left card']} left card · <b>${c['Interested']}</b> interested · ${c['Come back']} come back · ${c['NOT NOW']} not now${whyTxt?` (${whyTxt})`:''} · <b>${inProp}</b> in proposal · <b>${signed}</b> signed`;
+}
 function touchGoal(){try{return parseInt(localStorage.getItem('w_goal'),10)||50}catch(e){return 50}}
 function touches7d(){
   let n=0;const now=new Date();
@@ -1002,7 +1059,7 @@ function renderFilters(){
   const tabs=[['today','Today'],['active','Active'],['prospect','Prospects'],['referral','Referrals'],['new','New'],['contacted','Contacted'],['proposal','Proposal'],['signed','Signed'],['waitlist','Waitlist'],['installed','Installed'],['dead','Dead'],['all','All']];
   $('filters').innerHTML=tabs.map(([k,lbl])=>
     `<button class="ftab${FILTER===k?' on':''}" data-f="${k}">${lbl} <span class="n">${counts[k]??0}</span></button>`).join('');
-  $('filters').querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{FILTER=b.dataset.f;SHOWN=80;saveView();render();}));
+  $('filters').querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{FILTER=b.dataset.f;SHOWN=80;RECENT.clear();saveView();render();}));
 }
 /* Today plan: due follow-ups + install deadlines + hot inbound, then untouched Tier A prospects ranked by fit + a known decision-maker, penalised by distance */
 const SUGGEST=new Set();
@@ -1018,10 +1075,11 @@ function todayPlan(){
 let LOC_TRIED=false;
 function visible(){
   let arr=LEADS;
-  if(FILTER==='active')arr=arr.filter(l=>l.status!=='dead'&&l.status!=='installed'&&l.status!=='prospect');
+  const keep=l=>RECENT.has(l.id); // a lead logged in this view stays put until the tab changes, so the card doesn't vanish under your thumb
+  if(FILTER==='active')arr=arr.filter(l=>keep(l)||(l.status!=='dead'&&l.status!=='installed'&&l.status!=='prospect'));
   else if(FILTER==='today')arr=todayPlan();
   else if(FILTER==='referral')arr=arr.filter(isReferral);
-  else if(FILTER!=='all')arr=arr.filter(l=>l.status===FILTER);
+  else if(FILTER!=='all')arr=arr.filter(l=>keep(l)||l.status===FILTER);
   if(FTIER)arr=arr.filter(l=>!l.prospect||tierOf(l)===FTIER);
   if(FCITY)arr=arr.filter(l=>l.data.city===FCITY);
   if(FVENUE)arr=arr.filter(l=>l.data.venue_type===FVENUE);
@@ -1159,8 +1217,9 @@ function isToday(l){return fuDue(l)||(l.status==='signed'&&l.signed_at&&installD
 function leadCard(l){
   const d=l.data, s=+d.lead_score||0;
   let roi=null;try{roi=d.roi_snapshot?JSON.parse(d.roi_snapshot):null}catch(e){}
-  const phone=(d.phone||'').replace(/\D/g,'');
-  const tel=phone?'+1'+phone.replace(/^1/,''):'';
+  const telN=n=>{n=(n||'').replace(/\D/g,'');return n?'+1'+n.replace(/^1/,''):''};
+  const direct=telN(l.metaPhone),main=telN(d.phone);
+  const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
   const smsBody=encodeURIComponent(`Hi ${firstName(d.name)} — Wrapt here, following up on the machine for ${d.company||'your location'}. `);
   const tags=[];
   const tier=tierOf(l);
@@ -1207,39 +1266,46 @@ function leadCard(l){
         <div class="l-meta" style="margin-top:2px"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener" style="color:var(--gold-deep);text-decoration:underline">${d.address?esc(d.address):'Map'}</a></div>
         ${l.prospect&&d.intel?`<div class="l-meta" style="margin-top:2px;color:var(--taupe)">${esc(d.intel)}</div>`:''}
         ${l.prospect&&dmOf(l)?`<div class="l-meta" style="margin-top:2px">Ask for <b>${esc(dmOf(l).name)}</b>${dmOf(l).title?' · '+esc(dmOf(l).title):''}</div>`:''}
-        <div class="l-tags">${tags.join('')}</div>
-        <div class="l-actions">
-          ${tel?`<a class="act primary" href="tel:${tel}">Call</a><a class="act" href="sms:${tel}?&body=${smsBody}">Text</a>`:''}
-          ${l.prospect&&['prospect','contacted'].includes(l.status)&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
-          ${(d.email||l.metaEmail)?`<a class="act" href="${mailProposal(l,pd)}">Email proposal</a><a class="act" href="${mailFollowup(l)}">Follow-up</a>`:''}
-          ${l.prospect?(l.metaEmail?`<button class="act" data-act="emailaddr">✉</button>`:`<button class="act" data-act="emailaddr">Add ✉</button>`):''}
-          ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
-          <a class="act" href="proposal.html#${pd}" target="_blank" rel="noopener">Proposal</a>
-          <a class="act" href="wrap-studio.html?biz=${encodeURIComponent((isReferral(l)&&d.referred_business)||d.company||d.name||'')}" target="_blank" rel="noopener">Mock</a>
-          ${l.prospect?`<button class="act" data-act="pitch">Pitch</button>`:''}
-          <select class="status" data-act="status">${STATUSES.map(x=>`<option value="${x}"${x===l.status?' selected':''}>${SLABEL[x]}</option>`).join('')}</select>
-          ${['proposal','signed','waitlist','installed'].includes(l.status)?`<button class="act" data-act="coi">COI: ${l.coi==='sent'?'sent ✓':l.coi==='requested'?'requested':'–'}</button>`:''}
-          <button class="act" data-act="note">Note</button>
-          <button class="act" data-act="photo">+ Photo${photosOf(l.id).length?` (${photosOf(l.id).length})`:''}</button>
-          ${l.prospect?(l.metaPhone?`<a class="act" href="tel:${esc(l.metaPhone)}">Call</a><a class="act" href="sms:${esc(l.metaPhone)}">Text</a><button class="act" data-act="phonenum">#</button>`:`<button class="act" data-act="phonenum">Add #</button>`):''}
-          ${l.prospect?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent((d.company||'')+' '+(d.city||'')+' TN phone')}">Find #</a>`:''}
-          ${l.prospect&&/Apartment|Office|Corporate|Senior/.test(d.venue_type||'')?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('"'+(d.company||'')+'" '+(d.city||'')+' "property manager" OR "community manager" OR "leasing"')}">Find PM</a>`:''}
-        </div>
-        ${photosOf(l.id).length?`<div class="l-gallery" style="display:flex;gap:6px;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch">${photosOf(l.id).map((pid,_,all)=>{const u=`${FN}/photo?id=${encodeURIComponent(pid)}&k=${encodeURIComponent(KEY)}&v=${Date.now()%1e7}`;const multi=all.length>1;return `<a href="${u}" target="_blank" rel="noopener" style="${multi?'flex:0 0 auto':'flex:1 1 100%'}"><img class="l-photo" style="${multi?'width:130px;height:98px;':'width:100%;'}margin-top:0" loading="lazy" src="${u}" alt="location photo"></a>`}).join('')}</div>`:''}
         ${['prospect','new','contacted'].includes(l.status)?`<div class="l-quick" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
           <button class="act" data-act="ql" data-ql="No answer">No answer</button>
           <button class="act" data-act="ql" data-ql="Left card">Left card</button>
           <button class="act" data-act="ql" data-ql="Interested — wants proposal">Interested</button>
-          <button class="act" data-act="ql" data-ql="Come back later">Come back</button>
-        </div>`:''}
-        ${l.prospect?`<div class="l-pitch" style="display:none;margin-top:8px;padding:10px 12px;background:var(--card,#fff);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5">${esc(pitchFor(l))}<div style="margin-top:6px"><button class="act" data-act="copypitch">Copy</button></div></div>`:''}
-        <div class="l-note${l.note?' open':''}">
+          <button class="act" data-act="chips" data-chips="comeback">Come back</button>
+          <button class="act" data-act="chips" data-chips="notnow">Not now</button>
+        </div>
+        <div class="l-chips" data-chipset="comeback" style="display:none"><span class="mono chips-lbl">BEST TIME</span>${['Mornings','Lunch','After 3','Weekends'].map(t=>`<button class="fu-chip" data-act="ql" data-ql="Come back later" data-extra="${t}">${t}</button>`).join('')}<button class="fu-chip" data-act="ql" data-ql="Come back later">Not sure</button></div>
+        <div class="l-chips" data-chipset="notnow" style="display:none"><span class="mono chips-lbl">WHY</span>${NOTNOW.map(r=>`<button class="fu-chip" data-act="nn" data-nn="${esc(r)}">${esc(r)}</button>`).join('')}</div>`:''}
+        <div class="l-tags">${tags.join('')}</div>
+        <div class="l-actions">
+          ${tel?`<a class="act primary" href="tel:${tel}">Call</a><a class="act" href="sms:${tel}?&body=${smsBody}">Text</a>`:''}
+          ${l.prospect&&['prospect','contacted'].includes(l.status)&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
+          ${l.prospect?`<button class="act" data-act="pitch">Pitch</button>`:''}
+          <button class="act" data-act="note">Note</button>
+          <button class="act" data-act="photo">+ Photo${photosOf(l.id).length?` (${photosOf(l.id).length})`:''}</button>
+          <select class="status" data-act="status">${STATUSES.map(x=>`<option value="${x}"${x===l.status?' selected':''}>${SLABEL[x]}</option>`).join('')}</select>
+          ${['proposal','signed','waitlist','installed'].includes(l.status)?`<button class="act" data-act="coi">COI: ${l.coi==='sent'?'sent ✓':l.coi==='requested'?'requested':'–'}</button>`:''}
+          <button class="act" data-act="more">${MORE_OPEN.has(l.id)?'Less ▴':'More ▾'}</button>
+        </div>
+        <div class="l-actions l-more" style="display:${MORE_OPEN.has(l.id)?'flex':'none'}">
+          ${tel2?`<a class="act" href="tel:${tel2}">Call main line</a>`:''}
+          ${(d.email||l.metaEmail)?`<a class="act" href="${mailProposal(l,pd)}">Email proposal</a><a class="act" href="${mailFollowup(l)}">Follow-up</a>`:''}
+          ${l.prospect?`<button class="act" data-act="contact">${dmOf(l)?'Contact ✎':'+ Contact'}</button><button class="act" data-act="phonenum">${l.metaPhone?'Phone ✎':'+ Phone'}</button><button class="act" data-act="emailaddr">${l.metaEmail?'Email ✎':'+ Email'}</button>`:''}
+          ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
+          <a class="act" href="proposal.html#${pd}" target="_blank" rel="noopener">Proposal</a>
+          <a class="act" href="wrap-studio.html?biz=${encodeURIComponent((isReferral(l)&&d.referred_business)||d.company||d.name||'')}" target="_blank" rel="noopener">Mock</a>
+          ${l.prospect?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent((d.company||'')+' '+(d.city||'')+' TN phone')}">Find #</a>`:''}
+          ${l.prospect&&/Apartment|Office|Corporate|Senior/.test(d.venue_type||'')?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('"'+(d.company||'')+'" '+(d.city||'')+' "property manager" OR "community manager" OR "leasing"')}">Find PM</a>`:''}
+        </div>
+        <div class="l-edit" data-edit></div>
+        ${photosOf(l.id).length?`<div class="l-gallery" style="display:flex;gap:6px;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch">${photosOf(l.id).map((pid,_,all)=>{const u=photoSrc(pid);const multi=all.length>1;return `<a href="${u||'#'}" data-pid="${esc(pid)}" target="_blank" rel="noopener" style="${multi?'flex:0 0 auto':'flex:1 1 100%'}"><img class="l-photo" data-pid="${esc(pid)}" style="${multi?'width:130px;height:98px;':'width:100%;'}margin-top:0" loading="lazy" src="${u}" alt="location photo"></a>`}).join('')}</div>`:''}
+        ${l.prospect?`<div class="l-pitch" style="display:${PITCH_OPEN.has(l.id)?'block':'none'};margin-top:8px;padding:10px 12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5;white-space:pre-wrap">${esc(pitchFor(l))}<div style="margin-top:6px"><button class="act" data-act="copypitch">Copy</button></div></div>`:''}
+        ${['dead','installed'].includes(l.status)?'':`<div class="l-fu">
+          <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
+          <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px">
+          <button class="fu-chip" data-fuq="1">+1d</button><button class="fu-chip" data-fuq="3">+3d</button><button class="fu-chip" data-fuq="7">+1w</button>${l.followup?`<button class="fu-chip" data-fuclear title="Clear follow-up">✕</button>`:''}
+        </div>`}
+        <div class="l-note${(l.note||NOTE_OPEN.has(l.id))?' open':''}">
           <textarea data-act="notetext" placeholder="Call notes, objections, next step…">${esc(l.note)}</textarea>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-            <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
-            <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px;font-size:12px">
-            <button class="fu-chip" data-fuq="1">+1d</button><button class="fu-chip" data-fuq="3">+3d</button><button class="fu-chip" data-fuq="7">+1w</button>
-          </div>
           <div class="save-hint"></div>
         </div>
       </div>
@@ -1248,7 +1314,7 @@ function leadCard(l){
   </div>`;
 }
 /* ---------- compact rows (tap to expand, swipe to work) ---------- */
-const EXPANDED=new Set();
+const EXPANDED=new Set(),NOTE_OPEN=new Set(),PITCH_OPEN=new Set(),MORE_OPEN=new Set(),RECENT=new Set();
 function compactRow(l){
   const d=l.data;
   const score=l.prospect?(l.flag?'✕':(l.fit||'P')):(+d.lead_score||0);
@@ -1266,22 +1332,84 @@ function compactRow(l){
       <span class="lr-score ${l.flag?'':tier}"${l.flag?' style="color:var(--red);border-color:var(--red)"':''}>${score}</span>
       <span class="lr-name">${esc(d.company||d.name||'Unknown')}</span>
       <span class="lr-meta">${dist||esc(d.city||'')}</span>
+      ${FILTER==='today'&&l.prospect&&dmOf(l)?`<span class="lr-b">ASK ${esc(firstName(dmOf(l).name).toUpperCase())}</span>`:''}
       ${badge}
       <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span>
     </div>
   </div>`;
 }
-function quickLogSwipe(id,label){
-  const l=LEADS.find(x=>x.id===id);if(!l)return;
-  l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${label}`;
-  const updates={note:l.note};
-  if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
-  saveMeta(id,updates);render();
+/* door outcomes: every knock sets a follow-up so the prospect never silently drops out of Today */
+const OUTCOMES={'No answer':{fu:2},'Left card':{fu:5},'Interested — wants proposal':{fu:1,status:'proposal'},'Come back later':{fu:3}};
+const NOTNOW=['Has vendor contract','No space / power','Corporate decides','Not interested','Closed'];
+let UNDO_T=null;
+function showUndo(msg,undo){
+  let t=$('undoToast');
+  if(!t){t=document.createElement('div');t.id='undoToast';document.body.appendChild(t);}
+  t.innerHTML=`<span>${esc(msg)}</span><button type="button">Undo</button>`;
+  t.style.display='flex';clearTimeout(UNDO_T);
+  t.querySelector('button').addEventListener('click',()=>{t.style.display='none';undo();render();if($('blitz').style.display==='block')blitzRender();});
+  UNDO_T=setTimeout(()=>{t.style.display='none';},6000);
 }
-function snooze(id,days){
+function logDoor(id,label,extra){
   const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const prev={note:l.note||'',status:l.status,followup:l.followup||''};
+  const updates={note:(l.note?l.note+'\n':'')+`[${stamp()}] ${label}${extra?' — '+extra:''}`};
+  RECENT.add(id);
+  const o=OUTCOMES[label]||{};
+  if(o.status&&['prospect','new','contacted'].includes(l.status))updates.status=o.status;
+  else if(['prospect','new'].includes(l.status))updates.status='contacted';
+  if(o.fu&&!l.followup)updates.followup=isoDays(o.fu);
+  saveMeta(id,updates);
+  showUndo(`${label.replace(/ — .*/,'')} logged${updates.followup?' · follow-up '+updates.followup.slice(5).replace('-','/'):''}`,()=>saveMeta(id,prev));
+}
+function logNotNow(id,reason){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const prev={note:l.note||'',status:l.status,followup:l.followup||''};
+  RECENT.add(id);
+  const updates={note:(l.note?l.note+'\n':'')+`[${stamp()}] NOT NOW — ${reason}`};
+  if(/Not interested|Closed/.test(reason))updates.status='dead';
+  else{if(['prospect','new'].includes(l.status))updates.status='contacted';updates.followup=isoDays(90);}
+  saveMeta(id,updates);
+  showUndo(`Not now — ${reason}`,()=>saveMeta(id,prev));
+}
+function snooze(id,days,withUndo){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const prev=l.followup||'';
   const f=isoDays(days);
-  l.followup=f;saveMeta(id,{followup:f});render();
+  saveMeta(id,{followup:f});
+  if(withUndo)showUndo('Follow-up set for '+f.slice(5).replace('-','/'),()=>saveMeta(id,{followup:prev}));
+  render();
+}
+/* decision-maker line: written by the + Contact editor, read by dmOf() */
+function setDmLine(note,name,title){
+  const lines=(note||'').split('\n').filter(x=>!/^Decision-makers?: /i.test(x));
+  if(name)lines.unshift(`Decision-makers: ${name}${title?' ('+title+')':''}`);
+  return lines.join('\n').replace(/^\n+/,'');
+}
+const EDIT_FIELDS={
+  phone:[['tel','Direct phone','615-555-0100']],
+  email:[['email','Email (leasing@, info@, service@…)','name@business.com']],
+  contact:[['text','Decision-maker','Dana Smith'],['text','Title','GM']],
+};
+function openEdit(card,id,kind){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const box=card.querySelector('[data-edit]');if(!box)return;
+  const dm=dmOf(l);
+  const cur=kind==='phone'?[l.metaPhone||'']:kind==='email'?[l.metaEmail||'']:[dm?dm.name:'',dm?dm.title:''];
+  box.innerHTML=EDIT_FIELDS[kind].map(([type,label,ph],i)=>`<label class="l-edit-f"><span class="mono">${label.toUpperCase()}</span><input class="inp" type="${type}" inputmode="${type==='tel'?'tel':type==='email'?'email':'text'}" autocomplete="off" autocapitalize="${type==='text'?'words':'off'}" placeholder="${ph}" value="${esc(cur[i])}"></label>`).join('')
+    +`<div style="display:flex;gap:8px"><button type="button" class="act primary" data-edit-save>Save</button><button type="button" class="act" data-edit-cancel>Cancel</button></div>`;
+  box.classList.add('open');
+  const save=()=>{
+    const v=[...box.querySelectorAll('input')].map(i=>i.value.trim());
+    if(kind==='phone')saveMeta(id,{phone:v[0]});
+    else if(kind==='email')saveMeta(id,{email:v[0]});
+    else saveMeta(id,{note:setDmLine(l.note,v[0],v[1])});
+    render();
+  };
+  box.querySelector('[data-edit-save]').addEventListener('click',save);
+  box.querySelector('[data-edit-cancel]').addEventListener('click',()=>box.classList.remove('open'));
+  box.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();save();}}));
+  box.querySelector('input').focus();
 }
 function wireSwipe(card,id){
   const l=LEADS.find(x=>x.id===id);
@@ -1295,25 +1423,31 @@ function wireSwipe(card,id){
     if(!swiping)return;
     dx=Math.max(-110,Math.min(110,mx));
     row.style.transform='translateX('+dx+'px)';
-    card.style.background=dx>60?'#EAF3E6':dx<-60?'#F3EEE0':'';
+    card.style.background=Math.abs(dx)>60?'var(--panel2)':'';
+    card.style.borderLeftColor=dx>60?'var(--gold)':dx<-60?'var(--taupe)':'';
     card.dataset.swiped=Math.abs(dx)>60?'1':'';
   },{passive:true});
+  const reset=()=>{row.style.transform='';card.style.background='';card.style.borderLeftColor='';};
+  card.addEventListener('touchcancel',()=>{reset();dx=0;swiping=false;setTimeout(()=>{card.dataset.swiped='';},50);});
   card.addEventListener('touchend',()=>{
-    row.style.transform='';card.style.background='';
+    reset();
     if(!swiping)return;
-    if(dx>80)quickLogSwipe(id,'No answer');
-    else if(dx<-80)snooze(id,1);
+    const commit=Math.max(100,row.offsetWidth*0.4); // a drifting thumb-scroll must not log a door
+    if(dx>commit){logDoor(id,'No answer');render();}
+    else if(dx<-commit)snooze(id,1,true);
     dx=0;swiping=false;
     setTimeout(()=>{card.dataset.swiped='';},50);
   });
 }
 function render(){
-  renderStats();renderFilters();
+  renderStats();renderFilters();renderFunnel();
   if(FILTER==='today'&&!MYLOC&&!LOC_TRIED){LOC_TRIED=true;locate(()=>render());}
   const arr=visible();
   const page=arr.slice(0,SHOWN);
-  const planBar=(FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:11px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested</span></div>`:'';
+  const planBar=(FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:11px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested</span>${LOC_FAIL&&!MYLOC?`<button class="fu-chip" id="locRetry">Location off — retry</button>`:''}</div>`:'';
   $('list').innerHTML=planBar+(page.length?page.map(l=>{try{return EXPANDED.has(l.id)?leadCard(l):compactRow(l)}catch(e){console.error('card render failed',l.id,e);return `<div class="lead"><div class="l-top"><div class="l-main"><div class="l-name">${esc(l.data?.name||l.data?.company||l.id)}</div><div class="l-meta" style="color:var(--red)">Card failed to render — data issue logged to console.</div></div></div></div>`}}).join('')+(arr.length>SHOWN?`<button class="act" id="showMore" style="width:100%;justify-content:center;padding:14px;margin-top:4px">Show ${Math.min(60,arr.length-SHOWN)} more (${arr.length-SHOWN} remaining)</button>`:''):`<div class="empty">${FILTER==='prospect'?'No prospects match these filters.':FILTER==='referral'?'No referrals yet — they arrive when someone picks “A spot I know” on the site.':(Q||FCITY||FVENUE||FTIER)?'Nothing matches the current filters. <button class="act" id="emptyClear" style="margin-left:8px">Clear filters</button>':'No leads in this view yet. New site submissions land here automatically.'}</div>`);
+  const lr=$('locRetry');
+  if(lr)lr.addEventListener('click',()=>{LOC_TRIED=true;locate(()=>render());});
   const rt=$('routeToday');
   if(rt)rt.addEventListener('click',()=>{
     ROUTE.clear();visible().forEach(l=>ROUTE.add(l.id));saveRoute();updateRouteBar();
@@ -1347,50 +1481,42 @@ function render(){
     const coiBtn=card.querySelector('[data-act="coi"]');
     if(coiBtn)coiBtn.addEventListener('click',()=>{
       const l=LEADS.find(x=>x.id===id);if(!l)return;
-      const next=l.coi==='sent'?'':l.coi==='requested'?'sent':'requested';
-      l.coi=next;saveMeta(id,{coi:next});render();
+      saveMeta(id,{coi:l.coi==='sent'?'':l.coi==='requested'?'sent':'requested'});render();
     });
     card.querySelector('[data-act="note"]').addEventListener('click',()=>{
-      card.querySelector('.l-note').classList.toggle('open');
+      const open=card.querySelector('.l-note').classList.toggle('open');
+      open?NOTE_OPEN.add(id):NOTE_OPEN.delete(id);
+      if(open)card.querySelector('[data-act="notetext"]').focus();
     });
     const pt=card.querySelector('[data-act="pitch"]');
     if(pt)pt.addEventListener('click',()=>{
-      const p=card.querySelector('.l-pitch');
-      if(p)p.style.display=p.style.display==='none'?'block':'none';
+      const p=card.querySelector('.l-pitch');if(!p)return;
+      const open=p.style.display==='none';p.style.display=open?'block':'none';
+      open?PITCH_OPEN.add(id):PITCH_OPEN.delete(id);
     });
+    const mr=card.querySelector('[data-act="more"]');
+    if(mr)mr.addEventListener('click',()=>{MORE_OPEN.has(id)?MORE_OPEN.delete(id):MORE_OPEN.add(id);render();});
+    card.querySelectorAll('[data-act="chips"]').forEach(b=>b.addEventListener('click',()=>{
+      card.querySelectorAll('[data-chipset]').forEach(c=>{c.style.display=(c.dataset.chipset===b.dataset.chips&&c.style.display==='none')?'flex':'none';});
+    }));
+    card.querySelectorAll('[data-act="nn"]').forEach(b=>b.addEventListener('click',()=>{logNotNow(id,b.dataset.nn);render();}));
+    const ct=card.querySelector('[data-act="contact"]');
+    if(ct)ct.addEventListener('click',()=>openEdit(card,id,'contact'));
+    const fc=card.querySelector('[data-fuclear]');
+    if(fc)fc.addEventListener('click',()=>{saveMeta(id,{followup:''});render();});
     const cp=card.querySelector('[data-act="copypitch"]');
     if(cp)cp.addEventListener('click',()=>{
       const l=LEADS.find(x=>x.id===id);if(!l)return;
       try{navigator.clipboard.writeText(pitchFor(l));cp.textContent='Copied ✓';setTimeout(()=>cp.textContent='Copy',1500);}catch(e){}
     });
-    card.querySelectorAll('[data-act="ql"]').forEach(qb=>qb.addEventListener('click',()=>{
-      const l=LEADS.find(x=>x.id===id);if(!l)return;
-      l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${qb.dataset.ql}`;
-      const updates={note:l.note};
-      if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
-      saveMeta(id,updates);
-      render();
-    }));
+    card.querySelectorAll('[data-act="ql"]').forEach(qb=>qb.addEventListener('click',()=>{logDoor(id,qb.dataset.ql,qb.dataset.extra||'');render();}));
     card.querySelectorAll('[data-fuq]').forEach(b=>b.addEventListener('click',()=>snooze(id,+b.dataset.fuq)));
     const fu=card.querySelector('[data-act="followup"]');
-    if(fu)fu.addEventListener('change',()=>{
-      const l=LEADS.find(x=>x.id===id);if(!l)return;
-      l.followup=fu.value;saveMeta(id,{followup:fu.value});render();
-    });
+    if(fu)fu.addEventListener('change',()=>{saveMeta(id,{followup:fu.value});render();});
     const pn=card.querySelector('[data-act="phonenum"]');
-    if(pn)pn.addEventListener('click',()=>{
-      const l=LEADS.find(x=>x.id===id);if(!l)return;
-      const v=prompt('Phone number for '+(l.data.company||l.id)+':',l.metaPhone||'');
-      if(v===null)return;
-      l.metaPhone=v.trim();saveMeta(id,{phone:l.metaPhone});render();
-    });
+    if(pn)pn.addEventListener('click',()=>openEdit(card,id,'phone'));
     const em=card.querySelector('[data-act="emailaddr"]');
-    if(em)em.addEventListener('click',()=>{
-      const l=LEADS.find(x=>x.id===id);if(!l)return;
-      const v=prompt('Email for '+(l.data.company||l.id)+' (leasing@, info@, service@...):',l.metaEmail||'');
-      if(v===null)return;
-      l.metaEmail=v.trim();saveMeta(id,{email:l.metaEmail});render();
-    });
+    if(em)em.addEventListener('click',()=>openEdit(card,id,'email'));
     const phb=card.querySelector('[data-act="photo"]');
     if(phb)phb.addEventListener('click',()=>{PHOTO_ID=id;$('photoInput').value='';$('photoInput').click();});
     const rc=card.querySelector('[data-act="route"]');
@@ -1398,9 +1524,7 @@ function render(){
     const pb=card.querySelector('[data-act="payout"]');
     if(pb)pb.addEventListener('click',()=>{
       const l=LEADS.find(x=>x.id===id);if(!l)return;
-      const next=l.payout==='paid'?'unpaid':'paid';
-      saveMeta(id,{payout:next});
-      l.payout=next;render();
+      saveMeta(id,{payout:l.payout==='paid'?'unpaid':'paid'});render();
     });
     const ta=card.querySelector('[data-act="notetext"]');
     let t;
@@ -1410,7 +1534,7 @@ function render(){
     });
   });
 }
-$('q').addEventListener('input',e=>{Q=e.target.value;SHOWN=80;render();});
+let QT=null;$('q').addEventListener('input',e=>{Q=e.target.value;SHOWN=80;clearTimeout(QT);QT=setTimeout(render,150);});
 $('citySel').addEventListener('change',e=>{FCITY=e.target.value;SHOWN=80;saveView();render();});
 $('venueSel').addEventListener('change',e=>{FVENUE=e.target.value;SHOWN=80;saveView();render();});
 /* auto-log outreach touches: tapping Call/Text/Email stamps the note */
@@ -1509,20 +1633,18 @@ function blitzRender(){
         <button class="act" data-bz="Left card" style="justify-content:center;padding:14px">Left card</button>
         <button class="act" data-bz="No answer" style="justify-content:center;padding:14px">No answer</button>
         <button class="act" data-bz="Come back later" style="justify-content:center;padding:14px">Come back</button>
+        <button class="act" id="bzNotNow" style="justify-content:center;padding:14px;grid-column:1/-1">Not now — pick a reason</button>
       </div>
+      <div id="bzReasons" class="l-chips" style="display:none">${NOTNOW.map(r=>`<button class="fu-chip" data-bznn="${esc(r)}" style="min-height:44px">${esc(r)}</button>`).join('')}</div>
       <div style="display:flex;justify-content:space-between;margin-top:16px">
         <button class="refresh" id="bzBack"${BZI===0?' disabled':''}>← Back</button>
         <button class="refresh" id="bzSkip">Skip →</button>
       </div>
       ${l.note?`<div style="margin-top:18px;border:2px solid var(--line);background:var(--panel2);padding:12px;font-size:13px;white-space:pre-wrap">${esc(l.note)}</div>`:''}
     </div>`;
-  $('bzBody').querySelectorAll('[data-bz]').forEach(b=>b.addEventListener('click',()=>{
-    l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${b.dataset.bz}`;
-    const updates={note:l.note};
-    if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
-    saveMeta(l.id,updates);
-    BZLOG++;BZI++;blitzRender();
-  }));
+  $('bzBody').querySelectorAll('[data-bz]').forEach(b=>b.addEventListener('click',()=>{logDoor(l.id,b.dataset.bz);BZLOG++;BZI++;blitzRender();}));
+  $('bzNotNow').addEventListener('click',()=>{const r=$('bzReasons');r.style.display=r.style.display==='none'?'flex':'none';});
+  $('bzBody').querySelectorAll('[data-bznn]').forEach(b=>b.addEventListener('click',()=>{logNotNow(l.id,b.dataset.bznn);BZLOG++;BZI++;blitzRender();}));
   document.getElementById('bzSkip').addEventListener('click',()=>{BZSKIP++;BZI++;blitzRender();});
   $('bzPitchBtn').addEventListener('click',()=>{const p=$('bzPitch');p.style.display=p.style.display==='none'?'block':'none';});
   document.getElementById('bzBack').addEventListener('click',()=>{if(BZI>0){BZI--;blitzRender();}});
@@ -1592,12 +1714,14 @@ function startTrip(resumeMi){
   TRIP.watchId=navigator.geolocation.watchPosition(tripTick,
     ()=>{$('tripStat').textContent='LOCATION UNAVAILABLE — CHECK PHONE SETTINGS';},
     {enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>{if(TRIP)TRIP.wl=w;}).catch(()=>{});}catch(e){}
   $('tripBtn').textContent='■ End trip — '+TRIP.mi.toFixed(1)+' mi';
   $('tripStat').textContent='TRACKING · KEEP THIS PAGE OPEN';
 }
 function endTrip(){
   if(!TRIP)return;
   navigator.geolocation.clearWatch(TRIP.watchId);
+  try{TRIP.wl&&TRIP.wl.release();}catch(e){}
   const mi=Math.round(TRIP.mi*10)/10;
   if(mi<0.2){ // nothing meaningful
     TRIP=null;try{localStorage.removeItem('w_trip');}catch(_){}
@@ -1644,7 +1768,7 @@ function renderOps(){
       <span class="mono" style="font-size:10px;color:var(--taupe)">${t.d.slice(5)}</span>
       <b>${esc(t.v)}</b><span>${fmt2(t.a)}</span><span style="color:var(--muted);font-size:12px">${esc(t.n||'')}</span>
       <span style="margin-left:auto;display:flex;gap:6px">
-        ${hasR?`<a class="act" style="padding:3px 8px" target="_blank" rel="noopener" href="${FN}/photo?id=exp:${t.id}&k=${encodeURIComponent(KEY)}">Receipt ✓</a>`
+        ${hasR?`<a class="act" style="padding:3px 8px" target="_blank" rel="noopener" data-pid="${esc('exp:'+t.id)}" href="${photoSrc('exp:'+t.id)||'#'}">Receipt ✓</a>`
               :`<button class="act" data-exrcpt="${t.id}" style="padding:3px 8px">+ Receipt</button>`}
         <button class="act" data-exdel="${i}" style="padding:3px 8px">✕</button></span></div>`;
   }).join('')||'<div class="mono" style="font-size:10px;color:var(--taupe);padding:8px 0">NO EXPENSES LOGGED YET</div>';
