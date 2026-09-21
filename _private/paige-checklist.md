@@ -51,7 +51,7 @@ legit so leads get an instant reply when they ask for texts.
 
 ### 5. Phone setup — 5 min
 - [ ] Save wraptvending.com/command.html to your home screen
-      (dashboard key: wrapt) — this is your pipeline, live, in the field
+      (dashboard key: ask Paige — it is never written down in a file) — this is your pipeline, live, in the field
 - [ ] Test the flow once: submit a fake lead on the site, watch the
       text arrive, find it in Command
 

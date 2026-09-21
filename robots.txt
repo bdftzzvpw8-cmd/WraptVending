@@ -1,8 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /command.html
-Disallow: /proposal.html
-Disallow: /wrap-studio.html
-Disallow: /todo.html
 
 Sitemap: https://wraptvending.com/sitemap.xml

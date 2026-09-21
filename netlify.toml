@@ -9,6 +9,13 @@
 publish = "."
 functions = "netlify/functions"
 
+# working files (checklists, patch tooling) live in _private/ and must never be served
+[[redirects]]
+from = "/_private/*"
+to = "/404.html"
+status = 404
+force = true
+
 [[headers]]
 for = "/*"
 
@@ -17,6 +24,45 @@ for = "/*"
   X-Content-Type-Options = "nosniff"
   Referrer-Policy = "strict-origin-when-cross-origin"
   Permissions-Policy = "camera=(self), microphone=(), geolocation=(self)"
+  Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+
+# the field CRM and the private tools: never cached by the CDN, never indexed
+[[headers]]
+for = "/command.html"
+
+  [headers.values]
+  Cache-Control = "no-store"
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/command-manifest.json"
+
+  [headers.values]
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/proposal.html"
+
+  [headers.values]
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/wrap-studio.html"
+
+  [headers.values]
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/sw.js"
+
+  [headers.values]
+  Cache-Control = "no-cache"
+
+[[headers]]
+for = "/.netlify/functions/*"
+
+  [headers.values]
+  Cache-Control = "no-store"
 
 [[headers]]
 for = "/og.png"
