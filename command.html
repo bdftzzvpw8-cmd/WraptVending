@@ -171,6 +171,8 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
 .l-edit-f{display:flex;flex-direction:column;gap:3px}
 .l-edit-f span{font-size:9px;letter-spacing:.14em;color:var(--taupe)}
 .l-more{border-top:1px dashed var(--line);padding-top:10px}
+.pitch-lbl{font-size:9px;letter-spacing:.14em;color:var(--taupe);margin-top:8px}
+.pitch-lbl:first-child{margin-top:0}
 #undoToast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:120;background:var(--cream);color:var(--bg);padding:10px 14px;gap:14px;align-items:center;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
 #undoToast button{background:var(--gold);border:0;color:#221B0E;font-weight:700;padding:8px 14px;cursor:pointer;min-height:40px;font-size:13px}
 #funnel{font-size:10.5px;letter-spacing:.04em;color:var(--muted);padding:2px 0 6px;line-height:1.7}
@@ -1155,7 +1157,7 @@ function mailFollowup(l){
   const subj='Following up \u2014 Wrapt at '+co;
   const body=`Hi ${firstOf(d,l)},
 
-Just circling back on the smart cooler for ${co}. Happy to answer anything \u2014 space, products, how the 15% works, or how the two-page agreement works.
+Just circling back on the smart cooler for ${co}. Happy to answer anything \u2014 where it would go, what goes in it, or how the 15% gets paid.
 
 If it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.
 
@@ -1174,18 +1176,21 @@ function introLine(vt){
   if(/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt))return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
   return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
 }
+/* true once a door outcome is stamped in the note (calls and emails don't count as a visit) */
+function doorTouched(l){return /\] (No answer|Left card|Come back|Interested|NOT NOW)/.test((l&&l.note)||'')}
 function mailIntro(l){
   const d=l.data,co=d.company||'your location';const em=d.email||l.metaEmail||'';
-  const subj='A free smart cooler for '+co;
+  const visited=l.prospect&&doorTouched(l);
+  const subj=visited?'Following up from my visit \u2014 a smart cooler for '+co:'Cold drinks at '+co+' \u2014 15% of sales to you';
   const body=`Hi ${firstOf(d,l)},
 
-I'm Paige, owner of Wrapt, a local company here in Franklin. We place AI smart coolers in businesses around Middle Tennessee at no cost.
+${visited?`I stopped by ${co} ${lastTouchDays(l)===0?'today':'this week'} and wanted to follow up in writing. `:''}I'm Paige, owner of Wrapt here in Franklin. We place glass-front smart coolers in local businesses at no cost to the host \u2014 wrapped in your branding, so it looks like yours.
 
 ${introLine(d.venue_type)}
 
-How it works: we install it, stock it and service it every week. ${co} keeps 15% of every sale, paid monthly with a statement. There's nothing to buy and nothing to manage.
+We install it, stock it and service it weekly. ${co} keeps 15% of every sale, paid monthly with a statement. Nothing to buy, nothing to manage.
 
-Would you be open to a quick 10-minute look? I'm happy to stop by or send details.
+Could I stop by for 10 minutes this week with a mockup in ${co}'s colors? Reply with a day that works, or tell me who I should ask for.
 
 Paige Fryer
 Owner, Wrapt
@@ -1194,16 +1199,17 @@ Owner, Wrapt
 }
 /* ---------- door scripts ---------- */
 const PITCH_MAP=[
- [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, we're local. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
- [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart market cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — wrapped in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 15% of sales. No cost to the hotel. Is the GM the right person to show a mockup to?`],
+ [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
+ [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — wrapped in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 15% of sales. No cost to the hotel. Is the GM the right person to show a mockup to?`],
  [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We wrap it in {co}'s branding so it photographs like part of the community, the property keeps 15% of sales, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
  [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — wrapped in {co}'s branding so it looks factory. You keep 15% of sales, we stock and service it, zero cost. Can I show you a mockup with your logo on it?`],
- [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, we're local. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and it's wrapped in {co}'s branding. You keep 15% of every sale, we do all the stocking and service. Free. Where's your power outlet situation?`],
+ [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and it's wrapped in {co}'s branding. You keep 15% of every sale, we do all the stocking and service. Free. Where do folks sit while the dryers run?`],
  [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler wrapped in {co}'s branding: tap, grab a water or tea, done. It upgrades the client experience, you keep 15% of sales, and we stock and service it — costs you nothing. Want to see the wrap mockup with your logo?`],
- [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We run branded smart markets — a cooler wrapped in {co}'s look where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 15% of sales at no cost. Who owns workplace amenities here?`],
+ [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We place branded smart coolers — wrapped in {co}'s look — where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 15% of sales at no cost. Who owns workplace amenities here?`],
  [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, wrapped to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 15% of sales, and there's no cost. Who would I talk to about placements?`],
  [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler wrapped in {co}'s look: tap, grab, go, no cash handling for your team. 15% of sales goes back to the ministry, we stock and service it, zero cost. Who handles facilities decisions?`],
  [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. It's wrapped in {co}'s branding, you keep 15% of sales, and we handle stocking and service. No cost to you. Where do people congregate between games?`],
+ [/Public|civic|Library/i,`Hi, I'm Paige — I own Wrapt here in Franklin. We place a smart cooler for visitors and staff: tap a card, grab a drink or snack, no cash for your team to handle. Wrapped in {co}'s look, 15% of sales back to the facility, we stock and service it, and there's no cost or purchase order — we can provide a certificate of insurance. Who handles vendor placements here?`],
  [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. Wrapped in {co}'s branding, you keep 15% of sales, we stock and service everything. Free. Could I show you a mockup?`],
 ];
 const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle all stocking and service. It costs you nothing. Where would this get the most traffic?`;
@@ -1211,6 +1217,35 @@ function pitchFor(l){
   const vt=l.data.venue_type||'';
   const hit=PITCH_MAP.find(([re])=>re.test(vt));
   return (hit?hit[1]:PITCH_DEFAULT).replaceAll('{co}',l.data.company||'your business');
+}
+/* the first ten seconds: most counters are staffed by someone who can't say yes */
+function spotFor(vt){
+  vt=vt||'';
+  if(/Gym|fitness|Pickleball/i.test(vt))return 'the members\' way out';
+  if(/Hotel|Apartment|Senior|Church|Public|College/i.test(vt))return 'the lobby';
+  if(/Dealership|Auto repair|Veterinary|Medical|clinic|Salon|Beauty|Tattoo/i.test(vt))return 'the waiting area';
+  if(/Laundromat/i.test(vt))return 'the folding area';
+  if(/Office|Corporate|coworking/i.test(vt))return 'the break room';
+  return 'the front area';
+}
+function openerFor(l){
+  const dm=dmOf(l);
+  return dm?`Hi — is ${dm.name} in? I'm Paige, I own Wrapt here in Franklin. Thirty seconds about a cooler for ${spotFor(l.data.venue_type)} — no cost to y'all.`
+           :`Hi — who handles vendors here, is that you? I'm Paige with Wrapt, here in Franklin. Thirty seconds and I'm out of your hair.`;
+}
+const GATEKEEPER=`No problem — who should I ask for, and when are they usually in? I'll leave a mockup card.`;
+const OBJECTIONS=[
+ [`"We already have a vending company."`,`Keep them. Ours is a cold cooler, not a snack machine — it goes where theirs isn't: the lobby, the second floor, the waiting area. When is their term up? I'll make a note.`],
+ [`"No room."`,`Three feet of wall and a regular outlet — a hotel-room fridge stood on end. Show me the spot you think it won't fit.`],
+ [`"Power?"`,`One standard 110V outlet, same draw as a kitchen fridge. If the outlet is a few feet off, we bring the cord cover.`],
+ [`"Who eats theft or spoilage?"`,`We do. The door only unlocks after a card is tapped, so every grab is paid for, and the inventory is ours — expired or damaged product is our loss. Your 15% is on what sells.`],
+ [`"How long am I locked in?"`,`It's a multi-year placement — we're putting a machine and a custom wrap on your wall, so we ask for three to five years. Two pages, statement every month. If the mix isn't working we change the mix, not the deal.`],
+];
+function pitchHtml(l){
+  return `<div class="mono pitch-lbl">AT THE DOOR</div><div>${esc(openerFor(l))}</div>`
+    +`<div class="mono pitch-lbl">PITCH</div><div>${esc(pitchFor(l))}</div>`
+    +`<div class="mono pitch-lbl">IF IT'S NOT THE DECISION-MAKER</div><div>${esc(GATEKEEPER)}</div>`
+    +`<details style="margin-top:8px"><summary class="mono pitch-lbl" style="cursor:pointer;margin-top:0">OBJECTIONS ▾</summary>${OBJECTIONS.map(([q,a])=>`<div style="margin-top:6px"><b>${esc(q)}</b><br>${esc(a)}</div>`).join('')}</details>`;
 }
 function installDaysLeft(l){if(!l.signed_at)return null;return 14-Math.floor((Date.now()-new Date(l.signed_at))/864e5)}
 function isToday(l){return fuDue(l)||(l.status==='signed'&&l.signed_at&&installDaysLeft(l)<=4)||(!l.prospect&&(+l.data.lead_score||0)>=70&&['new','contacted'].includes(l.status))}
@@ -1220,7 +1255,10 @@ function leadCard(l){
   const telN=n=>{n=(n||'').replace(/\D/g,'');return n?'+1'+n.replace(/^1/,''):''};
   const direct=telN(l.metaPhone),main=telN(d.phone);
   const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
-  const smsBody=encodeURIComponent(`Hi ${firstName(d.name)} — Wrapt here, following up on the machine for ${d.company||'your location'}. `);
+  const smsCo=d.company||'your location',smsCold=l.prospect&&['prospect','contacted'].includes(l.status);
+  const smsBody=encodeURIComponent(smsCold
+    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place branded smart coolers at no cost to the host; ${smsCo} would keep 15% of sales. Could I stop by for 10 min this week with a mockup?`
+    :`Hi ${firstOf(d,l)} — Paige with Wrapt, following up on the smart cooler for ${smsCo}. Any questions I can answer, or a good day to swing by with the mockup?`);
   const tags=[];
   const tier=tierOf(l);
   if(tier)tags.push(`<span class="tag" style="${tier==='A'?'color:var(--gold-deep);border-color:var(--gold);font-weight:700':tier==='B'?'color:var(--cream);border-color:var(--cream)':'color:var(--taupe);border-color:var(--line)'}">TIER ${tier}</span>`);
@@ -1298,7 +1336,7 @@ function leadCard(l){
         </div>
         <div class="l-edit" data-edit></div>
         ${photosOf(l.id).length?`<div class="l-gallery" style="display:flex;gap:6px;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch">${photosOf(l.id).map((pid,_,all)=>{const u=photoSrc(pid);const multi=all.length>1;return `<a href="${u||'#'}" data-pid="${esc(pid)}" target="_blank" rel="noopener" style="${multi?'flex:0 0 auto':'flex:1 1 100%'}"><img class="l-photo" data-pid="${esc(pid)}" style="${multi?'width:130px;height:98px;':'width:100%;'}margin-top:0" loading="lazy" src="${u}" alt="location photo"></a>`}).join('')}</div>`:''}
-        ${l.prospect?`<div class="l-pitch" style="display:${PITCH_OPEN.has(l.id)?'block':'none'};margin-top:8px;padding:10px 12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5;white-space:pre-wrap">${esc(pitchFor(l))}<div style="margin-top:6px"><button class="act" data-act="copypitch">Copy</button></div></div>`:''}
+        ${l.prospect?`<div class="l-pitch" style="display:${PITCH_OPEN.has(l.id)?'block':'none'};margin-top:8px;padding:10px 12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5">${pitchHtml(l)}<div style="margin-top:8px"><button class="act" data-act="copypitch">Copy pitch</button></div></div>`:''}
         ${['dead','installed'].includes(l.status)?'':`<div class="l-fu">
           <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
           <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px">
@@ -1626,7 +1664,7 @@ function blitzRender(){
         <a class="act" href="wrap-studio.html?biz=${encodeURIComponent(d.company||'')}" target="_blank" rel="noopener">Mock</a>
         <button class="act" id="bzPitchBtn">Pitch</button>
       </div>
-      <div id="bzPitch" style="display:none;margin:6px 0 0;padding:10px 12px;border:1px dashed var(--gold);font-size:13px;line-height:1.5;white-space:pre-wrap">${esc(pitchFor(l))}</div>
+      <div id="bzPitch" style="display:none;margin:6px 0 0;padding:10px 12px;border:1px dashed var(--gold);font-size:13px;line-height:1.5">${pitchHtml(l)}</div>
       <div class="mono" style="font-size:10px;letter-spacing:.16em;color:var(--taupe);margin:20px 0 8px">LOG THE DOOR — ONE TAP ADVANCES</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <button class="btn" data-bz="Interested — wants proposal" style="margin:0">Interested</button>
