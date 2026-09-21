@@ -210,6 +210,7 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
         <option value="tier">Tier A→C</option>
         <option value="fit">Fit high→low</option>
         <option value="near">Nearest first</option>
+        <option value="reach">Best contact first</option>
       </select>
       <button class="ftab" id="clearFilters" style="white-space:nowrap">Clear</button>
     </div>
@@ -821,17 +822,18 @@ async function load(silent){
   }
 }
 let OFFLINE=false;
+const RENAMES={'pros-a35':'Camden Gulch (fka Harlowe)','pros-x14':'Franklin Bridge Golf Club (fka Forrest Crossing)','pros-l04':'Nashville Laundry (fka Bellevue Coin Laundry)','pros-h29':'Comfort Suites Columbia I-65 (fka Comfort Inn)'};
 function buildFrom(j){
     const meta=j.meta||{};
     const inbound=(j.leads||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     const pros=PROSPECTS.map(p=>({
       id:p.id,created_at:null,prospect:true,
-      data:{name:'',company:p.company,venue_type:p.venue_type,city:p.city,address:p.address||'',phone:p.phone||'',website:p.website||'',size:p.size||'',brand:p.brand||'',intel:p.intel||'',lead_type:'Prospect'},
+      data:{name:'',company:(RENAMES[p.id]||p.company),venue_type:p.venue_type,city:p.city,address:p.address||'',phone:p.phone||'',website:p.website||'',size:p.size||'',brand:p.brand||'',intel:p.intel||'',lead_type:'Prospect'},
       fit:p.fit||0,flag:p.flag||'',lat:p.lat,lng:p.lng,geoApprox:p.geo==='approx',
       status:meta[p.id]?.status||'prospect',
       payout:meta[p.id]?.payout||'',
       followup:meta[p.id]?.followup||'',
-      metaPhone:meta[p.id]?.phone||'',
+      metaPhone:meta[p.id]?.phone||'',metaEmail:meta[p.id]?.email||'',
       signed_at:meta[p.id]?.signed_at||'',
       coi:meta[p.id]?.coi||'',
       note:meta[p.id]?.note||''
@@ -988,7 +990,7 @@ function todayPlan(){
   const due=LEADS.filter(isToday);
   SUGGEST.clear();
   const cand=LEADS.filter(l=>l.prospect&&l.status==='prospect'&&!l.flag&&tierOf(l)==='A'&&lastTouchDays(l)==null&&!due.includes(l));
-  cand.sort((a,b)=>((distOf(a)??1e9)-(distOf(b)??1e9))||((b.fit||0)-(a.fit||0)));
+  const _k=l=>reachOf(l)-Math.min(distOf(l)??15,30)*1.5;cand.sort((a,b)=>_k(b)-_k(a));
   const sug=cand.slice(0,8);
   sug.forEach(l=>SUGGEST.add(l.id));
   return [...due,...sug];
@@ -1014,6 +1016,7 @@ function visible(){
   else if(SORT==='fu')arr.sort((a,b)=>((a.followup||'9999')+'').localeCompare((b.followup||'9999')+''));
   else if(SORT==='tier')arr.sort((a,b)=>((tierOf(a)||'Z')+(a.data.company||'')).localeCompare((tierOf(b)||'Z')+(b.data.company||'')));
   else if(SORT==='fit')arr.sort((a,b)=>((b.fit||0)-(a.fit||0))||((a.data.company||'').localeCompare(b.data.company||'')));
+  else if(SORT==='reach')arr.sort((a,b)=>(reachOf(b)-reachOf(a))||((b.fit||0)-(a.fit||0)));
   else if(SORT==='near')arr.sort((a,b)=>((distOf(a)??1e9)-(distOf(b)??1e9))||((b.fit||0)-(a.fit||0)));
   else arr.sort((a,b)=>{const at=a.created_at?new Date(a.created_at).getTime():0,bt=b.created_at?new Date(b.created_at).getTime():0;return bt-at;});
   return arr;
@@ -1041,12 +1044,15 @@ function tierOf(l){
   return 'B';
 }
 const WRAPT_EMAIL='paige@wraptvending.com';
-function firstOf(d){return firstName(d.name||'')||'there';}
+function dmOf(l){const m=/Decision-makers: ([^\n]+)/.exec((l&&l.note)||'');if(!m||/^none/i.test(m[1]))return null;const first=m[1].split('; ')[0];const k=first.indexOf(' (');const name=(k>0?first.slice(0,k):first).trim();const title=k>0?first.slice(k+2).replace(/\)$/,''):'';return name?{name,title}:null;}
+function cqOf(l){if(!l||!l.prospect)return 0;const em=!!(l.metaEmail||l.data.email||/Emails: (?!none)/.test(l.note||''));return (em?2:0)+(dmOf(l)?1:0)+((l.metaPhone||l.data.phone)?1:0);}
+function reachOf(l){return (l.fit||0)+cqOf(l)*8;}
+function firstOf(d,l){return (d.name?firstName(d.name):'')||(l&&dmOf(l)?firstName(dmOf(l).name):'')||'there';}
 function mailProposal(l,pd){
   const d=l.data,co=d.company||'your location';const em=d.email||l.metaEmail||'';
   const url=location.origin+'/proposal.html#'+pd;
   const subj='Your Wrapt proposal \u2014 '+co;
-  const body=`Hi ${firstOf(d)},
+  const body=`Hi ${firstOf(d,l)},
 
 Great talking with you about ${co}. Here's your proposal \u2014 it's built from the details you shared, and it lays out exactly how the placement works:
 
@@ -1068,9 +1074,9 @@ Owner, Wrapt
 function mailFollowup(l){
   const d=l.data,co=d.company||'your location';const em=d.email||l.metaEmail||'';
   const subj='Following up \u2014 Wrapt at '+co;
-  const body=`Hi ${firstOf(d)},
+  const body=`Hi ${firstOf(d,l)},
 
-Just circling back on the smart cooler for ${co}. Happy to answer anything \u2014 space, products, how the 15% works, or the 30-day out if it ever isn't a fit.
+Just circling back on the smart cooler for ${co}. Happy to answer anything \u2014 space, products, how the 15% works, or how the two-page agreement works.
 
 If it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.
 
@@ -1079,21 +1085,49 @@ Owner, Wrapt
 615.948.2976 \u00b7 wraptvending.com`;
   return 'mailto:'+encodeURIComponent(em)+'?cc='+encodeURIComponent(WRAPT_EMAIL)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
+function introLine(vt){
+  vt=vt||'';
+  if(/Gym|fitness|Pickleball|Ice/i.test(vt))return 'Members can grab a protein shake, electrolyte drink or a cold water on the way out: tap a card, grab it, walk off. No front-desk time, no cash, no coins.';
+  if(/Apartment|Senior/i.test(vt))return 'It works as a 24/7 resident amenity for the lobby or clubroom: tap a card, grab a drink or snack, done. Your team never handles money or restocking.';
+  if(/Hotel/i.test(vt))return 'Guests can grab drinks and snacks any hour: tap a card, grab, auto-checkout. It reads as your amenity, and the front desk never has to touch it.';
+  if(/Office|Corporate|coworking/i.test(vt))return 'Employees and tenants get cold drinks and snacks without leaving the building: tap a card, grab, auto-checkout. Nothing for your team to manage.';
+  if(/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt))return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better and costs you nothing.';
+  if(/Church|College|Youth|Public|Entertainment|Golf/i.test(vt))return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
+  return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
+}
+function mailIntro(l){
+  const d=l.data,co=d.company||'your location';const em=d.email||l.metaEmail||'';
+  const subj='A free smart cooler for '+co;
+  const body=`Hi ${firstOf(d,l)},
+
+I'm Paige, owner of Wrapt, a local company here in Franklin. We place AI smart coolers in businesses around Middle Tennessee at no cost.
+
+${introLine(d.venue_type)}
+
+How it works: we install it, stock it and service it every week. ${co} keeps 15% of every sale, paid monthly with a statement. There's nothing to buy and nothing to manage.
+
+Would you be open to a quick 10-minute look? I'm happy to stop by or send details.
+
+Paige Fryer
+Owner, Wrapt
+615.948.2976 · wraptvending.com`;
+  return 'mailto:'+encodeURIComponent(em)+'?cc='+encodeURIComponent(WRAPT_EMAIL)+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
 /* ---------- door scripts ---------- */
 const PITCH_MAP=[
- [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, we're local. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle stocking and service. Costs you nothing, and there's a 30-day out if you ever want it gone. Where would members want cold drinks?`],
- [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart market cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — wrapped in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 15% of sales. No cost, 30-day out. Is the GM the right person to show a mockup to?`],
- [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We wrap it in {co}'s branding so it photographs like part of the community, the property keeps 15% of sales, and we handle all stocking and maintenance. There's a 30-day out. Who handles amenity decisions — you or regional?`],
- [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — wrapped in {co}'s branding so it looks factory. You keep 15% of sales, we stock and service it, zero cost, 30-day out. Can I show you a mockup with your logo on it?`],
- [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, we're local. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and it's wrapped in {co}'s branding. You keep 15% of every sale, we do all the stocking and service. Free, with a 30-day out. Where's your power outlet situation?`],
- [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler wrapped in {co}'s branding: tap, grab a water or tea, done. It upgrades the client experience, you keep 15% of sales, and we stock and service it — costs you nothing, 30-day out anytime. Want to see the wrap mockup with your logo?`],
- [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We run branded smart markets — a cooler wrapped in {co}'s look where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 15% of sales at no cost, with a 30-day out. Who owns workplace amenities here?`],
- [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, wrapped to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 15% of sales, and there's no cost and a 30-day out. Who would I talk to about placements?`],
- [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler wrapped in {co}'s look: tap, grab, go, no cash handling for your team. 15% of sales goes back to the ministry, we stock and service it, zero cost, 30-day out. Who handles facilities decisions?`],
- [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. It's wrapped in {co}'s branding, you keep 15% of sales, and we handle stocking and service. No cost, no contract lock — 30-day out. Where do people congregate between games?`],
- [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. Wrapped in {co}'s branding, you keep 15% of sales, we stock and service everything. Free, with a 30-day out. Could I show you a mockup?`],
+ [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, we're local. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
+ [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart market cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — wrapped in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 15% of sales. No cost to the hotel. Is the GM the right person to show a mockup to?`],
+ [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We wrap it in {co}'s branding so it photographs like part of the community, the property keeps 15% of sales, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
+ [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — wrapped in {co}'s branding so it looks factory. You keep 15% of sales, we stock and service it, zero cost. Can I show you a mockup with your logo on it?`],
+ [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, we're local. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and it's wrapped in {co}'s branding. You keep 15% of every sale, we do all the stocking and service. Free. Where's your power outlet situation?`],
+ [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler wrapped in {co}'s branding: tap, grab a water or tea, done. It upgrades the client experience, you keep 15% of sales, and we stock and service it — costs you nothing. Want to see the wrap mockup with your logo?`],
+ [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We run branded smart markets — a cooler wrapped in {co}'s look where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 15% of sales at no cost. Who owns workplace amenities here?`],
+ [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, wrapped to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 15% of sales, and there's no cost. Who would I talk to about placements?`],
+ [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler wrapped in {co}'s look: tap, grab, go, no cash handling for your team. 15% of sales goes back to the ministry, we stock and service it, zero cost. Who handles facilities decisions?`],
+ [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. It's wrapped in {co}'s branding, you keep 15% of sales, and we handle stocking and service. No cost to you. Where do people congregate between games?`],
+ [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. Wrapped in {co}'s branding, you keep 15% of sales, we stock and service everything. Free. Could I show you a mockup?`],
 ];
-const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle all stocking and service. It costs you nothing and there's a 30-day out. Where would this get the most traffic?`;
+const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 15% of every sale, and we handle all stocking and service. It costs you nothing. Where would this get the most traffic?`;
 function pitchFor(l){
   const vt=l.data.venue_type||'';
   const hit=PITCH_MAP.find(([re])=>re.test(vt));
@@ -1151,9 +1185,11 @@ function leadCard(l){
         ${isReferral(l)&&d.referred_business?`<div class="l-meta" style="margin-top:2px">Referred: <b>${esc(d.referred_business)}</b>${d.referred_contact?' · ask for '+esc(d.referred_contact):''}</div>`:''}
         <div class="l-meta" style="margin-top:2px"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener" style="color:var(--gold-deep);text-decoration:underline">${d.address?esc(d.address):'Map'}</a></div>
         ${l.prospect&&d.intel?`<div class="l-meta" style="margin-top:2px;color:var(--taupe)">${esc(d.intel)}</div>`:''}
+        ${l.prospect&&dmOf(l)?`<div class="l-meta" style="margin-top:2px">Ask for <b>${esc(dmOf(l).name)}</b>${dmOf(l).title?' · '+esc(dmOf(l).title):''}</div>`:''}
         <div class="l-tags">${tags.join('')}</div>
         <div class="l-actions">
           ${tel?`<a class="act primary" href="tel:${tel}">Call</a><a class="act" href="sms:${tel}?&body=${smsBody}">Text</a>`:''}
+          ${l.prospect&&l.status==='prospect'&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
           ${(d.email||l.metaEmail)?`<a class="act" href="${mailProposal(l,pd)}">Email proposal</a><a class="act" href="${mailFollowup(l)}">Follow-up</a>`:''}
           ${l.prospect?(l.metaEmail?`<button class="act" data-act="emailaddr">✉</button>`:`<button class="act" data-act="emailaddr">Add ✉</button>`):''}
           ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
