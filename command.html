@@ -324,6 +324,7 @@ let KEY='', LEADS=[], FILTER='active', Q='';
 const $=id=>document.getElementById(id);
 /* local calendar day (Central), never the UTC day — after 7pm the two differ */
 const todayISO=()=>new Date().toLocaleDateString('en-CA');
+const tmo=ms=>(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)?AbortSignal.timeout(ms):undefined; // older Safari: no timeout rather than a crash
 const isoDays=n=>new Date(Date.now()+n*864e5).toLocaleDateString('en-CA');
 function stamp(){return new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');}
 const STATUSES=['prospect','new','contacted','proposal','signed','waitlist','installed','dead'];
@@ -806,7 +807,7 @@ function photoSrc(pid){
   fetch(FN+'/photo?id='+encodeURIComponent(pid),{headers:{'X-Dash-Key':KEY}})
     .then(r=>r.ok?r.blob():Promise.reject(r.status))
     .then(b=>apply(URL.createObjectURL(b)))
-    .catch(st=>{if(st===401||st===403)apply(`${FN}/photo?id=${encodeURIComponent(pid)}&k=${encodeURIComponent(KEY)}`);else PHOTO_URLS.delete(pid);});
+    .catch(st=>{if(typeof st==='number')apply(`${FN}/photo?id=${encodeURIComponent(pid)}&k=${encodeURIComponent(KEY)}`);else PHOTO_URLS.delete(pid);});
   return '';
 }
 function photosOf(id){return [...PHOTOS].filter(p=>p===id||p.startsWith(id+':')).sort((a,b)=>(a.length-b.length)||a.localeCompare(b))}
@@ -825,7 +826,7 @@ async function load(silent){
   // cache-first: on a key this phone already used, show the saved list right away and refresh behind it
   if(c&&c.j&&!LEADS.length&&KEY&&KEY===savedKey){OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();$('gate').style.display='none';}
   try{
-    const r=await fetch(FN+'/leads',{headers:{'X-Dash-Key':KEY},signal:AbortSignal.timeout(10000)});
+    const r=await fetch(FN+'/leads',{headers:{'X-Dash-Key':KEY},signal:tmo(10000)});
     if(!r.ok){
       LAST_ERR=r.status===401?'auth':'server '+r.status;
       if(r.status===401){try{localStorage.removeItem('w_key');localStorage.removeItem('w_cache');}catch(e2){}}
@@ -894,7 +895,7 @@ async function flushQueue(){
     let q=getQ();
     while(q.length){
       const it=q[0];
-      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch}),signal:AbortSignal.timeout(8000)}).catch(()=>null);
+      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch}),signal:tmo(8000)}).catch(()=>null);
       if(!r)break;                       // no signal: try again later
       if(r.status===401){forgetKey();break;}
       if(!r.ok&&r.status<500){q.shift();setQ(q);continue;} // server rejected it: drop, don't wedge the queue
@@ -922,7 +923,7 @@ async function saveMeta(id,patch,hintEl){
   if(l)applyPatch(l,patch); // apply once, up front: the UI never waits on the network and late responses can't clobber newer edits
   if(hintEl)hintEl.textContent='saving…';
   try{
-    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:AbortSignal.timeout(8000)});
+    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:tmo(8000)});
     if(!r.ok){
       if(r.status===401){forgetKey();return;}
       if(r.status<500){if(hintEl)hintEl.textContent='rejected by server ('+r.status+')';renderStats();renderFilters();return;}
