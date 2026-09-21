@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Wrap Studio · Wrapt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Crect x='5' y='7' width='22' height='18' fill='none' stroke='%23F3F1EC' stroke-width='2.5'/%3E%3Ctext x='16' y='21.5' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='12' fill='%23F3F1EC'%3EW%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#FFFFFF;--panel2:#F3F1EC;--line:#D7D2C7;--ink:#111111;--muted:#55534E;--taupe:#A39C8F;--gold:#B37922;--gold-deep:#8F5E16}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;border-top:7px solid var(--gold);min-height:100vh;padding-bottom:60px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header{padding:26px 0 18px;border-bottom:2px solid var(--ink);margin-bottom:26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-family:'Archivo';font-weight:900;font-size:14px;border:3px solid var(--ink);padding:8px 12px 6px;line-height:1}
+.mono{font-family:'Space Mono',monospace}
+header .tag{font-size:10px;letter-spacing:.22em;color:var(--gold-deep);text-transform:uppercase}
+h1{font-family:'Archivo';font-weight:900;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(26px,4vw,38px);margin-bottom:6px}
+.sub{color:var(--muted);font-size:14.5px;margin-bottom:22px}
+.controls{background:var(--panel2);border:2px solid var(--ink);padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+label.f{display:block}
+label.f span{display:block;font-family:'Space Mono';font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:6px}
+.inp{width:100%;background:#FFF;border:2px solid var(--line);padding:11px 12px;color:var(--ink);font-family:'Inter';font-size:14px}
+.inp:focus{border-color:var(--gold);outline:none}
+input[type=color]{width:100%;height:42px;padding:3px;background:#FFF;border:2px solid var(--line);cursor:pointer}
+.drop{border:2px dashed var(--taupe);background:#FFF;padding:14px;text-align:center;cursor:pointer;font-size:13px;color:var(--muted)}
+.drop.has{border-style:solid;border-color:var(--gold)}
+.drop img{max-height:44px;max-width:100%;display:block;margin:0 auto 4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.card{border:2px solid var(--ink);background:#FFF}
+.card .cv{background:var(--panel2);display:flex;justify-content:center;padding:18px 10px}
+canvas{max-width:100%;height:auto}
+.card .cap{border-top:2px solid var(--ink);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card .cap b{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:13px;letter-spacing:-.01em}
+.btn{background:var(--gold);color:#221B0E;border:2px solid var(--gold);font-family:'Space Mono';font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:9px 13px;cursor:pointer}
+.btn:hover{background:#C98A2E;border-color:#C98A2E}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold-deep)}
+.hint{font-size:12px;color:var(--muted);margin-top:14px}
+footer{margin-top:44px;border-top:2px solid var(--ink);border-bottom:12px solid var(--gold);padding:20px 0;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="logo">WRAPT</span>
+    <span class="mono tag">Wrap Studio · Internal</span>
+  </header>
+
+  <h1>Every machine is a canvas.</h1>
+  <p class="sub">Enter the business, drop in their logo, and show them their machine on the spot. Colors pull from the logo automatically — adjust if needed. Download any concept and text it before you leave the parking lot.</p>
+
+  <div class="controls">
+    <label class="f"><span>Business name</span><input class="inp" id="biz" placeholder="Iron House Gym"></label>
+    <label class="f"><span>Their logo (png/jpg)</span>
+      <div class="drop" id="drop">Tap to choose, or drop it here<input type="file" id="file" accept="image/*" hidden></div>
+    </label>
+    <label class="f"><span>Primary color</span><input type="color" id="c1" value="#2B4C7E"></label>
+    <label class="f"><span>Accent color</span><input type="color" id="c2" value="#B37922"></label>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr;max-width:520px;margin:0 auto">
+    <div class="card"><div class="cv"><canvas id="cv0" width="440" height="780"></canvas></div>
+      <div class="cap"><b class="cname">The Wrapt Full Wrap</b><button class="btn" data-dl="0">Download</button></div></div>
+  </div>
+
+  <p class="hint">Concepts are illustrative — the real wrap is designed with the host and approved in writing before install. Grab logos from the business's website or social page; a phone photo of their signage works too.</p>
+
+  <footer>WRAPT · Wrap Studio · wraptvending.com</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let LOGO=null;
+/* ---------- PHOTO-REAL MODE ---------- */
+let MACHINE=null;               // HTMLImage of the real 440 (img/machine-440.jpg)
+let CAL=location.search.includes('cal=1');
+// Mask = fractions of the photo: m = wrappable cabinet quad, g = glass window quad (excluded)
+let MASK={m:[[.02,.01],[.98,.01],[.98,.88],[.02,.88]],g:[[0.087,0.177],[0.922,0.177],[0.922,0.750],[0.087,0.750]]};
+try{const sv=JSON.parse(localStorage.getItem('w_mask')||'null');if(sv&&sv.m&&sv.g)MASK=sv;}catch(e){}
+(function(){
+  const im=new Image();
+  im.onload=()=>{MACHINE=im;drawAll();if(CAL)calInit();};
+  im.onerror=()=>{MACHINE=null;};
+  im.src='img/machine-440.jpg';
+})();
+
+/* ---------- logo load + dominant color extraction ---------- */
+$('drop').addEventListener('click',()=>$('file').click());
+$('drop').addEventListener('dragover',e=>{e.preventDefault()});
+$('drop').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files[0])loadLogo(e.dataTransfer.files[0])});
+$('file').addEventListener('change',e=>{if(e.target.files[0])loadLogo(e.target.files[0])});
+
+function loadLogo(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      LOGO=img;
+      $('drop').classList.add('has');
+      $('drop').innerHTML='';
+      const th=document.createElement('img');th.src=img.src;$('drop').appendChild(th);
+      const cap=document.createElement('span');cap.textContent='Tap to change';cap.style.fontSize='11px';$('drop').appendChild(cap);
+      $('drop').appendChild($('file'));
+      extractColors(img);
+      drawAll();
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function extractColors(img){
+  const c=document.createElement('canvas'),x=c.getContext('2d');
+  const w=c.width=48,h=c.height=48;
+  x.drawImage(img,0,0,w,h);
+  let data;try{data=x.getImageData(0,0,w,h).data}catch(e){return}
+  const buckets={};
+  for(let i=0;i<data.length;i+=4){
+    const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
+    if(a<128)continue;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+    if(mx>235&&mn>225)continue;           // near-white
+    if(mx<35)continue;                    // near-black
+    if(mx-mn<18&&mx>140)continue;         // light gray
+    const key=(r>>5)+','+(g>>5)+','+(b>>5);
+    (buckets[key]=buckets[key]||{n:0,r:0,g:0,b:0});
+    const bk=buckets[key];bk.n++;bk.r+=r;bk.g+=g;bk.b+=b;
+  }
+  const sorted=Object.values(buckets).sort((a,b)=>b.n-a.n);
+  const hex=bk=>'#'+[bk.r,bk.g,bk.b].map(v=>Math.round(v/bk.n).toString(16).padStart(2,'0')).join('');
+  if(sorted[0])$('c1').value=hex(sorted[0]);
+  // second color: most-used bucket that differs enough from the first
+  if(sorted[0]){
+    const p=sorted[0];
+    const far=sorted.find(s=>{
+      const dr=s.r/s.n-p.r/p.n,dg=s.g/s.n-p.g/p.n,db=s.b/s.n-p.b/p.n;
+      return Math.sqrt(dr*dr+dg*dg+db*db)>90;
+    });
+    if(far)$('c2').value=hex(far);
+  }
+}
+
+/* ---------- shared machine chrome ---------- */
+function shade(hex,f){ // f<0 darken, f>0 lighten
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const t=f<0?0:255,p=Math.abs(f);
+  r=Math.round(r+(t-r)*p);g=Math.round(g+(t-g)*p);b=Math.round(b+(t-b)*p);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function lum(hex){const n=parseInt(hex.slice(1),16);return(0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255}
+function inkOn(hex){return lum(hex)>0.55?'#111111':'#F3F1EC'}
+
+function machineShell(x,W,H){
+  // floor shadow
+  x.fillStyle='rgba(17,17,15,.14)';
+  x.beginPath();x.ellipse(W/2,H-26,W*0.36,14,0,0,Math.PI*2);x.fill();
+  // body
+  x.fillStyle='#111111';
+  rr(x,30,20,W-60,H-70,10);x.fill();
+  return {bx:38,by:28,bw:W-76,bh:H-96}; // wrap face area
+}
+function rr(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath()}
+function hardware(x,f){
+  // dispense tray
+  x.fillStyle='#0A0A0A';rr(x,f.bx+18,f.by+f.bh-54,f.bw-36,34,6);x.fill();
+  x.strokeStyle='#3a3a36';x.lineWidth=2;rr(x,f.bx+18,f.by+f.bh-54,f.bw-36,34,6);x.stroke();
+  x.fillStyle='#B37922';rr(x,f.bx+f.bw/2-34,f.by+f.bh-48,68,8,3);x.fill();
+  // card reader
+  x.fillStyle='#0A0A0A';rr(x,f.bx+f.bw-34,f.by+f.bh*0.42,22,54,4);x.fill();
+  x.fillStyle='#B37922';x.fillRect(f.bx+f.bw-30,f.by+f.bh*0.42+10,14,4);
+  x.fillStyle='#2c2c29';x.fillRect(f.bx+f.bw-30,f.by+f.bh*0.42+22,14,24);
+}
+function drawLogo(x,cx,cy,maxW,maxH,plate,ink){
+  if(!LOGO)return placeholderMark(x,cx,cy,maxW,maxH,plate,ink||'#111111');
+  const s=Math.min(maxW/LOGO.width,maxH/LOGO.height);
+  const w=LOGO.width*s,h=LOGO.height*s;
+  if(plate){x.fillStyle='#FFFFFF';rr(x,cx-w/2-12,cy-h/2-10,w+24,h+20,8);x.fill();}
+  x.drawImage(LOGO,cx-w/2,cy-h/2,w,h);
+}
+function placeholderMark(x,cx,cy,maxW,maxH,plate,ink){
+  const name=($('biz').value||'YOUR BRAND').toUpperCase();
+  if(plate){x.fillStyle='#FFFFFF';rr(x,cx-maxW/2,cy-30,maxW,60,8);x.fill();}
+  x.font='900 20px Archivo, Arial Black, sans-serif';x.textAlign='center';x.textBaseline='middle';
+  x.fillStyle=plate?'#111111':(ink||'#111111');
+  x.fillText(fit(x,name,maxW-30),cx,cy);
+}
+function fit(x,t,w){while(x.measureText(t).width>w&&t.length>4)t=t.slice(0,-2)+'\u2026';return t}
+function glassWindow(x,gx,gy,gw,gh,c2){
+  x.fillStyle='#15161A';rr(x,gx,gy,gw,gh,8);x.fill();
+  x.strokeStyle='#3a3a36';x.lineWidth=2;rr(x,gx,gy,gw,gh,8);x.stroke();
+  const rows=3,cols=4;
+  const cw=gw/cols,ch=gh/(rows+0.4);
+  const cols_=[c2,'#5F8AB8','#5FB877','#C96B5B','#8A6BB8','#D9993C'];
+  for(let r0=0;r0<rows;r0++){
+    x.strokeStyle='#2c2c29';x.beginPath();x.moveTo(gx+6,gy+(r0+1)*ch);x.lineTo(gx+gw-6,gy+(r0+1)*ch);x.stroke();
+    for(let c0=0;c0<cols;c0++){
+      x.fillStyle=cols_[(r0*cols+c0)%cols_.length];
+      rr(x,gx+c0*cw+8,gy+r0*ch+ch*0.28,cw-16,ch*0.68,4);x.fill();
+    }
+  }
+  // glass sheen
+  const g=x.createLinearGradient(gx,gy,gx+gw,gy+gh);
+  g.addColorStop(0,'rgba(255,255,255,.10)');g.addColorStop(.35,'rgba(255,255,255,0)');
+  x.fillStyle=g;rr(x,gx,gy,gw,gh,8);x.fill();
+}
+
+/* ---------- photo-real compositor ---------- */
+function quadPath(x,q,W,H){x.moveTo(q[0][0]*W,q[0][1]*H);for(let i=1;i<q.length;i++)x.lineTo(q[i][0]*W,q[i][1]*H);x.closePath();}
+function wrapRegion(x,W,H){x.beginPath();quadPath(x,MASK.m,W,H);quadPath(x,MASK.g,W,H);}
+function headerRect(W,H){
+  const mTop=Math.min(MASK.m[0][1],MASK.m[1][1])*H, gTop=Math.min(MASK.g[0][1],MASK.g[1][1])*H;
+  const l=Math.min(MASK.m[0][0],MASK.m[3][0])*W, r=Math.max(MASK.m[1][0],MASK.m[2][0])*W;
+  return {x:l,y:mTop,w:r-l,h:Math.max(24,gTop-mTop)};
+}
+function kickRect(W,H){
+  const gBot=Math.max(MASK.g[2][1],MASK.g[3][1])*H, mBot=Math.max(MASK.m[2][1],MASK.m[3][1])*H;
+  const l=Math.min(MASK.m[0][0],MASK.m[3][0])*W, r=Math.max(MASK.m[1][0],MASK.m[2][0])*W;
+  return {x:l,y:gBot,w:r-l,h:Math.max(20,mBot-gBot)};
+}
+function drawMachinePhoto(x,W,H){
+  const s=Math.min(W/MACHINE.width,H/MACHINE.height);
+  const w=MACHINE.width*s,h=MACHINE.height*s,ox=(W-w)/2,oy=(H-h)/2;
+  x.drawImage(MACHINE,ox,oy,w,h);
+  return {ox,oy,w,h};
+}
+function vinylPanel(x,px0,py0,pw,ph,color){
+  // opaque printed panel: solid color, soft vertical sheen, inset edge shadow
+  const g=x.createLinearGradient(0,py0,0,py0+ph);
+  const lite=shade(color,0.10),deep=shade(color,-0.12);
+  g.addColorStop(0,lite);g.addColorStop(.5,color);g.addColorStop(1,deep);
+  x.fillStyle=g;x.fillRect(px0,py0,pw,ph);
+  x.strokeStyle='rgba(0,0,0,.45)';x.lineWidth=2;x.strokeRect(px0+1,py0+1,pw-2,ph-2);
+  const sheen=x.createLinearGradient(px0,0,px0+pw,0);
+  sheen.addColorStop(0,'rgba(255,255,255,.07)');sheen.addColorStop(.5,'rgba(255,255,255,0)');sheen.addColorStop(1,'rgba(0,0,0,.06)');
+  x.fillStyle=sheen;x.fillRect(px0,py0,pw,ph);
+}
+function panelLogo(x,cx,cy,maxW,maxH,onColor){
+  // logo image: white plate ONLY as tight backing; text fallback: clean type, no plate
+  if(LOGO){
+    const s0=Math.min(maxW/LOGO.width,maxH/LOGO.height);
+    const w=LOGO.width*s0,h=LOGO.height*s0;
+    x.fillStyle='rgba(255,255,255,.96)';
+    rr(x,cx-w/2-10,cy-h/2-8,w+20,h+16,6);x.fill();
+    x.drawImage(LOGO,cx-w/2,cy-h/2,w,h);
+  } else {
+    const name=($('biz').value||'YOUR BRAND').toUpperCase();
+    x.font='900 22px Archivo, Arial Black, sans-serif';
+    let f=22;while(x.measureText(name).width>maxW*.92&&f>10){f-=1;x.font=`900 ${f}px Archivo, Arial Black, sans-serif`;}
+    x.textAlign='center';x.textBaseline='middle';
+    x.fillStyle=onColor;x.fillText(name,cx,cy);
+  }
+}
+function photoConcept(cv,name,c1,c2,style){
+  const x=cv.getContext('2d'),W=cv.width,H=cv.height;
+  x.clearRect(0,0,W,H);x.fillStyle='#F3F1EC';x.fillRect(0,0,W,H);
+  const f=drawMachinePhoto(x,W,H);
+  x.save();x.translate(f.ox,f.oy);
+  const hr=headerRect(f.w,f.h),kr=kickRect(f.w,f.h);
+  // panel faces inset slightly from structural edges
+  const hp={x:hr.x+f.w*.015,y:hr.y+hr.h*.10,w:hr.w-f.w*.03,h:hr.h*.80};
+  const kp={x:kr.x+f.w*.015,y:kr.y+kr.h*.08,w:kr.w-f.w*.03,h:kr.h*.62};
+  const gl=MASK.g, pillL={x:hr.x+f.w*.005,y:gl[0][1]*f.h,w:(gl[0][0]-MASK.m[0][0])*f.w-f.w*.02,h:(gl[3][1]-gl[0][1])*f.h};
+  const pillR={x:gl[1][0]*f.w+f.w*.015,y:gl[1][1]*f.h,w:(MASK.m[1][0]-gl[1][0])*f.w-f.w*.03,h:(gl[2][1]-gl[1][1])*f.h};
+  vinylPanel(x,hp.x,hp.y,hp.w,hp.h,c1);
+  if(pillL.w>6)vinylPanel(x,pillL.x,pillL.y,pillL.w,pillL.h,c1);
+  if(pillR.w>6)vinylPanel(x,pillR.x,pillR.y,pillR.w,pillR.h,c1);
+  vinylPanel(x,kp.x,kp.y,kp.w,kp.h,c1);
+  x.fillStyle=c2;x.fillRect(kp.x,kp.y,kp.w,Math.max(4,kp.h*.10));
+  panelLogo(x,hp.x+hp.w/2,hp.y+hp.h/2,hp.w*.62,hp.h*.72,inkOn(c1));
+  x.restore();
+}
+/* ---------- calibration mode (?cal=1): drag mask corners, saved locally ---------- */
+function calInit(){
+  const cv=$('cv0');
+  const tip=document.createElement('div');
+  tip.style.cssText='background:#111;color:#F3F1EC;padding:10px 14px;font:12px Inter;margin:12px 0';
+  tip.innerHTML='<b>CALIBRATION:</b> drag the 8 dots — outer quad = cabinet edge, inner = glass window. Auto-saves. <button id="calDone" style="margin-left:10px">Done → copy mask</button>';
+  cv.closest('.card').before(tip);
+  document.getElementById('calDone').addEventListener('click',()=>{
+    navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(MASK));
+    alert('Mask copied to clipboard + saved on this device.');
+  });
+  let drag=null;
+  const pts=()=>[...MASK.m.map((p,i)=>({q:'m',i,p})),...MASK.g.map((p,i)=>({q:'g',i,p}))];
+  function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;
+    const f=frameOf();return [((t.clientX-r.left)*(cv.width/r.width)-f.ox)/f.w,((t.clientY-r.top)*(cv.height/r.height)-f.oy)/f.h];}
+  function frameOf(){const W=cv.width,H=cv.height;const s=Math.min(W/MACHINE.width,H/MACHINE.height);
+    const w=MACHINE.width*s,h=MACHINE.height*s;return {ox:(W-w)/2,oy:(H-h)/2,w,h};}
+  function overlay(){
+    drawAll();
+    const x=cv.getContext('2d'),f=frameOf();
+    x.save();x.translate(f.ox,f.oy);
+    for(const {q,p} of pts()){
+      x.beginPath();x.arc(p[0]*f.w,p[1]*f.h,9,0,7);
+      x.fillStyle=q==='m'?'#B37922':'#C0392B';x.fill();x.strokeStyle='#fff';x.lineWidth=2;x.stroke();
+    }
+    x.restore();
+  }
+  function down(e){const [px,py]=pos(e);let best=null,bd=1;
+    for(const pt of pts()){const d=Math.hypot(pt.p[0]-px,pt.p[1]-py);if(d<bd){bd=d;best=pt;}}
+    if(best&&bd<0.06){drag=best;e.preventDefault();}}
+  function move(e){if(!drag)return;const [px,py]=pos(e);
+    MASK[drag.q][drag.i]=[Math.min(1,Math.max(0,px)),Math.min(1,Math.max(0,py))];
+    try{localStorage.setItem('w_mask',JSON.stringify(MASK));}catch(_){}
+    overlay();e.preventDefault();}
+  function up(){drag=null;}
+  cv.addEventListener('mousedown',down);cv.addEventListener('mousemove',move);addEventListener('mouseup',up);
+  cv.addEventListener('touchstart',down,{passive:false});cv.addEventListener('touchmove',move,{passive:false});addEventListener('touchend',up);
+  overlay();
+}
+
+/* ---------- three concepts ---------- */
+function drawAll(){
+  const name=($('biz').value||'Your Brand');
+  const c1=$('c1').value,c2=$('c2').value;
+  if(MACHINE){
+    photoConcept($('cv0'),name,c1,c2,0);
+    return;
+  }
+  concept0(name,c1,c2);
+}
+
+function concept0(name,c1,c2){ // FULL WRAP — their color head to toe
+  const cv=$('cv0'),x=cv.getContext('2d'),W=cv.width,H=cv.height;
+  x.clearRect(0,0,W,H);x.fillStyle='#F3F1EC';x.fillRect(0,0,W,H);
+  const f=machineShell(x,W,H);
+  x.fillStyle=c1;rr(x,f.bx,f.by,f.bw,f.bh,6);x.fill();
+  // diagonal tone stripe
+  x.save();rr(x,f.bx,f.by,f.bw,f.bh,6);x.clip();
+  x.fillStyle=shade(c1,-0.18);
+  x.beginPath();x.moveTo(f.bx,f.by+f.bh*0.62);x.lineTo(f.bx+f.bw,f.by+f.bh*0.40);x.lineTo(f.bx+f.bw,f.by+f.bh);x.lineTo(f.bx,f.by+f.bh);x.closePath();x.fill();
+  x.restore();
+  drawLogo(x,f.bx+f.bw/2,f.by+f.bh*0.30,f.bw*0.66,f.bh*0.24,true);
+  // name band
+  x.fillStyle=c2;rr(x,f.bx+22,f.by+f.bh*0.56,f.bw-44,40,4);x.fill();
+  x.fillStyle=inkOn(c2);x.font='900 17px Archivo, Arial Black, sans-serif';x.textAlign='center';x.textBaseline='middle';
+  x.fillText(fit(x,name.toUpperCase(),f.bw-70),f.bx+f.bw/2,f.by+f.bh*0.56+20);
+  hardware(x,f);
+}
+
+
+
+
+
+/* ---------- downloads ---------- */
+document.querySelectorAll('[data-dl]').forEach(b=>b.addEventListener('click',()=>{
+  const i=b.dataset.dl;
+  const a=document.createElement('a');
+  const nm=($('biz').value||'wrapt').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  a.download=`wrapt-mock-${nm}-full-wrap.png`;
+  a.href=$('cv'+i).toDataURL('image/png');
+  a.click();
+}));
+
+/* ---------- inputs ---------- */
+['biz','c1','c2'].forEach(id=>$(id).addEventListener('input',drawAll));
+
+/* prefill from Command link (?biz=Name) */
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('biz'))$('biz').value=p.get('biz');
+  document.fonts?document.fonts.ready.then(drawAll):drawAll();
+  setTimeout(drawAll,600);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WRAPT — Brand Guide · Gallery Neutral · v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#F3F1EC;
+    --char:#2B2B28;
+    --taupe:#A39C8F;
+    --stone:#D7D2C7;
+    --graph:#55534E;
+    --white:#FFFFFF;
+    --err:#A33B3B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',sans-serif;background:var(--bone);color:var(--char);line-height:1.55}
+  .arch{font-family:'Archivo',sans-serif;font-weight:900;letter-spacing:-.02em;line-height:1}
+  .mono{font-family:'Space Mono',monospace;text-transform:uppercase}
+
+  /* the logo */
+  .logo{border:3px solid currentColor;padding:20px 28px 17px;display:inline-block;text-align:center}
+  .logo .arch{font-size:34px}
+  .logo.sm{border-width:3px;padding:10px 15px 8px}
+  .logo.sm .arch{font-size:18px}
+  .logo.xs{border-width:2.5px;padding:7px 10px 5px}
+  .logo.xs .arch{font-size:13px}
+
+  /* ===== COVER ===== */
+  .cover{background:var(--char);color:var(--bone);min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center}
+  .cover .k{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--taupe);margin-bottom:40px}
+  .cover .logo{transform:scale(1.5);margin:26px 0 48px}
+  @media(max-width:520px){.cover .logo{transform:scale(1.1)}}
+  .cover p{max-width:480px;font-size:15px;opacity:.7}
+  .toc{margin-top:48px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:640px}
+  .toc a{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--bone);text-decoration:none;border:1px solid rgba(243,241,236,.3);padding:9px 15px;transition:background .15s,color .15s}
+  .toc a:hover,.toc a:focus-visible{background:var(--bone);color:var(--char);outline:none}
+
+  .inner{max-width:1000px;margin:0 auto;padding:0 24px}
+  section{padding:70px 0 10px}
+  .sec-head{display:flex;align-items:baseline;gap:16px;border-bottom:2px solid var(--char);padding-bottom:12px;margin-bottom:14px}
+  .sec-head .num{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.2em;color:var(--taupe)}
+  .sec-head h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(22px,3.6vw,32px);letter-spacing:-.01em}
+  .lede{max-width:660px;font-size:15px;opacity:.72;margin-bottom:28px}
+  .sub-label{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe);margin:36px 0 14px;display:flex;align-items:center;gap:14px}
+  .sub-label::after{content:"";flex:1;height:1px;background:var(--stone)}
+
+  .plate{border:2px solid var(--char);background:var(--white);display:flex;align-items:center;justify-content:center;min-height:210px;padding:32px 20px;position:relative}
+  .plate .tag{position:absolute;bottom:10px;left:12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.5}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:700px){.row2,.row3{grid-template-columns:1fr}}
+
+  /* foundation */
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .pillar{border:2px solid var(--char);background:var(--white);padding:22px}
+  .pillar h4{font-family:'Archivo',sans-serif;font-weight:900;font-size:16px;margin-bottom:8px}
+  .pillar p{font-size:13.5px;opacity:.72}
+  .position{border:2px solid var(--char);background:var(--char);color:var(--bone);padding:30px 32px;margin-top:18px}
+  .position p{font-size:clamp(16px,2.4vw,20px);font-family:'Archivo',sans-serif;font-weight:700;max-width:720px}
+  .position span{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--taupe);margin-bottom:12px}
+
+  /* clearspace */
+  .clear-demo{position:relative;display:inline-block;padding:34px}
+  .clear-demo::before{content:"";position:absolute;inset:0;border:1.5px dashed var(--taupe)}
+  .clear-demo .cs{position:absolute;font-family:'Space Mono',monospace;font-size:9px;color:var(--taupe)}
+
+  /* misuse */
+  .mis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .mis .m{border:2px solid var(--char);background:var(--white);padding:24px 12px 0;text-align:center;position:relative}
+  .mis .m .x{position:absolute;top:8px;right:10px;font-weight:700;color:var(--err);font-family:'Space Mono',monospace}
+  .mis .m p{font-size:11.5px;padding:12px 8px 14px;opacity:.65}
+
+  /* palette */
+  .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .swatch{border:2px solid var(--char);overflow:hidden;background:var(--white)}
+  .swatch .chip{height:96px}
+  .swatch .meta{padding:10px 12px;font-family:'Space Mono',monospace;font-size:10.5px}
+  .swatch .meta b{display:block;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;margin-bottom:3px}
+  .swatch .meta em{display:block;font-style:normal;font-size:9.5px;opacity:.6;margin-top:3px;font-family:'Inter',sans-serif}
+  .ratio{margin-top:16px;display:flex;height:18px;border:2px solid var(--char);overflow:hidden}
+  .ratio i{display:block;height:100%}
+  .ratio-cap{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.55;margin-top:8px}
+  .pair-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px}
+  .pair{border:2px solid var(--char);padding:16px;font-family:'Space Mono',monospace;font-size:11px;text-align:center}
+
+  /* type */
+  .type-row{display:grid;grid-template-columns:160px 1fr;gap:18px;padding:18px 0;border-bottom:1px solid var(--stone);align-items:baseline}
+  .type-row .role{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  @media(max-width:560px){.type-row{grid-template-columns:1fr;gap:4px}}
+  .scale{margin-top:22px;border:2px solid var(--char);background:var(--white);padding:22px 24px}
+  .scale > div{border-bottom:1px dashed var(--stone);padding:12px 0}
+  .scale > div:last-child{border:none}
+  .scale .lab{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);display:block;margin-bottom:3px}
+
+  /* graphic elements */
+  .elements{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .el{border:2px solid var(--char);background:var(--white);padding:20px;min-height:130px;display:flex;flex-direction:column;justify-content:space-between}
+  .el .demo{flex:1;display:flex;align-items:center;justify-content:flex-start}
+  .el p{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--graph);margin-top:14px}
+
+  /* voice */
+  .voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.voice-grid{grid-template-columns:1fr}}
+  .voice-card{border:2px solid var(--char);padding:22px;background:var(--white)}
+  .voice-card h4{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
+  .voice-card ul{list-style:none}
+  .voice-card li{padding-left:18px;position:relative;margin-bottom:9px;font-size:14.5px}
+  .voice-card.do li::before{content:"✓";position:absolute;left:0;font-weight:700}
+  .voice-card.dont li::before{content:"✕";position:absolute;left:0;font-weight:700;color:var(--err)}
+  .lex{margin-top:18px;border:2px solid var(--char);background:var(--white);padding:20px 24px}
+  .lex table{width:100%;border-collapse:collapse;font-size:14px}
+  .lex th{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;text-align:left;padding:6px 8px;border-bottom:2px solid var(--char)}
+  .lex td{padding:8px;border-bottom:1px solid var(--stone)}
+  .lex tr:last-child td{border:none}
+  .sample{border:2px solid var(--char);background:var(--white);padding:22px 26px;margin-top:18px}
+  .sample .lab{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--taupe);display:block;margin-bottom:10px}
+  .sample p{font-size:14.5px;max-width:560px}
+
+  /* applications */
+  .biz-card{width:290px;max-width:100%;aspect-ratio:1.75/1;background:var(--white);border:2px solid var(--char);padding:16px 18px;display:flex;justify-content:space-between;gap:12px}
+  .biz-card .info{text-align:right;display:flex;flex-direction:column;justify-content:flex-end}
+  .biz-card .info b{font-family:'Archivo',sans-serif;font-weight:700;font-size:13px}
+  .biz-card .info span{font-size:10.5px;opacity:.65}
+  .sticker{width:96px;height:96px;background:var(--char);color:var(--bone);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:10px}
+  .sticker .tel{font-family:'Space Mono',monospace;font-size:6.5px;letter-spacing:.12em;color:var(--taupe)}
+  .letterhead{width:100%;max-width:430px;background:var(--white);border:2px solid var(--char);padding:26px 30px;text-align:left}
+  .letterhead .lh-top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--char);padding-bottom:16px;margin-bottom:14px}
+  .letterhead .lines i{display:block;height:7px;background:var(--stone);margin-bottom:7px}
+  .letterhead .lines i:nth-child(1){width:88%}
+  .letterhead .lines i:nth-child(2){width:96%}
+  .letterhead .lines i:nth-child(3){width:70%}
+  .machine{width:130px;height:196px;background:var(--char);position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px}
+  .machine::before{content:"";position:absolute;inset:12px 14px 42px;background:linear-gradient(165deg,#3A3A36,#232320);border:1.5px solid var(--taupe)}
+  .machine .logo{position:relative}
+  .polo svg{width:150px;height:170px}
+  .avatar{width:86px;height:86px;background:var(--char);display:flex;align-items:center;justify-content:center}
+  .avatar .logo{border-color:var(--bone);color:var(--bone);padding:8px 11px 6px;border-width:2.5px}
+  .avatar .arch{font-size:15px}
+  .sig{background:var(--white);border:2px solid var(--char);padding:18px 22px;max-width:430px;width:100%;text-align:left}
+  .sig .top{display:flex;gap:14px;align-items:center;border-bottom:1px solid var(--stone);padding-bottom:12px;margin-bottom:10px}
+  .sig b{font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;display:block}
+  .sig span{font-size:11.5px;opacity:.65;display:block}
+  .sig .links{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--graph)}
+  .webhero{width:100%;max-width:430px;border:2px solid var(--char);background:var(--bone)}
+  .webhero .bar{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;border-bottom:2px solid var(--char);background:var(--white)}
+  .webhero .bar .links{display:flex;gap:9px;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--graph)}
+  .webhero .hero{padding:26px 20px 24px;text-align:center}
+  .webhero .hero .arch{font-size:19px}
+  .webhero .hero p{font-size:10px;opacity:.6;margin-top:7px}
+  .webhero .cta{display:inline-block;margin-top:12px;background:var(--char);color:var(--bone);font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;padding:7px 13px}
+
+  /* rules */
+  .rules{background:var(--char);color:var(--bone);padding:36px 34px;margin-top:8px}
+  .rules h3{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe);margin-bottom:18px}
+  .rules ol{padding-left:20px}
+  .rules li{margin-bottom:12px;font-size:14.5px}
+
+  footer{margin-top:80px;background:var(--char);color:var(--bone);padding:54px 24px 66px;text-align:center}
+  footer .logo{color:var(--bone);margin-bottom:24px}
+  footer p{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.5}
+</style>
+</head>
+<body>
+
+<!-- ===================== COVER ===================== -->
+<header class="cover">
+  <span class="k">Brand Guide · Gallery Neutral · v2.0 · August 2026</span>
+  <div class="logo"><span class="arch">WRAPT</span></div>
+  <p>One word in one drawn box. Charcoal and bone, nothing louder — because every machine we place wears someone else's brand, ours stays out of the way on purpose.</p>
+  <nav class="toc">
+    <a href="#s1">01 Foundation</a>
+    <a href="#s2">02 Logo</a>
+    <a href="#s3">03 Color</a>
+    <a href="#s4">04 Type</a>
+    <a href="#s5">05 Elements</a>
+    <a href="#s6">06 Voice</a>
+    <a href="#s7">07 Applications</a>
+    <a href="#s8">08 Rules</a>
+  </nav>
+</header>
+
+<div class="inner">
+
+<!-- ===================== 01 FOUNDATION ===================== -->
+<section id="s1">
+  <div class="sec-head"><span class="num">01</span><h2>FOUNDATION</h2></div>
+  <p class="lede">Wrapt places, stocks, and services smart coolers that wear the host's brand. What we sell is an amenity: a modern market in three feet of wall space, at zero cost to the building.</p>
+
+  <div class="pillars">
+    <div class="pillar"><h4>The frame</h4><p>Everything Wrapt makes lives inside clean, drawn structure. The box on the logo is the same box on the agreement, the sticker, and the site.</p></div>
+    <div class="pillar"><h4>The blank canvas</h4><p>Machines wear the client's wrap, not ours. Neutrality isn't a design taste — it's the product promise.</p></div>
+    <div class="pillar"><h4>The quiet operator</h4><p>Stocked, serviced, invisible. The brand behaves the way the service does: reliable, unshowy, always there.</p></div>
+  </div>
+
+  <div class="position">
+    <span>Positioning statement</span>
+    <p>Wrapt turns unused wall space into a branded, self-serve market — placed free, stocked weekly, and dressed in whatever brand the building calls home.</p>
+  </div>
+
+  <div class="sub-label">Taglines</div>
+  <p class="lede" style="margin-bottom:8px"><b style="opacity:1">Primary:</b> "Every machine is a canvas." · <b style="opacity:1">Secondary:</b> "Your brand. Our shelf." · <b style="opacity:1">Service:</b> "Stocked and serviced. You'll barely notice us."</p>
+</section>
+
+<!-- ===================== 02 LOGO ===================== -->
+<section id="s2">
+  <div class="sec-head"><span class="num">02</span><h2>THE LOGO</h2></div>
+  <p class="lede">The Classic: WRAPT in Archivo Black inside a single 3px frame. Nothing else ever enters the box. It never opens, never rounds, never tilts.</p>
+
+  <div class="row2">
+    <div class="plate">
+      <span class="logo"><span class="arch">WRAPT</span></span>
+      <span class="tag">Primary · positive</span>
+    </div>
+    <div class="plate" style="background:var(--char)">
+      <span class="logo" style="color:var(--bone)"><span class="arch">WRAPT</span></span>
+      <span class="tag" style="color:var(--bone)">Primary · reversed</span>
+    </div>
+  </div>
+  <div class="row3" style="margin-top:18px">
+    <div class="plate">
+      <span class="logo sm"><span class="arch">WRAPT</span></span>
+      <span class="tag">Compact · small placements</span>
+    </div>
+    <div class="plate">
+      <span class="logo xs"><span class="arch">W</span></span>
+      <span class="tag">Mark · favicon / stamp / sticker</span>
+    </div>
+    <div class="plate" style="background:var(--stone)">
+      <div class="clear-demo">
+        <span class="logo sm"><span class="arch">WRAPT</span></span>
+        <span class="cs" style="top:10px;left:50%;transform:translateX(-50%)">= H</span>
+        <span class="cs" style="left:6px;top:50%;transform:translateY(-50%)">= H</span>
+      </div>
+      <span class="tag">Clearspace = cap-height, all sides</span>
+    </div>
+  </div>
+
+  <div class="sub-label">Minimum sizes</div>
+  <p class="lede">Primary: 96px / 26mm wide. Compact: 56px / 15mm. Mark: 16px / 6mm. Below minimum, drop to the next smaller variant. The border scales with the lockup — never thinner than 2px on screen or 0.5pt in print.</p>
+
+  <div class="sub-label">Misuse</div>
+  <div class="mis">
+    <div class="m"><span class="x">✕</span><span class="logo sm" style="border-radius:12px"><span class="arch">WRAPT</span></span><p>No rounded corners</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm" style="border-style:dashed"><span class="arch">WRAPT</span></span><p>No dashed or decorative frames</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm" style="transform:rotate(-6deg)"><span class="arch">WRAPT</span></span><p>No rotation or tilt</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm"><span class="arch" style="font-family:'Inter',sans-serif;font-weight:600">WRAPT</span></span><p>No substitute typefaces</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm" style="border-color:var(--taupe);color:var(--taupe)"><span class="arch">WRAPT</span></span><p>No taupe or stone logo — charcoal or bone only</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm"><span class="arch">Wrapt</span></span><p>No mixed case — caps only</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm"><span class="arch" style="font-size:14px">WRAPT</span><span style="display:block;font-family:'Space Mono',monospace;font-size:5px;letter-spacing:.3em;margin-top:4px">INTELLIGENCE VENDING</span></span><p>Nothing joins the word in the box — no descriptors, taglines, or icons</p></div>
+    <div class="m"><span class="x">✕</span><span class="logo sm" style="box-shadow:5px 5px 0 var(--taupe)"><span class="arch">WRAPT</span></span><p>No shadows, glows, or effects</p></div>
+  </div>
+</section>
+
+<!-- ===================== 03 COLOR ===================== -->
+<section id="s3">
+  <div class="sec-head"><span class="num">03</span><h2>COLOR — GALLERY NEUTRAL</h2></div>
+  <p class="lede">Charcoal draws, bone breathes, stone and taupe support, graphite speaks second. There is no accent color — the absence is the positioning. If a layout feels flat, fix the structure, not the palette.</p>
+
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background:#2B2B28"></div><div class="meta"><b>Charcoal</b>#2B2B28 · C0 M0 Y0 K90<em>Frames, type, plates, wraps</em></div></div>
+    <div class="swatch"><div class="chip" style="background:#F3F1EC"></div><div class="meta"><b>Bone</b>#F3F1EC · C4 M4 Y8 K0<em>Primary ground everywhere</em></div></div>
+    <div class="swatch"><div class="chip" style="background:#FFFFFF;border-bottom:1px solid #E4E1DA"></div><div class="meta"><b>White</b>#FFFFFF<em>Cards, plates, paper stock</em></div></div>
+    <div class="swatch"><div class="chip" style="background:#D7D2C7"></div><div class="meta"><b>Stone</b>#D7D2C7<em>Dividers, washes, disabled states</em></div></div>
+    <div class="swatch"><div class="chip" style="background:#A39C8F"></div><div class="meta"><b>Taupe</b>#A39C8F<em>Labels &amp; hairlines · max 5% of any surface</em></div></div>
+    <div class="swatch"><div class="chip" style="background:#55534E"></div><div class="meta"><b>Graphite</b>#55534E<em>Secondary text, captions</em></div></div>
+  </div>
+  <div class="ratio">
+    <i style="width:52%;background:#F3F1EC;border-right:1px solid #2B2B28"></i>
+    <i style="width:20%;background:#FFFFFF;border-right:1px solid #2B2B28"></i>
+    <i style="width:16%;background:#2B2B28"></i>
+    <i style="width:7%;background:#D7D2C7"></i>
+    <i style="width:5%;background:#A39C8F"></i>
+  </div>
+  <div class="ratio-cap">Usage ratio — bone 52 · white 20 · charcoal 16 · stone 7 · taupe 5</div>
+
+  <div class="sub-label">Approved pairings</div>
+  <div class="pair-grid">
+    <div class="pair" style="background:#F3F1EC;color:#2B2B28;border-color:#2B2B28">Charcoal on bone<br>AA 11.9:1</div>
+    <div class="pair" style="background:#2B2B28;color:#F3F1EC">Bone on charcoal<br>AA 11.9:1</div>
+    <div class="pair" style="background:#FFFFFF;color:#55534E">Graphite on white<br>AA 7.4:1</div>
+    <div class="pair" style="background:#D7D2C7;color:#2B2B28">Charcoal on stone<br>AA 9.1:1</div>
+  </div>
+  <p class="lede" style="margin-top:16px">Taupe is never used for body text — labels of 11px+ Space Mono caps only. Stone never carries type smaller than 14px.</p>
+</section>
+
+<!-- ===================== 04 TYPE ===================== -->
+<section id="s4">
+  <div class="sec-head"><span class="num">04</span><h2>TYPOGRAPHY</h2></div>
+  <p class="lede">Three faces, three jobs, no exceptions. All are free Google Fonts — no licensing to manage across contractors or printers.</p>
+
+  <div class="type-row"><span class="role">Display</span><span class="arch" style="font-size:27px">ARCHIVO BLACK — headlines, the wordmark, numbers that matter</span></div>
+  <div class="type-row"><span class="role">Body</span><span style="font-size:16px">Inter — everything readable: paragraphs, agreements, emails. Weights 400 and 600 only.</span></div>
+  <div class="type-row"><span class="role">Utility</span><span class="mono" style="font-size:13.5px;letter-spacing:.1em">SPACE MONO — labels, specs, planograms, commission tables</span></div>
+
+  <div class="scale">
+    <div><span class="lab">H1 · Archivo 900 · 34–56px · tracking -2% · caps</span><span class="arch" style="font-size:32px">STOCKED &amp; SERVICED</span></div>
+    <div><span class="lab">H2 · Archivo 900 · 22–30px · caps</span><span class="arch" style="font-size:23px">EVERY MACHINE IS A CANVAS</span></div>
+    <div><span class="lab">H3 · Archivo 700 · 16–18px · mixed case allowed</span><span style="font-family:'Archivo',sans-serif;font-weight:700;font-size:17px">What your building gets</span></div>
+    <div><span class="lab">Body · Inter 400 · 15–16px / 1.55</span><span style="font-size:15px">Your building gets a modern market. Your people get 24/7 access. We handle everything else.</span></div>
+    <div><span class="lab">Caption · Inter 400 · 12–13px · graphite</span><span style="font-size:12.5px;color:var(--graph)">Commission paid monthly on gross sales, net of processing.</span></div>
+    <div><span class="lab">Label · Space Mono · 10–11px · tracking +20% · caps · taupe or graphite</span><span class="mono" style="font-size:10.5px;letter-spacing:.2em;color:var(--taupe)">Location Agreement · Section 04 · Commission</span></div>
+  </div>
+  <p class="lede" style="margin-top:16px">Archivo caps for anything that should feel drawn on the wall; Inter for anything a host actually reads; Space Mono wherever data has to feel exact. Never letterspace Inter. Never set Space Mono below 9px.</p>
+</section>
+
+<!-- ===================== 05 GRAPHIC ELEMENTS ===================== -->
+<section id="s5">
+  <div class="sec-head"><span class="num">05</span><h2>GRAPHIC ELEMENTS</h2></div>
+  <p class="lede">Five devices build every Wrapt layout. Nothing else — no icons, no illustration, no photography filters. When a layout needs an image, use a straight, well-lit photograph of a real machine or a real building.</p>
+
+  <div class="elements">
+    <div class="el"><div class="demo"><span style="width:100%;border-top:2px solid var(--char)"></span></div><p>The rule · 2px charcoal · section breaks</p></div>
+    <div class="el"><div class="demo"><span style="width:100%;border-top:1px solid var(--stone)"></span></div><p>The hairline · 1px stone · inside cards &amp; tables</p></div>
+    <div class="el"><div class="demo"><span style="width:100%;border-top:1.5px dashed var(--taupe)"></span></div><p>The dashed · taupe · clearspace &amp; wrap zones only</p></div>
+    <div class="el"><div class="demo"><span style="display:inline-block;width:64px;height:44px;border:2px solid var(--char)"></span></div><p>The plate · 2px box · holds content, never the word</p></div>
+    <div class="el"><div class="demo"><span class="mono" style="font-size:10px;letter-spacing:.22em;color:var(--taupe)">01 · SECTION</span></div><p>The index · mono caps · numbers real sequences only</p></div>
+  </div>
+  <p class="lede" style="margin-top:18px"><b style="opacity:1">Hierarchy of boxes:</b> the logo's 3px frame outranks every other box. Plates are 2px, hairlines 1px. Two frames never touch; give them a full clearspace between.</p>
+</section>
+
+<!-- ===================== 06 VOICE ===================== -->
+<section id="s6">
+  <div class="sec-head"><span class="num">06</span><h2>VOICE</h2></div>
+  <p class="lede">Wrapt speaks like a good landlord's favorite vendor: brief, certain, zero hype. The intelligence is in the machine, not the adjectives.</p>
+
+  <div class="voice-grid">
+    <div class="voice-card do"><h4>Sounds like</h4><ul>
+      <li>"Your brand. Our shelf."</li>
+      <li>"Stocked and serviced. You'll barely notice us."</li>
+      <li>"Three feet of wall. Zero cost. We'll handle the rest."</li>
+      <li>Short declaratives. Concrete nouns. Numbers over adjectives.</li>
+    </ul></div>
+    <div class="voice-card dont"><h4>Never</h4><ul>
+      <li>"AI-powered!", "revolutionary", "game-changing"</li>
+      <li>Exclamation points, emoji, discount-speak</li>
+      <li>Explaining the technology unprompted — it shows itself when the door unlocks</li>
+      <li>More than two sentences where one will do</li>
+    </ul></div>
+  </div>
+
+  <div class="lex">
+    <table>
+      <tr><th>Say</th><th>Not</th></tr>
+      <tr><td>smart cooler · market</td><td>vending machine (in sales copy)</td></tr>
+      <tr><td>host · location partner</td><td>account · lead</td></tr>
+      <tr><td>stocked · serviced</td><td>refilled · maintained</td></tr>
+      <tr><td>placed free</td><td>free installation!!</td></tr>
+      <tr><td>"the machine already knows"</td><td>"our AI vision technology detects"</td></tr>
+    </table>
+  </div>
+
+  <div class="sample">
+    <span class="lab">Sample · cold outreach</span>
+    <p>"We place modern smart coolers — card-only, glass front, stocked and serviced by us at zero cost to you. Your people get a 24/7 market in three feet of wall space, and we can pay you a share of sales. Who's the right person to talk to?"</p>
+  </div>
+  <div class="sample">
+    <span class="lab">Sample · host monthly report intro</span>
+    <p>"October at a glance: 412 transactions, $1,289 gross, your commission $96.68. Top seller: Liquid I.V. We swapped two slow SKUs — details below."</p>
+  </div>
+</section>
+
+<!-- ===================== 07 APPLICATIONS ===================== -->
+<section id="s7">
+  <div class="sec-head"><span class="num">07</span><h2>APPLICATIONS</h2></div>
+  <p class="lede">The frame travels everywhere unchanged. The machine wears the client's wrap — Wrapt appears only on the service sticker, the paperwork, the polo, and the screen.</p>
+
+  <div class="row2">
+    <div class="plate" style="background:var(--stone)">
+      <div class="biz-card">
+        <span class="logo sm" style="align-self:flex-start"><span class="arch">WRAPT</span></span>
+        <div class="info"><b>Franklin · Spring Hill</b><span>Location partnerships<br>hello@wrapt.co</span></div>
+      </div>
+      <span class="tag">Business card · white stock · charcoal edge paint</span>
+    </div>
+    <div class="plate" style="background:var(--stone)">
+      <div class="letterhead">
+        <div class="lh-top">
+          <span class="logo sm"><span class="arch">WRAPT</span></span>
+          <span class="mono" style="font-size:8.5px;letter-spacing:.2em;color:var(--taupe)">Location<br>Agreement</span>
+        </div>
+        <div class="lines"><i></i><i></i><i></i></div>
+      </div>
+      <span class="tag">Agreement · the frame as letterhead</span>
+    </div>
+  </div>
+
+  <div class="row3" style="margin-top:18px">
+    <div class="plate">
+      <div class="sticker">
+        <span class="logo xs" style="border-color:var(--bone);color:var(--bone)"><span class="arch">W</span></span>
+        <span class="tel">Serviced by Wrapt<br>(615) 000-0000</span>
+      </div>
+      <span class="tag">Service sticker · 2in · lower rear corner</span>
+    </div>
+    <div class="plate" style="background:var(--bone)">
+      <div class="machine">
+        <span class="logo xs" style="border-color:var(--bone);color:var(--bone)"><span class="arch">WRAPT</span></span>
+      </div>
+      <span class="tag">Default wrap · pre-client placement only</span>
+    </div>
+    <div class="plate" style="background:var(--bone)">
+      <svg viewBox="0 0 150 170" width="150" height="170" aria-label="polo shirt">
+        <path d="M40 18 L60 8 Q75 16 90 8 L110 18 L134 40 L118 58 L112 48 L112 158 L38 158 L38 48 L32 58 L16 40 Z" fill="#2B2B28"/>
+        <path d="M60 8 Q75 16 90 8 L86 22 Q75 28 64 22 Z" fill="#1E1E1B"/>
+        <rect x="60" y="46" width="31" height="19" fill="none" stroke="#F3F1EC" stroke-width="2"/>
+        <text x="75.5" y="59.5" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="9.5" fill="#F3F1EC">WRAPT</text>
+      </svg>
+      <span class="tag">Polo · left chest · bone embroidery</span>
+    </div>
+  </div>
+
+  <div class="row3" style="margin-top:18px">
+    <div class="plate">
+      <div class="avatar"><span class="logo"><span class="arch">W</span></span></div>
+      <span class="tag">Social avatar / app icon · mark on charcoal</span>
+    </div>
+    <div class="plate" style="background:var(--stone)">
+      <div class="sig">
+        <div class="top">
+          <span class="logo xs"><span class="arch">W</span></span>
+          <div><b>Lord — Wrapt</b><span>Location Partnerships · Franklin, TN</span></div>
+        </div>
+        <span class="links">wraptvending.com · (615) 000-0000</span>
+      </div>
+      <span class="tag">Email signature · mark, name, two lines, done</span>
+    </div>
+    <div class="plate" style="background:var(--stone)">
+      <div class="webhero">
+        <div class="bar">
+          <span class="logo xs"><span class="arch">WRAPT</span></span>
+          <span class="links"><span>Hosts</span><span>Machines</span><span>Contact</span></span>
+        </div>
+        <div class="hero">
+          <span class="arch">EVERY MACHINE<br>IS A CANVAS.</span>
+          <p>A modern market in three feet of wall space — placed free.</p>
+          <span class="cta">Become a host</span>
+        </div>
+      </div>
+      <span class="tag">Web header · logo left, one CTA, bone ground</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 08 RULES ===================== -->
+<section id="s8">
+  <div class="sec-head"><span class="num">08</span><h2>SYSTEM RULES</h2></div>
+  <div class="rules">
+    <h3>Non-negotiables</h3>
+    <ol>
+      <li><b>The frame never opens.</b> Four sides, square corners. It is the logo, the letterhead, the card border, the sticker.</li>
+      <li><b>Only the word lives in the box.</b> No descriptors, taglines, icons, or effects join WRAPT inside its frame — "Intelligence Vending" appears in running text and legal paperwork only.</li>
+      <li><b>Charcoal or bone only for the logo.</b> Never taupe, stone, or any client color — the neutrality is the strategy.</li>
+      <li><b>Taupe stays under 5%</b> of any surface. Labels and hairlines, nothing structural. Never body text.</li>
+      <li><b>The machine never wears Wrapt.</b> Client wrap on the machine; Wrapt lives on the 2-inch service sticker, the agreement, the polo, and the screen. The charcoal default wrap is for pre-client placements only.</li>
+      <li><b>Caps in the frame, always.</b> WRAPT is never written mixed-case inside its box.</li>
+      <li><b>One 3px frame per surface.</b> The logo's box is the only full frame in any layout — plates are 2px so the mark stays the loudest structure on the page.</li>
+      <li><b>No new colors, faces, or effects.</b> A layout that needs more than this system needs a better layout.</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="logo"><span class="arch">WRAPT</span></div>
+  <p>Brand Guide v2.0 · The Classic · Gallery Neutral · August 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+[functions]
+
+  [functions.emails]
+  included_files = [
+    "./emails/**"
+  ]
+
+[build]
+publish = "."
+functions = "netlify/functions"
+
+[[headers]]
+for = "/*"
+
+  [headers.values]
+  X-Frame-Options = "DENY"
+  X-Content-Type-Options = "nosniff"
+  Referrer-Policy = "strict-origin-when-cross-origin"
+  Permissions-Policy = "camera=(self), microphone=(), geolocation=(self)"
+
+[[headers]]
+for = "/og.png"
+
+  [headers.values]
+  Cache-Control = "public, max-age=604800"
+
+[context]
+
+  [context.production]
+
+    [context.production.functions]
+
+      [context.production.functions.emails]
+      included_files = [
+        "./emails/**"
+      ]
+
+  [context.master]
+
+    [context.master.functions]
+
+      [context.master.functions.emails]
+      included_files = [
+        "./emails/**"
+      ]

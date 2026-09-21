@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Wrapt — Ops To-Do</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232B2B28'/%3E%3Crect x='5' y='7' width='22' height='18' fill='none' stroke='%23F3F1EC' stroke-width='2.5'/%3E%3Ctext x='16' y='21.5' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='12' fill='%23F3F1EC'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<style>
+:root{--bg:#F3F1EC;--panel:#FFFFFF;--line:#D7D2C7;--gold:#B37922;--gold-deep:#8F5E16;--ink:#111111;--muted:#55534E;--taupe:#A39C8F;--red:#A33B3B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;border-top:8px solid var(--gold);padding-bottom:60px}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0 6px;flex-wrap:wrap;gap:10px}
+.logo{font-family:'Archivo';font-weight:900;font-size:14px;text-transform:uppercase;display:inline-block;border:3px solid var(--ink);padding:8px 12px 6px;line-height:1;color:var(--ink)}
+.mono{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe)}
+h1{font-family:'Archivo';font-weight:900;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(30px,6vw,44px);margin:10px 0 4px}
+.sub{color:var(--muted);margin-bottom:20px}
+.waiting{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 26px}
+.wait{background:var(--panel);border:1px dashed var(--gold);padding:9px 14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--gold-deep)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.card{background:var(--panel);border:2px solid var(--ink)}
+.card>h2{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:20px;padding:16px 18px 13px;border-bottom:3px solid var(--gold);display:flex;justify-content:space-between;align-items:baseline}
+.card>h2 .count{font-family:'Space Mono',monospace;font-size:11px;color:var(--taupe);letter-spacing:.1em;font-weight:400}
+.item{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
+.item:last-child{border-bottom:none}
+.item:hover{background:#FBFAF7}
+.box{flex:0 0 auto;width:20px;height:20px;border:2px solid var(--ink);margin-top:2px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;background:#fff;transition:.12s}
+.item.done .box{background:var(--gold);border-color:var(--gold);color:#221B0E}
+.item .t{font-weight:600}
+.item .d{color:var(--muted);font-size:13px;margin-top:2px}
+.item .d a{color:var(--gold-deep)}
+.item.done .t,.item.done .d{color:var(--taupe);text-decoration:line-through;text-decoration-color:var(--gold)}
+.item .pri{display:inline-block;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;padding:2px 7px;border:1px solid;margin-left:8px;vertical-align:2px}
+.pri.now{color:var(--red);border-color:var(--red)}
+.pri.soon{color:var(--gold-deep);border-color:var(--gold)}
+.pri.wait{color:var(--taupe);border-color:var(--line)}
+details{margin-top:26px;background:var(--panel);border:1px solid var(--line)}
+summary{cursor:pointer;padding:14px 18px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);list-style:none}
+summary::before{content:'▸ ';color:var(--gold-deep)}
+details[open] summary::before{content:'▾ '}
+details .inner{padding:4px 18px 16px;color:var(--muted);font-size:13.5px}
+details .inner li{margin:7px 0 7px 16px}
+.item details{margin:10px 0 2px;background:#FBFAF7;border:1px solid var(--line)}
+.item details summary{padding:10px 14px;font-size:10px}
+.item details .inner{padding:2px 14px 12px;font-size:13px;line-height:1.6}
+.item details .inner p{margin:8px 0}
+.item details .inner b{color:var(--ink)}
+.paste{background:#fff;border:1px dashed var(--gold);padding:12px 14px;margin:8px 0;font-size:13px;color:var(--ink);user-select:all}
+.foot{margin-top:26px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--taupe);text-transform:uppercase}
+@page{margin:13mm}
+@media print{
+  body{border-top:6px solid #B37922;padding-bottom:0;font-size:13px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .sub .screen-only{display:none}
+  .item{cursor:default;break-inside:avoid;padding:10px 14px}
+  .item:has(details){break-inside:auto} /* long briefing cards may flow across pages */
+  .item details .inner p{break-inside:avoid}
+  .card{border-width:2px}
+  .card>h2{font-size:17px;padding:12px 14px 10px}
+  .item .d{font-size:12px;color:#3a3833}
+  .item details{background:#fff}
+  .item details summary{display:none} /* headers off — content prints in full below */
+  .item details .inner{padding:0 2px}
+  .mono,.wait{color:#8F5E16}
+  .waiting{break-inside:avoid}
+  .paste{break-inside:avoid}
+  details{border:none;margin-top:14px}
+  summary{padding:8px 0}
+  .foot{display:none}
+  a{color:inherit;text-decoration:none}
+  .box{width:16px;height:16px}
+  h1{font-size:30px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="logo">WRAPT</span>
+    <span class="mono">OPS BOARD · UPDATED SEPT 3, 2026</span>
+  </header>
+  <h1>The To-Do Board.</h1>
+  <p class="sub">Everything standing between here and ten machines earning.<span class="screen-only"> Tap an item to check it off — checks save on this device.</span></p>
+
+  <div class="waiting">
+    <span class="wait">⏳ WAITING ON · EIN letter in the mail</span>
+    <span class="wait">⏳ WAITING ON · First 5 machines in delivery</span>
+  </div>
+
+  <div class="cols" style="grid-template-columns:1fr">
+    <div class="card">
+      <h2>Paige <span class="count" id="cPaige"></span></h2>
+      <div class="item" data-k="p1"><span class="box">✓</span><div><div class="t">Call the wrap shops — get machine-wrap pricing + turnaround<span class="pri now">DO FIRST</span></div><div class="d">① <b>12-Point SignWorks</b> · <a href="tel:6155956564">615-595-6564</a> · <a href="mailto:hello@12psw.com">hello@12psw.com</a> · 1120 Lakeview Dr #900, Franklin<br>② <b>FASTSIGNS Brentwood/Franklin</b> · <a href="tel:6154888611">615-488-8611</a> · 1945 Mallory Ln #165, Franklin<br>Ask: wrapped a cooler before? · price per machine from print-ready files · days from approved art to installed · on-site install or bring the machine in?</div></div></div>
+      <div class="item" data-k="p4"><span class="box">✓</span><div><div class="t">Get insurance quotes<span class="pri now">DO FIRST</span></div><div class="d">Get quotes from three companies and pick the best: <b>Next Insurance</b> (nextinsurance.com — start here), <b>Hiscox</b> (hiscox.com), and <b>biBERK</b> (biberk.com). All three quote online in about 15 minutes; a Social Security number works now, and we can add the business tax ID later. A fair total is roughly <b>$600–$1,100 for the year</b> — under $100 a month.
+        <details><summary>What to know before you call — read this first</summary><div class="inner">
+          <p><b>How to describe us:</b> "We're a vending machine operator. We own about ten refrigerated smart vending coolers that we place inside other businesses — gyms, hotels, offices, apartments — around Middle Tennessee. Owner-operated, no employees."</p>
+          <p><b>We're buying two things.</b> First, <b>general liability insurance</b> — this protects the business if someone gets hurt or property gets damaged in connection with a machine or something it sold (a leak ruins a host's floor, someone trips on the machine, a customer claims a drink made them sick). Every hotel and property manager will require us to have this before they let a machine in the door.</p>
+          <p><b>The coverage amount to ask for:</b> one million dollars per occurrence, two million dollars aggregate. In plain English: the insurer pays up to $1 million for any single incident, and up to $2 million total across all incidents in a year. This is the standard amount business landlords expect — don't accept less to save a few dollars.</p>
+          <p><b>Second, equipment coverage.</b> The insurance industry calls this "inland marine" coverage — ignore the weird name, it simply means <i>your business equipment is protected while it sits somewhere other than your own building</i>. That's exactly our situation: our coolers live at host businesses. It covers theft, vandalism, fire, and water damage. Tell them: about $25,000–$30,000 worth of machines, spread across up to ten locations in Tennessee.</p>
+          <p><b>Two questions to ask every company:</b> ① "Are certificates of insurance free and instant?" — a certificate of insurance is the one-page proof-of-coverage document hosts will ask us for; we'll need to produce one quickly and often. ② "Can I add a host business as an additional insured at no charge?" — "additional insured" means the host's name gets listed on our policy, which hotels and property-management companies frequently require before signing.</p>
+          <p><b>One thing to confirm:</b> that the general liability policy includes <b>products coverage</b> — meaning it covers claims about the food and drinks we sell, not just accidents around the machine.</p>
+          <p><b>If a quote comes back far above $1,100/year,</b> say you have lower quotes elsewhere — or just take the better one. Nothing here is negotiable-in-person magic; the online quotes are the real prices.</p>
+        </div></details></div></div></div>
+      <div class="item" data-k="p2"><span class="box">✓</span><div><div class="t">Create a Google app password for lead emails<span class="pri soon">SOON</span></div><div class="d">This lets the website email you every new lead automatically. An app password is a special 16-character code that lets one specific app (our website) send email as you — it is <b>not</b> your regular password, and you can cancel it anytime without affecting anything else.
+        <details><summary>Step by step</summary><div class="inner">
+          <p><b>1.</b> Go to <b>myaccount.google.com</b> and sign in as <b>paige@wraptvending.com</b>.</p>
+          <p><b>2.</b> Click <b>Security</b> in the left menu.</p>
+          <p><b>3.</b> Make sure <b>2-Step Verification</b> is turned ON (this is the "text me a code when I log in" feature). If it's off, turn it on first and follow the prompts with your phone number — app passwords don't exist until this is on.</p>
+          <p><b>4.</b> Back on the Security page, type <b>"App passwords"</b> into the search bar at the top of the page (Google hides this option — searching is the fastest way to find it).</p>
+          <p><b>5.</b> Where it asks for an app name, type <b>Wrapt lead emails</b> and click Create.</p>
+          <p><b>6.</b> Google shows a <b>16-character code once</b> — copy it right then (the spaces don't matter). Text or securely send it to Lord and he'll plug it into the website. That's it — from then on, every lead that comes through the site lands in your inbox with their name, number, score, and one-tap call/text buttons.</p>
+          <p>If the code ever gets lost or you feel weird about it: go back to App passwords and delete "Wrapt lead emails" — it stops working instantly, and your account is untouched.</p>
+        </div></details></div></div></div>
+      <div class="item" data-k="p5"><span class="box">✓</span><div><div class="t">Get a headshot<span class="pri soon">SOON</span></div><div class="d">A clean, friendly professional shot — it goes on the website's "Paige answers, not a call center" card, proposals, and anywhere hosts should see a real face instead of a logo.</div></div></div>
+      <div class="item" data-k="p7"><span class="box">✓</span><div><div class="t">Create the Google Business Profile<span class="pri soon">SOON</span></div><div class="d">This is the free listing that makes Wrapt show up on Google Maps and in "vending machine company near me" searches. Set it up at <b>google.com/business</b> signed in as paige@wraptvending.com. Choose <b>service-area business</b> (we go to customers — your address stays private) · business name <b>Wrapt</b> · category <b>Vending machine supplier</b> · service areas: Franklin, Spring Hill, Brentwood, Columbia, Murfreesboro, Nashville · phone <b>615.948.2976</b> · website <b>wraptvending.com</b>. Google will mail or call with a verification code — enter it and the listing goes live.
+        <details><summary>Copy-paste: business description + services list</summary><div class="inner">
+          <p><b>Business description</b> (paste into the "description" box):</p>
+          <p class="paste">Wrapt places free smart vending machines at businesses across Franklin, Spring Hill, and Greater Nashville. We install a glass-front smart cooler wrapped in your branding, stock it weekly with drinks and snacks matched to your crowd, and service it end to end — you provide three feet of wall space and an outlet, and earn a commission on every sale. Card-only, tap-and-go checkout: no coins, no cash box, no hassle. Locally owned and operated in Franklin, Tennessee — when you call, an owner answers. Hosting is free for gyms, hotels, offices, apartment communities, dealerships, salons, and more, with a simple one-page agreement and a 30-day out.</p>
+          <p><b>Services</b> (add each one under Services — type them in as custom services):</p>
+          <p class="paste">Free vending machine placement · Smart cooler placement · Custom-wrapped vending machines · Vending machine stocking and restocking · Vending machine service and maintenance · Office break room vending · Gym vending machines · Hotel vending and mini markets · Apartment community vending · Multi-property vending programs</p>
+          <p>Once it's verified: add the wrapped-machine photos when they exist, and we'll start asking happy hosts for reviews — reviews are what move the listing up the map results.</p>
+        </div></details></div></div></div>
+      <div class="item" data-k="p6"><span class="box">✓</span><div><div class="t">EIN arrives → open the business bank account<span class="pri wait">WAITING</span></div><div class="d">Then the card for stocking runs, then wire the processor payout to it. If the EIN was an online application, the number may already exist — check before waiting on the letter.</div></div></div>
+      </div>
+  </div>
+
+  <details>
+    <summary>Shipped in the Sept 4 build — live once deployed</summary>
+    <div class="inner"><ul>
+      <li>✓ Mileage tracker (Ops button in Command — GPS trips, manual entries, editable rate, accountant CSV)</li>
+      <li>✓ Expense log with receipt photos (same Ops screen — vendor, amount, note, CSV)</li>
+      <li>✓ Signed-to-installed 14-day countdown with overdue flags in the Today plan</li>
+      <li>✓ COI requested/sent tracker on proposal/signed/installed cards</li>
+      <li>✓ "Waitlisted" pipeline status for signed hosts beyond machine inventory</li>
+      <li>Email env vars in Netlify — being added by hand with this deploy</li>
+    </ul></div>
+  </details>
+
+  <details>
+    <summary>Shelved until HAHA software access</summary>
+    <div class="inner"><ul>
+      <li>Host statement generator + host-facing dashboard (the site promises this — first priority once sales data exists)</li>
+      <li>QR "want one of these?" lead decals on the machines</li>
+      <li>Post-install Google review asks (once the profile is live)</li>
+      <li>Machines tab in Command (serials, hosts, install dates, 30-day-out dates)</li>
+      <li>Post-install automation (day-after text, 2-week check-in in the Today plan)</li>
+    </ul></div>
+  </details>
+
+  <p class="foot">Wrapt Ops · content updates come through Claude · checks are saved per device</p>
+</div>
+
+<script>
+(function(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem('w_todo')||'{}');}catch(e){}
+  const items=document.querySelectorAll('.item');
+  function counts(){
+    [['cPaige','p']].forEach(([id,pre])=>{
+      const all=[...items].filter(i=>i.dataset.k.startsWith(pre));
+      const done=all.filter(i=>i.classList.contains('done')).length;
+      document.getElementById(id).textContent=done+' / '+all.length+' done';
+    });
+  }
+  items.forEach(it=>{
+    if(saved[it.dataset.k])it.classList.add('done');
+    it.addEventListener('click',e=>{
+      if(e.target.closest('a,details'))return; // links + expandable sections shouldn't toggle the check
+      it.classList.toggle('done');
+      saved[it.dataset.k]=it.classList.contains('done')?1:0;
+      try{localStorage.setItem('w_todo',JSON.stringify(saved));}catch(e2){}
+      counts();
+    });
+  });
+  counts();
+  // printing: expand every section so nothing is hidden on paper
+  let openState=null;
+  window.addEventListener('beforeprint',()=>{
+    const ds=[...document.querySelectorAll('details')];
+    openState=ds.map(d=>d.open);
+    ds.forEach(d=>d.open=true);
+  });
+  window.addEventListener('afterprint',()=>{
+    if(!openState)return;
+    [...document.querySelectorAll('details')].forEach((d,i)=>d.open=openState[i]);
+    openState=null;
+  });
+})();
+</script>
+</body>
+</html>

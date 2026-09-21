@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Wrapt — Placement Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFFFF;--panel:#FFFFFF;--line:#D7D2C7;--brass:#111111;--brass-hi:#55534E;--taupe:#A39C8F;--gold:#B37922;--gold-hi:#C98A2E;--gold-deep:#8F5E16;--cream:#111111;--muted:#55534E;--good:#111111}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--cream);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.6;border-top:8px solid var(--gold)}
+.page{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+.mono{font-family:'Space Mono',monospace}
+h1,h2{font-family:'Archivo';text-transform:uppercase;letter-spacing:-.02em;line-height:1.05;font-weight:900}
+.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--cream);padding-bottom:22px;margin-bottom:30px}
+.logo{font-family:'Archivo';font-weight:900;font-size:16px;letter-spacing:-.01em;text-transform:uppercase;display:inline-block;border:3px solid currentColor;padding:9px 14px 7px;line-height:1;color:var(--cream)}
+.top .meta{text-align:right;font-family:'Space Mono';font-size:11px;color:var(--muted);letter-spacing:.08em;line-height:1.9}
+h1{font-size:42px;margin-bottom:6px}
+.for{color:var(--muted);margin-bottom:34px}
+.for b{color:var(--cream)}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:34px}
+.box{background:var(--panel);border:1px solid var(--line);padding:18px}
+.box label{font-family:'Space Mono';font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.box b{display:block;font-family:'Archivo';font-size:34px;font-weight:900;margin-top:3px}
+.box b.gold{color:var(--gold-deep)}
+h2{font-size:22px;margin:32px 0 12px;color:var(--cream);border-bottom:3px solid var(--gold);padding-bottom:6px;display:inline-block}
+ul{list-style:none}
+li{padding:8px 0;border-bottom:1px dashed #1c1f25;display:flex;gap:11px;color:var(--muted)}
+li::before{content:"—";color:var(--gold);font-weight:700}
+li b{color:var(--cream);font-weight:500}
+.terms{background:var(--panel);border:1px solid var(--line);padding:22px;margin-top:14px}
+.trow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #1c1f25;font-size:14.5px}
+.trow span{color:var(--muted)}
+.trow b{font-weight:600}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:44px}
+.sig div{border-top:1px solid var(--muted);padding-top:8px;font-family:'Space Mono';font-size:11px;color:var(--muted);letter-spacing:.08em}
+.note{font-size:12px;color:var(--muted);margin-top:30px}
+.bar{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:4px solid var(--gold);padding:12px;display:flex;gap:10px;justify-content:center}
+.btn{background:var(--gold);color:#221B0E;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-weight:700;padding:12px 20px;border:2px solid var(--gold);cursor:pointer;font-size:10.5px}
+.btn.ghost{background:transparent;color:var(--cream);border:2px solid var(--cream)}
+@media print{
+  body{background:#fff;color:#111}
+  .bar{display:none}
+  .page{padding:0}
+  .box,.terms{background:#f6f4ef;border-color:#ddd}
+  ​.box b{color:#111}.box b.gold{color:#111}
+  h2{color:#111;border-color:#111}
+  li{color:#444;border-color:#e3e0d8}li b{color:#111}
+  .trow span{color:#555}
+  .for{color:#555}.for b{color:#111}
+  .top{border-color:#111}
+  .top .meta,.note,.sig div{color:#666}
+  
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <span class="logo">WRAPT</span>
+    <div class="meta">PLACEMENT PROPOSAL<br><span id="pDate"></span><br>wraptvending.com · 615.948.2976</div>
+  </div>
+
+  <h1>Placed free.<br><span style="border-bottom:6px solid var(--gold)">Paid monthly.</span></h1>
+  <p class="for">Prepared for <b id="pName">—</b><span id="pCoWrap"> at <b id="pCo">—</b></span><span id="pCityWrap">, <span id="pCity"></span></span></p>
+
+  <div class="grid">
+    <div class="box"><label>Site score</label><b class="gold" id="pGrade">—</b></div>
+    <div class="box"><label>Est. gross / month</label><b id="pGross">—</b></div>
+    <div class="box"><label>Your value / year</label><b class="gold" id="pAnnual">—</b></div>
+  </div>
+
+  <h2>What Wrapt provides — at no cost to you</h2>
+  <ul>
+    <li><b id="pMachine">Commercial smart vending machine</b> — installed, wrapped, and configured for your space</li>
+    <li><b>Full vinyl wrap in your branding</b> — your logo and colors, approved by you before install (or our plain charcoal wrap)</li>
+    <li><b>Stocked &amp; serviced, always</b><span id="pWants"></span> — the machine is never empty and never your problem</li>
+    <li><b>Card-only checkout</b> — tap, swipe, mobile pay; no cash on site</li>
+    <li><b>Liability insurance</b> on the placement — certificate available on request</li>
+    <li><b>Live host dashboard</b> — every sale on the record, statement monthly</li>
+  </ul>
+
+  <h2>Terms</h2>
+  <div class="terms">
+    <div class="trow"><span>Cost to you</span><b>Nothing — ever</b></div>
+    <div class="trow"><span>Your commission</span><b id="pShare">15% of gross sales</b></div>
+    <div class="trow"><span>Payout</span><b>Monthly deposit + itemized statement</b></div>
+    <div class="trow"><span>You provide</span><b>Three feet of wall + an outlet</b></div>
+    <div class="trow"><span>Install timeline</span><b>Within 2 weeks of signing</b></div>
+  </div>
+
+  <div class="sig">
+    <div>HOST — SIGNATURE / DATE</div>
+    <div>WRAPT — SIGNATURE / DATE</div>
+  </div>
+
+  <p class="note">Revenue figures are estimates based on the traffic and venue details you provided, using Wrapt network averages. Actual results vary by location. This proposal is valid for 14 days.</p>
+</div>
+
+<div class="bar">
+  <a class="btn" id="acceptBtn" href="#" style="text-decoration:none">Accept — text us to schedule install</a>
+  <button class="btn ghost" onclick="window.print()">Print / PDF</button>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  $('pDate').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}).toUpperCase();
+  let d={};
+  try{
+    if(location.hash.length>1){
+      const raw=atob(location.hash.slice(1));
+      try{ d=JSON.parse(decodeURIComponent(escape(raw))); }
+      catch(e2){ d=JSON.parse(raw); } // legacy links
+    }
+  }catch(e){}
+  if(d.name)$('pName').textContent=d.name;
+  if(d.co)$('pCo').textContent=d.co; else $('pCoWrap').style.display='none';
+  if(d.city)$('pCity').textContent=d.city; else $('pCityWrap').style.display='none';
+  if(d.grade)$('pGrade').textContent=d.grade;
+  if(d.gross)$('pGross').textContent=d.gross;
+  if(d.annual)$('pAnnual').textContent=d.annual;
+  if(d.share)$('pShare').textContent=d.share+' of gross sales';
+  if(d.venue){
+    const v=d.venue.toLowerCase();
+    $('pMachine').textContent=(v.includes('hotel')||v.includes('hospit')||v.includes('school')||v.includes('campus'))
+      ?'Wrapt Vision — glass-front smart cooler (tap, grab & go)'
+      :'Wrapt One — glass-front smart cooler (drinks + snacks, tap, grab & go)';
+  }
+  if(d.wants)$('pWants').textContent=', stocked around '+d.wants.toLowerCase();
+  $('acceptBtn').href='sms:+16159482976?&body='+encodeURIComponent(
+    `Accepting the Wrapt proposal${d.co?' for '+d.co:''} — let's schedule the install.`);
+})();
+</script>
+<script>
+(function(){
+  const mobile=matchMedia('(pointer:coarse)').matches||/android|iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(mobile)return;
+  let tip=null;
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a[href^="sms:"],a[href^="tel:"]');
+    if(!a)return;
+    e.preventDefault();
+    if(tip)tip.remove();
+    tip=document.createElement('div');
+    tip.innerHTML=(a.getAttribute('href').indexOf('sms:')===0?'Text':'Call')+' Paige: <b style="font-family:monospace;letter-spacing:.04em">615.948.2976</b>';
+    try{navigator.clipboard.writeText('615-948-2976').then(()=>{if(tip)tip.innerHTML+=' <span style="opacity:.7">— copied to clipboard</span>';}).catch(()=>{});}catch(_){}
+    tip.style.cssText='position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#111111;color:#F3F1EC;padding:15px 24px;font:500 16px Inter,system-ui,sans-serif;z-index:999;box-shadow:0 12px 34px rgba(0,0,0,.35);border-left:4px solid #B37922;white-space:nowrap';
+    document.body.appendChild(tip);
+    setTimeout(()=>{if(tip){tip.remove();tip=null;}},4500);
+  },true);
+})();
+</script>
+</body>
+</html>
