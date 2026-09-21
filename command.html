@@ -15,7 +15,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Command">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
 :root{
   --bg:#FFFFFF;--panel:#FFFFFF;--panel2:#EAE7E0;--line:#D7D2C7;
@@ -34,7 +35,7 @@ html[data-theme="dark"] .gate-card,html[data-theme="dark"] .lead{box-shadow:none
 body{background:var(--bg);color:var(--cream);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .mono{font-family:'Space Mono',monospace}
 button,input,select,textarea{font:inherit}
-::selection{background:var(--brass);color:#F3F1EC}
+::selection{background:var(--gold);color:#221B0E}
 .wrap{max-width:860px;margin:0 auto;padding:0 14px}
 
 /* LOGIN */
@@ -95,7 +96,7 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 /* compact rows */
 .lrow{padding:0;overflow:hidden;cursor:pointer;touch-action:pan-y}
 .lr{display:flex;align-items:center;gap:9px;padding:11px 12px;transition:transform .15s ease}
-.lr-cb{display:flex;align-items:center}
+.lr-cb{display:flex;align-items:center;padding:12px 8px;margin:-12px 0 -12px -8px}
 .lr-cb input{width:17px;height:17px;accent-color:#B37922}
 .lr-score{flex:0 0 auto;min-width:36px;text-align:center;border:2px solid var(--line);font-family:'Archivo';font-weight:900;font-size:14px;padding:4px 3px;color:var(--muted)}
 .lr-score.hot{color:var(--gold-deep);border-color:var(--gold)}
@@ -106,7 +107,7 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .lr-b{flex:0 0 auto;font-family:'Space Mono';font-size:9px;letter-spacing:.06em;border:1px solid var(--line);color:var(--taupe);padding:2px 6px}
 .lr-b.red{color:var(--red);border-color:var(--red);font-weight:700}
 .lr .pill{flex:0 0 auto}
-.fu-chip{font-family:'Space Mono';font-size:10px;padding:5px 9px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--cream)}
+.fu-chip{font-family:'Space Mono';font-size:10px;padding:6px 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--cream)}
 .fu-chip:active{border-color:var(--gold)}
 .l-main{flex:1;min-width:0}
 .l-name{font-weight:600;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -158,10 +159,10 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
   .act{padding:10px 13px;font-size:13px;min-height:42px}
   .status{min-height:42px}
   .l-actions{gap:8px}
-  .search{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:8px}
+  .search{position:sticky;top:var(--hdrH,90px);z-index:5;background:var(--bg);padding-top:8px}
   .l-time{display:none}
 }
-@media(max-width:640px){.inp,select.inp,input.inp{font-size:16px}}
+@media(max-width:640px){.inp,select.inp,input.inp,.l-note textarea,select.status,input[type=date],.l-edit input{font-size:16px}}
 /* door-outcome chips, inline editors, follow-up row, undo toast */
 .l-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
 .chips-lbl{font-size:9px;letter-spacing:.14em;color:var(--taupe);margin-right:2px}
@@ -992,6 +993,7 @@ function ago(d){
   if(m<1440)return Math.round(m/60)+'h ago';
   return Math.round(m/1440)+'d ago';
 }
+function poss(n){n=n||'';return /s$/i.test(n)?n+'\u2019':n+'\u2019s'}
 function firstName(n){return (n||'').trim().split(' ')[0]||'there'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
@@ -1190,7 +1192,7 @@ ${introLine(d.venue_type)}
 
 We install it, stock it and service it weekly. ${co} keeps 15% of every sale, paid monthly with a statement. Nothing to buy, nothing to manage.
 
-Could I stop by for 10 minutes this week with a mockup in ${co}'s colors? Reply with a day that works, or tell me who I should ask for.
+Could I stop by for 10 minutes this week with a mockup in ${poss(co)} colors? Reply with a day that works, or tell me who I should ask for.
 
 Paige Fryer
 Owner, Wrapt
@@ -1216,7 +1218,8 @@ const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We pla
 function pitchFor(l){
   const vt=l.data.venue_type||'';
   const hit=PITCH_MAP.find(([re])=>re.test(vt));
-  return (hit?hit[1]:PITCH_DEFAULT).replaceAll('{co}',l.data.company||'your business');
+  const co=l.data.company||'your business';
+  return (hit?hit[1]:PITCH_DEFAULT).replaceAll("{co}'s",poss(co)).replaceAll('{co}',co);
 }
 /* the first ten seconds: most counters are staffed by someone who can't say yes */
 function spotFor(vt){
@@ -1296,7 +1299,7 @@ function leadCard(l){
   const urgency=fuDue(l)?' u-due':(!l.prospect&&s>=70&&['new','contacted'].includes(l.status)?' u-hot':'');
   return `<div class="lead${urgency}" data-id="${esc(l.id)}">
     <div class="l-top">
-      ${l.prospect?`<label style="display:flex;align-items:center;margin-right:8px"><input type="checkbox" data-act="route" style="width:16px;height:16px;accent-color:#B37922"${ROUTE.has(l.id)?' checked':''}></label>${l.flag?`<div class="score" style="color:var(--red);border-color:var(--red)">✕<small>${l.flag==='closed'?'CLOSED':'DUPE'}</small></div>`:`<div class="score ${scoreTier(l.fit||0)}">${l.fit||'P'}<small>FIT</small></div>`}`:`<div class="score ${scoreTier(s)}">${s}<small>SCORE</small></div>`}
+      ${l.prospect?`<label style="display:flex;align-items:center;margin-right:4px;padding:12px 8px 12px 0"><input type="checkbox" data-act="route" style="width:18px;height:18px;accent-color:#B37922"${ROUTE.has(l.id)?' checked':''}></label>${l.flag?`<div class="score" style="color:var(--red);border-color:var(--red)">✕<small>${l.flag==='closed'?'CLOSED':'DUPE'}</small></div>`:`<div class="score ${scoreTier(l.fit||0)}">${l.fit||'P'}<small>FIT</small></div>`}`:`<div class="score ${scoreTier(s)}">${s}<small>SCORE</small></div>`}
       <div class="l-main">
         <div class="l-name">${esc(d.name||d.company||'Unknown')}${d.name&&d.company?` <span class="co">· ${esc(d.company)}</span>`:''} <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span></div>
         <div class="l-meta"><b>${esc(d.venue_type||'?')}</b> in <b>${esc(d.city||'?')}</b>${fmtDist(l)?` · <b style="color:var(--gold-deep)">${fmtDist(l)}</b>`:''}${l.prospect?'':` · ${esc(d.daily_traffic||'?')} daily · ${esc(d.timeline||'?')}${d.role?' · '+esc(d.role):''}`}</div>
@@ -1339,7 +1342,7 @@ function leadCard(l){
         ${l.prospect?`<div class="l-pitch" style="display:${PITCH_OPEN.has(l.id)?'block':'none'};margin-top:8px;padding:10px 12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5">${pitchHtml(l)}<div style="margin-top:8px"><button class="act" data-act="copypitch">Copy pitch</button></div></div>`:''}
         ${['dead','installed'].includes(l.status)?'':`<div class="l-fu">
           <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
-          <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px">
+          <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px;min-height:40px">
           <button class="fu-chip" data-fuq="1">+1d</button><button class="fu-chip" data-fuq="3">+3d</button><button class="fu-chip" data-fuq="7">+1w</button>${l.followup?`<button class="fu-chip" data-fuclear title="Clear follow-up">✕</button>`:''}
         </div>`}
         <div class="l-note${(l.note||NOTE_OPEN.has(l.id))?' open':''}">
@@ -1970,6 +1973,8 @@ $('btnTheme').addEventListener('click',()=>{
   applyThemeMeta();
 });
 applyThemeMeta();
+const setHdrH=()=>document.documentElement.style.setProperty('--hdrH',document.querySelector('header').offsetHeight+'px');
+setHdrH();window.addEventListener('resize',setHdrH);
 if('serviceWorker' in navigator&&location.protocol==='https:'){
   navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
