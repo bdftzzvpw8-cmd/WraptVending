@@ -304,6 +304,10 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
 const FN='/.netlify/functions';
 let KEY='', LEADS=[], FILTER='active', Q='';
 const $=id=>document.getElementById(id);
+/* local calendar day (Central), never the UTC day — after 7pm the two differ */
+const todayISO=()=>new Date().toLocaleDateString('en-CA');
+const isoDays=n=>new Date(Date.now()+n*864e5).toLocaleDateString('en-CA');
+function stamp(){return new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');}
 const STATUSES=['prospect','new','contacted','proposal','signed','waitlist','installed','dead'];
 const SLABEL={prospect:'Prospect',new:'New',contacted:'Contacted',proposal:'Proposal',signed:'Signed',waitlist:'Waitlisted',installed:'Installed',dead:'Dead'};
 
@@ -777,12 +781,12 @@ $('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey()});
   try{const saved=localStorage.getItem('w_key');if(saved)KEY=saved;}catch(e){}
   const ok=await load(true);
   if(ok){$('gate').style.display='none';}
-  else{KEY='';$('list').innerHTML='<div class="loading">AWAITING KEY…</div>';}
+  else{KEY='';LEADS=[];$('gate').style.display='';$('list').innerHTML='<div class="loading">AWAITING KEY…</div>';}
 })();
 
 /* ---------- data ---------- */
 let LAST_ERR='';let LAST_ERR_MSG='';let TRAFFIC=null;let SORT='new';let FCITY='';let FVENUE='';const ROUTE=new Set();const PHOTOS=new Set();let PHOTO_ID=null;let SHOWN=80;let FTIER='';
-/* multiple photos per lead: extras stored under suffixed ids (id~2, id~3, …) — same backend, no changes needed */
+/* multiple photos per lead: extras stored under suffixed ids (id:2, id:3, …) — same backend, no changes needed */
 function photosOf(id){return [...PHOTOS].filter(p=>p===id||p.startsWith(id+':')).sort((a,b)=>(a.length-b.length)||a.localeCompare(b))}
 function nextPhotoId(id){if(!PHOTOS.has(id))return id;let n=2;while(PHOTOS.has(id+':'+n))n++;return id+':'+n}
 try{
@@ -794,10 +798,15 @@ function saveView(){try{localStorage.setItem('w_view',JSON.stringify({f:FILTER,c
 function saveRoute(){try{sessionStorage.setItem('w_route',JSON.stringify([...ROUTE]));}catch(e){}}
 async function load(silent){
   if(!silent)$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  let c=null;try{c=JSON.parse(localStorage.getItem('w_cache')||'null');}catch(e2){}
+  let savedKey='';try{savedKey=localStorage.getItem('w_key')||'';}catch(e2){}
+  // cache-first: on a key this phone already used, show the saved list right away and refresh behind it
+  if(c&&c.j&&!LEADS.length&&KEY&&KEY===savedKey){OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();$('gate').style.display='none';}
   try{
-    const r=await fetch(FN+'/leads',{headers:{'X-Dash-Key':KEY}});
+    const r=await fetch(FN+'/leads',{headers:{'X-Dash-Key':KEY},signal:AbortSignal.timeout(10000)});
     if(!r.ok){
       LAST_ERR=r.status===401?'auth':'server '+r.status;
+      if(r.status===401){try{localStorage.removeItem('w_key');localStorage.removeItem('w_cache');}catch(e2){}}
       try{const ej=await r.json();if(ej&&ej.error)LAST_ERR_MSG=ej.error;}catch(_){}
       throw new Error(r.status);
     }
@@ -811,7 +820,6 @@ async function load(silent){
   }catch(e){
     if(LAST_ERR!=='auth'&&!String(e.message).match(/^\d+$/))LAST_ERR='offline';
     if(LAST_ERR==='offline'){
-      let c=null;try{c=JSON.parse(localStorage.getItem('w_cache')||'null');}catch(e2){}
       if(c&&c.j){
         OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();
         return true;
@@ -822,13 +830,14 @@ async function load(silent){
   }
 }
 let OFFLINE=false;
-const RENAMES={'pros-a35':'Camden Gulch (fka Harlowe)','pros-x14':'Franklin Bridge Golf Club (fka Forrest Crossing)','pros-l04':'Nashville Laundry (fka Bellevue Coin Laundry)','pros-h29':'Comfort Suites Columbia I-65 (fka Comfort Inn)'};
+/* rebranded prospects: [current name, former name]. The former name lands in intel (still searchable) and never in customer-facing copy. */
+const RENAMES={'pros-a35':['Camden Gulch','Harlowe Apartments'],'pros-x14':['Franklin Bridge Golf Club','Forrest Crossing Golf Course'],'pros-l04':['Nashville Laundry','Bellevue Coin Laundry'],'pros-h29':['Comfort Suites Columbia I-65','Comfort Inn Columbia']};
 function buildFrom(j){
     const meta=j.meta||{};
     const inbound=(j.leads||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
     const pros=PROSPECTS.map(p=>({
       id:p.id,created_at:null,prospect:true,
-      data:{name:'',company:(RENAMES[p.id]||p.company),venue_type:p.venue_type,city:p.city,address:p.address||'',phone:p.phone||'',website:p.website||'',size:p.size||'',brand:p.brand||'',intel:p.intel||'',lead_type:'Prospect'},
+      data:{name:'',company:(RENAMES[p.id]?.[0]||p.company),venue_type:p.venue_type,city:p.city,address:p.address||'',phone:p.phone||'',website:p.website||'',size:p.size||'',brand:p.brand||'',intel:(RENAMES[p.id]?'Formerly '+RENAMES[p.id][1]+'. ':'')+(p.intel||''),lead_type:'Prospect'},
       fit:p.fit||0,flag:p.flag||'',lat:p.lat,lng:p.lng,geoApprox:p.geo==='approx',
       status:meta[p.id]?.status||'prospect',
       payout:meta[p.id]?.payout||'',
@@ -847,7 +856,9 @@ function buildFrom(j){
 /* ---------- offline queue ---------- */
 function getQ(){try{return JSON.parse(localStorage.getItem('w_q')||'[]')}catch(e){return[]}}
 function setQ(q){try{localStorage.setItem('w_q',JSON.stringify(q))}catch(e){}}
-function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(l)Object.assign(l,it.patch);});}
+const META_KEYS={phone:'metaPhone',email:'metaEmail'};
+function applyPatch(l,p){for(const k in p)l[META_KEYS[k]||k]=p[k];}
+function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(l)applyPatch(l,it.patch);});}
 function updateBanner(cachedAt){
   const q=getQ(),b=$('offBanner');
   if(OFFLINE){b.style.display='block';b.textContent='OFFLINE — showing saved list'+(cachedAt?' from '+ago(cachedAt):'')+(q.length?` · ${q.length} update${q.length>1?'s':''} queued`:'')+'. Changes will sync when signal returns.';}
@@ -861,28 +872,38 @@ async function flushQueue(){
     let q=getQ();
     while(q.length){
       const it=q[0];
-      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch})}).catch(()=>null);
-      if(!r||!r.ok)break;
+      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch}),signal:AbortSignal.timeout(8000)}).catch(()=>null);
+      if(!r)break;                       // no signal: try again later
+      if(r.status===401){forgetKey();break;}
+      if(!r.ok&&r.status<500){q.shift();setQ(q);continue;} // server rejected it: drop, don't wedge the queue
+      if(!r.ok)break;
       q.shift();setQ(q);
     }
   }finally{FLUSHING=false;OFFLINE=getQ().length&&OFFLINE;updateBanner();}
 }
-window.addEventListener('online',()=>{flushQueue();load(true);});
+window.addEventListener('online',()=>{flushQueue().then(()=>load(true));});
 $('btnRefresh').addEventListener('click',()=>load());
 
+function forgetKey(){
+  KEY='';
+  try{localStorage.removeItem('w_key');localStorage.removeItem('w_cache');}catch(e){}
+  $('gate').style.display='';$('gateErr').textContent='Key no longer valid — enter the current key.';
+}
 async function saveMeta(id,patch,hintEl){
+  const l=LEADS.find(x=>x.id===id);
+  if(l)applyPatch(l,patch); // apply once, up front: the UI never waits on the network and late responses can't clobber newer edits
   if(hintEl)hintEl.textContent='saving…';
   try{
-    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch})});
-    if(!r.ok)throw new Error(r.status);
-    const l=LEADS.find(x=>x.id===id);
-    if(l)Object.assign(l,patch);
+    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:AbortSignal.timeout(8000)});
+    if(!r.ok){
+      if(r.status===401){forgetKey();return;}
+      if(r.status<500){if(hintEl)hintEl.textContent='rejected by server ('+r.status+')';renderStats();renderFilters();return;}
+      throw new Error(r.status);
+    }
     if(hintEl)hintEl.textContent='saved';
     renderStats();renderFilters();
   }catch(e){
-    // no signal — apply locally and queue for sync
-    const l=LEADS.find(x=>x.id===id);
-    if(l)Object.assign(l,patch);
+    // no signal — keep the local change and queue it for sync
     const q=getQ();
     const prev=q.find(it=>it.id===id);
     if(prev)Object.assign(prev.patch,patch);else q.push({id,patch,t:Date.now()});
@@ -919,8 +940,7 @@ function lastTouchDays(l){
 }
 function autoLog(id,kind){
   const l=LEADS.find(x=>x.id===id);if(!l)return;
-  const stamp=new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');
-  const line=`[${stamp}] ${kind}`;
+  const line=`[${stamp()}] ${kind}`;
   if((l.note||'').split('\n').pop()===line)return;
   l.note=(l.note?l.note+'\n':'')+line;
   saveMeta(id,{note:l.note});
@@ -982,15 +1002,15 @@ function renderFilters(){
   const tabs=[['today','Today'],['active','Active'],['prospect','Prospects'],['referral','Referrals'],['new','New'],['contacted','Contacted'],['proposal','Proposal'],['signed','Signed'],['waitlist','Waitlist'],['installed','Installed'],['dead','Dead'],['all','All']];
   $('filters').innerHTML=tabs.map(([k,lbl])=>
     `<button class="ftab${FILTER===k?' on':''}" data-f="${k}">${lbl} <span class="n">${counts[k]??0}</span></button>`).join('');
-  document.querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{FILTER=b.dataset.f;SHOWN=80;saveView();render();}));
+  $('filters').querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{FILTER=b.dataset.f;SHOWN=80;saveView();render();}));
 }
-/* Today plan: due follow-ups + payouts + hot inbound, then nearest untouched Tier A prospects */
+/* Today plan: due follow-ups + install deadlines + hot inbound, then untouched Tier A prospects ranked by fit + a known decision-maker, penalised by distance */
 const SUGGEST=new Set();
 function todayPlan(){
   const due=LEADS.filter(isToday);
   SUGGEST.clear();
   const cand=LEADS.filter(l=>l.prospect&&l.status==='prospect'&&!l.flag&&tierOf(l)==='A'&&lastTouchDays(l)==null&&!due.includes(l));
-  const _k=l=>reachOf(l)-Math.min(distOf(l)??15,30)*1.5;cand.sort((a,b)=>_k(b)-_k(a));
+  const _k=l=>(l.fit||0)+(dmOf(l)?8:0)-Math.min(distOf(l)??15,30)*1.5-(l.geoApprox?4:0);cand.sort((a,b)=>_k(b)-_k(a));
   const sug=cand.slice(0,8);
   sug.forEach(l=>SUGGEST.add(l.id));
   return [...due,...sug];
@@ -1021,7 +1041,7 @@ function visible(){
   else arr.sort((a,b)=>{const at=a.created_at?new Date(a.created_at).getTime():0,bt=b.created_at?new Date(b.created_at).getTime():0;return bt-at;});
   return arr;
 }
-function fuDue(l){return l.followup&&l.followup<=new Date().toISOString().slice(0,10)&&!['dead','installed'].includes(l.status)}
+function fuDue(l){return l.followup&&l.followup<=todayISO()&&!['dead','installed'].includes(l.status)}
 // ---- PRIORITY TIERS (derived, prospect cards only) ----
 // A: owner-at-the-counter, high dwell, no food-service conflict — knock first
 // B: strong fit, slower approval chains (managers, boards, property mgmt)
@@ -1044,8 +1064,9 @@ function tierOf(l){
   return 'B';
 }
 const WRAPT_EMAIL='paige@wraptvending.com';
-function dmOf(l){const m=/Decision-makers: ([^\n]+)/.exec((l&&l.note)||'');if(!m||/^none/i.test(m[1]))return null;const first=m[1].split('; ')[0];const k=first.indexOf(' (');const name=(k>0?first.slice(0,k):first).trim();const title=k>0?first.slice(k+2).replace(/\)$/,''):'';return name?{name,title}:null;}
-function cqOf(l){if(!l||!l.prospect)return 0;const em=!!(l.metaEmail||l.data.email||/Emails: (?!none)/.test(l.note||''));return (em?2:0)+(dmOf(l)?1:0)+((l.metaPhone||l.data.phone)?1:0);}
+/* decision-maker from the note: last "Decision-makers: Name (Title); ..." line wins; placeholders return null */
+function dmOf(l){const ms=[...((l&&l.note)||'').matchAll(/Decision-makers?: ([^\n]+)/gi)];if(!ms.length)return null;const raw=ms[ms.length-1][1].trim();if(!raw||/^(none|n\/a|unknown|tbd|not |\?|-)/i.test(raw))return null;const first=raw.split(/; |\s[|\u00b7]\s/)[0];const t=/^(.*?)\s*\(([^)]*)\)/.exec(first);const name=(t?t[1]:first).trim();const title=t?t[2].trim():'';return name?{name,title}:null;}
+function cqOf(l){if(!l||!l.prospect)return 0;const em=!!(l.metaEmail||l.data.email||/Emails?: [^\n]*@/i.test(l.note||''));return (em?2:0)+(dmOf(l)?1:0)+((l.metaPhone||l.data.phone)?1:0);}
 function reachOf(l){return (l.fit||0)+cqOf(l)*8;}
 function firstOf(d,l){return (d.name?firstName(d.name):'')||(l&&dmOf(l)?firstName(dmOf(l).name):'')||'there';}
 function mailProposal(l,pd){
@@ -1087,12 +1108,12 @@ Owner, Wrapt
 }
 function introLine(vt){
   vt=vt||'';
-  if(/Gym|fitness|Pickleball|Ice/i.test(vt))return 'Members can grab a protein shake, electrolyte drink or a cold water on the way out: tap a card, grab it, walk off. No front-desk time, no cash, no coins.';
+  if(/Gym|fitness|Pickleball/i.test(vt))return 'Members can grab a protein shake, electrolyte drink or a cold water on the way out: tap a card, grab it, walk off. No front-desk time, no cash, no coins.';
   if(/Apartment|Senior/i.test(vt))return 'It works as a 24/7 resident amenity for the lobby or clubroom: tap a card, grab a drink or snack, done. Your team never handles money or restocking.';
   if(/Hotel/i.test(vt))return 'Guests can grab drinks and snacks any hour: tap a card, grab, auto-checkout. It reads as your amenity, and the front desk never has to touch it.';
   if(/Office|Corporate|coworking/i.test(vt))return 'Employees and tenants get cold drinks and snacks without leaving the building: tap a card, grab, auto-checkout. Nothing for your team to manage.';
   if(/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt))return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better and costs you nothing.';
-  if(/Church|College|Youth|Public|Entertainment|Golf/i.test(vt))return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
+  if(/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt))return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
   return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
 }
 function mailIntro(l){
@@ -1149,7 +1170,7 @@ function leadCard(l){
   if(l.prospect&&d.brand)tags.push(`<span class="tag" style="color:var(--taupe)">${esc(d.brand)}</span>`);
   const ltd=l.prospect?lastTouchDays(l):null;
   if(ltd!=null)tags.push(`<span class="tag">TOUCHED ${ltd===0?'TODAY':ltd+'D AGO'}</span>`);
-  if(FILTER==='today'&&SUGGEST.has(l.id))tags.push(`<span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">SUGGESTED · NEAR YOU</span>`);
+  if(FILTER==='today'&&SUGGEST.has(l.id))tags.push(`<span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">SUGGESTED${fmtDist(l)?' · '+fmtDist(l).toUpperCase():''}</span>`);
   if(fuDue(l))tags.push(`<span class="age-flag">FOLLOW-UP DUE</span>`);
   if(l.status==='signed'&&l.signed_at){
     const dl=installDaysLeft(l);
@@ -1176,11 +1197,11 @@ function leadCard(l){
   }));
   const mapsQ=d.address||`${(isReferral(l)&&d.referred_business)||d.company||''} ${d.city||''} TN`;
   const urgency=fuDue(l)?' u-due':(!l.prospect&&s>=70&&['new','contacted'].includes(l.status)?' u-hot':'');
-  return `<div class="lead${urgency}" data-id="${l.id}">
+  return `<div class="lead${urgency}" data-id="${esc(l.id)}">
     <div class="l-top">
       ${l.prospect?`<label style="display:flex;align-items:center;margin-right:8px"><input type="checkbox" data-act="route" style="width:16px;height:16px;accent-color:#B37922"${ROUTE.has(l.id)?' checked':''}></label>${l.flag?`<div class="score" style="color:var(--red);border-color:var(--red)">✕<small>${l.flag==='closed'?'CLOSED':'DUPE'}</small></div>`:`<div class="score ${scoreTier(l.fit||0)}">${l.fit||'P'}<small>FIT</small></div>`}`:`<div class="score ${scoreTier(s)}">${s}<small>SCORE</small></div>`}
       <div class="l-main">
-        <div class="l-name">${esc(d.name||d.company||'Unknown')}${d.name&&d.company?` <span class="co">· ${esc(d.company)}</span>`:''} <span class="pill ${l.status}">${SLABEL[l.status]||esc(l.status)}</span></div>
+        <div class="l-name">${esc(d.name||d.company||'Unknown')}${d.name&&d.company?` <span class="co">· ${esc(d.company)}</span>`:''} <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span></div>
         <div class="l-meta"><b>${esc(d.venue_type||'?')}</b> in <b>${esc(d.city||'?')}</b>${fmtDist(l)?` · <b style="color:var(--gold-deep)">${fmtDist(l)}</b>`:''}${l.prospect?'':` · ${esc(d.daily_traffic||'?')} daily · ${esc(d.timeline||'?')}${d.role?' · '+esc(d.role):''}`}</div>
         ${isReferral(l)&&d.referred_business?`<div class="l-meta" style="margin-top:2px">Referred: <b>${esc(d.referred_business)}</b>${d.referred_contact?' · ask for '+esc(d.referred_contact):''}</div>`:''}
         <div class="l-meta" style="margin-top:2px"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener" style="color:var(--gold-deep);text-decoration:underline">${d.address?esc(d.address):'Map'}</a></div>
@@ -1189,7 +1210,7 @@ function leadCard(l){
         <div class="l-tags">${tags.join('')}</div>
         <div class="l-actions">
           ${tel?`<a class="act primary" href="tel:${tel}">Call</a><a class="act" href="sms:${tel}?&body=${smsBody}">Text</a>`:''}
-          ${l.prospect&&l.status==='prospect'&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
+          ${l.prospect&&['prospect','contacted'].includes(l.status)&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
           ${(d.email||l.metaEmail)?`<a class="act" href="${mailProposal(l,pd)}">Email proposal</a><a class="act" href="${mailFollowup(l)}">Follow-up</a>`:''}
           ${l.prospect?(l.metaEmail?`<button class="act" data-act="emailaddr">✉</button>`:`<button class="act" data-act="emailaddr">Add ✉</button>`):''}
           ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
@@ -1216,7 +1237,7 @@ function leadCard(l){
           <textarea data-act="notetext" placeholder="Call notes, objections, next step…">${esc(l.note)}</textarea>
           <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
             <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
-            <input type="date" class="inp" data-act="followup" value="${l.followup||''}" style="width:auto;padding:6px 8px;font-size:12px">
+            <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px;font-size:12px">
             <button class="fu-chip" data-fuq="1">+1d</button><button class="fu-chip" data-fuq="3">+3d</button><button class="fu-chip" data-fuq="7">+1w</button>
           </div>
           <div class="save-hint"></div>
@@ -1239,28 +1260,27 @@ function compactRow(l){
     :idl!=null&&idl<=4?`<span class="lr-b red">${idl<0?'OVERDUE':idl+'D'}</span>`
     :l.flag?'<span class="lr-b red">✕</span>'
     :ltd!=null?`<span class="lr-b">${ltd===0?'TODAY':ltd+'D'}</span>`:'';
-  return `<div class="lead lrow${fuDue(l)?' u-due':''}" data-id="${l.id}" data-compact="1">
+  return `<div class="lead lrow${fuDue(l)?' u-due':''}" data-id="${esc(l.id)}" data-compact="1">
     <div class="lr">
       ${l.prospect?`<label class="lr-cb" data-stop="1"><input type="checkbox" data-act="route"${ROUTE.has(l.id)?' checked':''}></label>`:''}
       <span class="lr-score ${l.flag?'':tier}"${l.flag?' style="color:var(--red);border-color:var(--red)"':''}>${score}</span>
       <span class="lr-name">${esc(d.company||d.name||'Unknown')}</span>
       <span class="lr-meta">${dist||esc(d.city||'')}</span>
       ${badge}
-      <span class="pill ${l.status}">${SLABEL[l.status]||esc(l.status)}</span>
+      <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span>
     </div>
   </div>`;
 }
 function quickLogSwipe(id,label){
   const l=LEADS.find(x=>x.id===id);if(!l)return;
-  const stamp=new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');
-  l.note=(l.note?l.note+'\n':'')+`[${stamp}] ${label}`;
+  l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${label}`;
   const updates={note:l.note};
   if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
   saveMeta(id,updates);render();
 }
 function snooze(id,days){
   const l=LEADS.find(x=>x.id===id);if(!l)return;
-  const f=new Date(Date.now()+days*864e5).toISOString().slice(0,10);
+  const f=isoDays(days);
   l.followup=f;saveMeta(id,{followup:f});render();
 }
 function wireSwipe(card,id){
@@ -1292,7 +1312,7 @@ function render(){
   if(FILTER==='today'&&!MYLOC&&!LOC_TRIED){LOC_TRIED=true;locate(()=>render());}
   const arr=visible();
   const page=arr.slice(0,SHOWN);
-  const planBar=(FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:11px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested near you</span></div>`:'';
+  const planBar=(FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:11px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested</span></div>`:'';
   $('list').innerHTML=planBar+(page.length?page.map(l=>{try{return EXPANDED.has(l.id)?leadCard(l):compactRow(l)}catch(e){console.error('card render failed',l.id,e);return `<div class="lead"><div class="l-top"><div class="l-main"><div class="l-name">${esc(l.data?.name||l.data?.company||l.id)}</div><div class="l-meta" style="color:var(--red)">Card failed to render — data issue logged to console.</div></div></div></div>`}}).join('')+(arr.length>SHOWN?`<button class="act" id="showMore" style="width:100%;justify-content:center;padding:14px;margin-top:4px">Show ${Math.min(60,arr.length-SHOWN)} more (${arr.length-SHOWN} remaining)</button>`:''):`<div class="empty">${FILTER==='prospect'?'No prospects match these filters.':FILTER==='referral'?'No referrals yet — they arrive when someone picks “A spot I know” on the site.':(Q||FCITY||FVENUE||FTIER)?'Nothing matches the current filters. <button class="act" id="emptyClear" style="margin-left:8px">Clear filters</button>':'No leads in this view yet. New site submissions land here automatically.'}</div>`);
   const rt=$('routeToday');
   if(rt)rt.addEventListener('click',()=>{
@@ -1320,11 +1340,8 @@ function render(){
       const l=LEADS.find(x=>x.id===id);
       const patch={status:e.target.value};
       // stamp the signing date — starts the 14-day install clock
-      if(e.target.value==='signed'&&l&&!l.signed_at){patch.signed_at=new Date().toISOString().slice(0,10);l.signed_at=patch.signed_at;}
+      if(e.target.value==='signed'&&l&&!l.signed_at){patch.signed_at=todayISO();l.signed_at=patch.signed_at;}
       saveMeta(id,patch);
-      if(l)l.status=e.target.value;
-      card.querySelector('.pill').className='pill '+e.target.value;
-      card.querySelector('.pill').textContent=SLABEL[e.target.value];
       render();
     });
     const coiBtn=card.querySelector('[data-act="coi"]');
@@ -1348,8 +1365,7 @@ function render(){
     });
     card.querySelectorAll('[data-act="ql"]').forEach(qb=>qb.addEventListener('click',()=>{
       const l=LEADS.find(x=>x.id===id);if(!l)return;
-      const stamp=new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');
-      l.note=(l.note?l.note+'\n':'')+`[${stamp}] ${qb.dataset.ql}`;
+      l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${qb.dataset.ql}`;
       const updates={note:l.note};
       if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
       saveMeta(id,updates);
@@ -1425,7 +1441,7 @@ $('btnRoute').addEventListener('click',()=>{
       }
     }
     const addrs=ordered.map(l=>l.data.address||`${l.data.company||l.data.name||''} ${l.data.city||''} TN`);
-    window.open('https://www.google.com/maps/dir/'+addrs.slice(0,10).map(encodeURIComponent).join('/'),'_blank');
+    window.open('https://www.google.com/maps/dir/'+addrs.slice(0,10).map(encodeURIComponent).join('/'),'_blank','noopener');
     if(addrs.length>10)alert(`Route has ${addrs.length} stops — Maps opened with the nearest 10 in drive order. Untick finished stops and tap Route again for the rest.`);
   };
   MYLOC?go():locate(go);
@@ -1482,9 +1498,11 @@ function blitzRender(){
       ${d.address?`<div style="color:var(--muted);font-size:14px">${esc(d.address)}</div>`:''}
       <div style="display:flex;gap:8px;margin:16px 0 6px;flex-wrap:wrap">
         <a class="act" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener">Navigate</a>
-        ${l.metaPhone?`<a class="act" href="tel:${esc(l.metaPhone)}">Call</a>`:''}
+        ${(l.metaPhone||d.phone)?`<a class="act" href="tel:${esc(l.metaPhone||d.phone)}">Call</a>`:''}
         <a class="act" href="wrap-studio.html?biz=${encodeURIComponent(d.company||'')}" target="_blank" rel="noopener">Mock</a>
+        <button class="act" id="bzPitchBtn">Pitch</button>
       </div>
+      <div id="bzPitch" style="display:none;margin:6px 0 0;padding:10px 12px;border:1px dashed var(--gold);font-size:13px;line-height:1.5;white-space:pre-wrap">${esc(pitchFor(l))}</div>
       <div class="mono" style="font-size:10px;letter-spacing:.16em;color:var(--taupe);margin:20px 0 8px">LOG THE DOOR — ONE TAP ADVANCES</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <button class="btn" data-bz="Interested — wants proposal" style="margin:0">Interested</button>
@@ -1499,20 +1517,22 @@ function blitzRender(){
       ${l.note?`<div style="margin-top:18px;border:2px solid var(--line);background:var(--panel2);padding:12px;font-size:13px;white-space:pre-wrap">${esc(l.note)}</div>`:''}
     </div>`;
   $('bzBody').querySelectorAll('[data-bz]').forEach(b=>b.addEventListener('click',()=>{
-    const stamp=new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');
-    l.note=(l.note?l.note+'\n':'')+`[${stamp}] ${b.dataset.bz}`;
+    l.note=(l.note?l.note+'\n':'')+`[${stamp()}] ${b.dataset.bz}`;
     const updates={note:l.note};
     if(['prospect','new'].includes(l.status)){l.status='contacted';updates.status='contacted';}
     saveMeta(l.id,updates);
     BZLOG++;BZI++;blitzRender();
   }));
   document.getElementById('bzSkip').addEventListener('click',()=>{BZSKIP++;BZI++;blitzRender();});
+  $('bzPitchBtn').addEventListener('click',()=>{const p=$('bzPitch');p.style.display=p.style.display==='none'?'block':'none';});
   document.getElementById('bzBack').addEventListener('click',()=>{if(BZI>0){BZI--;blitzRender();}});
 }
 $('btnBlitz').addEventListener('click',blitzStart);
 $('bzEnd').addEventListener('click',()=>{$('blitz').style.display='none';render();});
 function updateRouteBar(){$('routeBar').style.display=ROUTE.size?'flex':'none';$('btnRoute').textContent=`Route (${ROUTE.size}) →`;}
 
+/* CSV cell: quote as needed and defuse spreadsheet formulas (=, +, -, @) that a public form could plant */
+function csvCell(v){v=String(v??'');if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
 /* ---------- ops: mileage + expenses ---------- */
 const OPS={mileage:null,expenses:null};
 let OPS_LOADED=false,OPS_DIRTY=new Set();
@@ -1548,7 +1568,7 @@ async function opsLoad(){
   }
   OPS_LOADED=true;
 }
-function monthKey(d){return (d||new Date().toISOString().slice(0,10)).slice(0,7)}
+function monthKey(d){return (d||todayISO()).slice(0,7)}
 function fmt2(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2})}
 /* --- GPS trip --- */
 let TRIP=null; // {mi,last:[lat,lng],startTs,watchId}
@@ -1592,7 +1612,7 @@ function endTrip(){
 $('tripBtn').addEventListener('click',()=>{TRIP&&!TRIP.pendingMi?endTrip():startTrip();});
 document.querySelectorAll('[data-tp]').forEach(b=>b.addEventListener('click',()=>{
   if(!TRIP||!TRIP.pendingMi)return;
-  OPS.mileage.trips.unshift({d:new Date().toISOString().slice(0,10),mi:TRIP.pendingMi,p:b.dataset.tp,n:''});
+  OPS.mileage.trips.unshift({d:todayISO(),mi:TRIP.pendingMi,p:b.dataset.tp,n:''});
   TRIP=null;try{localStorage.removeItem('w_trip');}catch(_){}
   $('tripPurpose').style.display='none';$('tripStat').textContent='';
   opsSave('mileage');renderOps();
@@ -1639,7 +1659,7 @@ function renderOps(){
 $('miAdd').addEventListener('click',()=>{
   const mi=+$('miMiles').value;
   if(!(mi>0)){alert('Enter the miles.');return;}
-  OPS.mileage.trips.unshift({d:$('miDate').value||new Date().toISOString().slice(0,10),mi:Math.round(mi*10)/10,p:$('miPurpose').value,n:''});
+  OPS.mileage.trips.unshift({d:$('miDate').value||todayISO(),mi:Math.round(mi*10)/10,p:$('miPurpose').value,n:''});
   $('miMiles').value='';opsSave('mileage');renderOps();
 });
 $('miRate').addEventListener('change',()=>{
@@ -1649,30 +1669,30 @@ $('miRate').addEventListener('change',()=>{
 $('exAdd').addEventListener('click',()=>{
   const a=+$('exAmount').value,v=$('exVendor').value.trim();
   if(!v||!(a>0)){alert('Vendor and amount, please.');return;}
-  OPS.expenses.items.unshift({id:Date.now().toString(36),d:$('exDate').value||new Date().toISOString().slice(0,10),v,a:Math.round(a*100)/100,n:$('exNote').value.trim()});
+  OPS.expenses.items.unshift({id:Date.now().toString(36),d:$('exDate').value||todayISO(),v,a:Math.round(a*100)/100,n:$('exNote').value.trim()});
   $('exVendor').value='';$('exAmount').value='';$('exNote').value='';
   opsSave('expenses');renderOps();
 });
 function dlCsv(name,rows){
-  const cell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const cell=csvCell;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(cell).join(',')).join('\n')],{type:'text/csv'}));
   a.download=name;a.click();URL.revokeObjectURL(a.href);
 }
 $('miCsv').addEventListener('click',()=>{
   const m=OPS.mileage;
-  dlCsv('wrapt-mileage-'+new Date().toISOString().slice(0,10)+'.csv',
+  dlCsv('wrapt-mileage-'+todayISO()+'.csv',
     [['Date','Miles','Purpose','Note','Rate per mile','Deduction']]
     .concat(m.trips.slice().reverse().map(t=>[t.d,t.mi,t.p,t.n||'',m.rate,(t.mi*m.rate).toFixed(2)])));
 });
 $('exCsv').addEventListener('click',()=>{
-  dlCsv('wrapt-expenses-'+new Date().toISOString().slice(0,10)+'.csv',
+  dlCsv('wrapt-expenses-'+todayISO()+'.csv',
     [['Date','Vendor','Amount','Note','Receipt photo']]
     .concat(OPS.expenses.items.slice().reverse().map(t=>[t.d,t.v,t.a.toFixed(2),t.n||'',PHOTOS.has('exp:'+t.id)?'yes':'no'])));
 });
 $('btnOps').addEventListener('click',async()=>{
   $('opsView').style.display='block';
-  $('miDate').value=$('exDate').value=new Date().toISOString().slice(0,10);
+  $('miDate').value=$('exDate').value=todayISO();
   if(!OPS_LOADED)await opsLoad();
   else for(const d of [...OPS_DIRTY])await opsSave(d); // retry unsynced
   // crash recovery: a trip was mid-flight when the page died
@@ -1735,8 +1755,8 @@ function drawMarkers(){
       <b>${esc(l.data.company||l.data.name||'')}</b><br>
       <span style="color:#777;font-size:12px">${esc(l.data.venue_type||'')}${tierOf(l)?' · Tier '+tierOf(l):''}${l.fit?' · Fit '+l.fit:''}${dm?' · '+dm:''}</span><br>
       <span style="font-size:12px">${esc(SLABEL[l.status]||l.status)}</span><br>
-      <button id="mr-${l.id}" onclick="mapAddRoute('${l.id}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">${ROUTE.has(l.id)?'✓ On route':'+ Route'}</button>
-      <button onclick="mapOpenCard('${l.id}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">Open card</button>
+      <button id="mr-${esc(l.id)}" onclick="mapAddRoute('${esc(l.id)}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">${ROUTE.has(l.id)?'✓ On route':'+ Route'}</button>
+      <button onclick="mapOpenCard('${esc(l.id)}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">Open card</button>
     </div>`);
     m.addTo(MAPLAYER);
   });
@@ -1766,12 +1786,11 @@ $('mapClose').addEventListener('click',()=>{$('mapView').style.display='none';re
 $('btnExport').addEventListener('click',()=>{
   if(!LEADS.length)return;
   const cols=['created_at','status','lead_score','fit','flag','name','company','role','lead_type','referred_business','referred_contact','payout','followup','venue_type','city','address','daily_traffic','timeline','current_vending','product_interests','contact_method','best_time','phone','email','website','size','brand','intel','lead_source','note'];
-  const csvCell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const rows=[cols.join(',')].concat(LEADS.map(l=>cols.map(c=>
     csvCell(c==='created_at'?l.created_at:c==='status'?l.status:c==='note'?l.note:c==='payout'?l.payout:c==='followup'?l.followup:c==='fit'?(l.prospect?l.fit:''):c==='flag'?(l.flag||''):c==='phone'?(l.data.phone||l.metaPhone||''):c==='email'?(l.data.email||l.metaEmail||''):l.data[c])).join(',')));
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
-  a.download='wrapt-pipeline-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.download='wrapt-pipeline-'+todayISO()+'.csv';
   a.click();URL.revokeObjectURL(a.href);
 });
 
