@@ -22,7 +22,7 @@ Wrapt places free smart vending machines and coolers at gyms, offices,
 apartment communities, hotels, schools, and venues across Franklin,
 Spring Hill, and Greater Nashville. Hosting costs nothing: we supply the
 machine, install it, stock it, and service it — and pay your business a
-15% commission on every sale, with a monthly statement and deposit.
+10% commission on every sale, with a monthly statement and deposit.
 Every machine is wrapped in a full custom vinyl design in your own
 branding, included free. Machines are card-only with modern grab-and-go
 checkout, restocked before they run empty, and monitored around the

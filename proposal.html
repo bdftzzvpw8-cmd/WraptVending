@@ -84,7 +84,7 @@ li b{color:var(--cream);font-weight:500}
   <h2>Terms</h2>
   <div class="terms">
     <div class="trow"><span>Cost to you</span><b>Nothing — ever</b></div>
-    <div class="trow"><span>Your commission</span><b id="pShare">15% of gross sales</b></div>
+    <div class="trow"><span>Your commission</span><b id="pShare">10% of gross sales</b></div>
     <div class="trow"><span>Payout</span><b>Monthly deposit + itemized statement</b></div>
     <div class="trow"><span>You provide</span><b>Three feet of wall + an outlet</b></div>
     <div class="trow"><span>Install timeline</span><b>Within 2 weeks of signing</b></div>
@@ -118,7 +118,7 @@ li b{color:var(--cream);font-weight:500}
   }catch(e){}
   // the link is unsigned, so cap what it can put on the page and never let it change the commission
   ['name','co','city','venue','wants','grade','gross','annual'].forEach(k=>{if(d[k]!=null)d[k]=String(d[k]).slice(0,120);});
-  d.share='15%';
+  d.share='10%';
   if(d.name)$('pName').textContent=d.name;
   if(d.co)$('pCo').textContent=d.co; else $('pCoWrap').style.display='none';
   if(d.city)$('pCity').textContent=d.city; else $('pCityWrap').style.display='none';
