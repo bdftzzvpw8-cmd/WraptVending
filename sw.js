@@ -16,7 +16,7 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname === '/command.html') {
     // network first (updates flow through), cache fallback (offline still opens)
     e.respondWith(
-      fetch(e.request).then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, cp)); return r; })
+      fetch(e.request).then((r) => { if (r.ok) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, cp)); } return r; })
         .catch(() => caches.match('/command.html'))
     );
   } else if (SHELL.includes(url.pathname)) {

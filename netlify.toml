@@ -47,6 +47,18 @@ for = "/proposal.html"
   X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
+for = "/brand-guide.html"
+
+  [headers.values]
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/img/*"
+
+  [headers.values]
+  Cache-Control = "public, max-age=604800"
+
+[[headers]]
 for = "/wrap-studio.html"
 
   [headers.values]

@@ -13,7 +13,7 @@ Go to: business.google.com → "Add your business"
 **Do you want to add a location customers can visit?** NO — choose
 "service-area business" (you go to them; keeps your home address private)
 **Service areas:** Franklin TN, Spring Hill TN, Brentwood TN,
-Thompson's Station TN, Columbia TN, Nashville TN
+Thompson's Station TN, Columbia TN, Murfreesboro TN, Nashville TN
 **Phone:** (615) 948-2976
 **Website:** https://wraptvending.com
 
@@ -105,7 +105,9 @@ available.
 ---
 
 ## ALREADY HANDLED IN CODE (no action)
-- robots.txt allows the public site, blocks /command.html & /proposal.html
+- robots.txt allows everything on purpose; /command.html, /proposal.html,
+  /wrap-studio.html and /brand-guide.html are kept out of Google with noindex
+  (meta tag + X-Robots-Tag header), which only works if Google can crawl them
 - sitemap.xml exists and references the live pages
 - LocalBusiness + FAQ schema markup embedded on the site
 - Honeypot spam protection on the form

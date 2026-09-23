@@ -197,7 +197,7 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
 <header>
   <div class="wrap head-in">
     <span class="logo">WRAPT</span><span class="mono" style="font-size:9px;letter-spacing:.24em;color:var(--taupe);margin-left:10px">COMMAND</span>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;min-width:0;flex:1 1 auto;justify-content:flex-end">
       <div class="hdr-actions"><button class="refresh" id="btnTheme" title="Light / dark" aria-label="Toggle dark mode">◐</button><button class="refresh" id="btnOps">Ops</button><button class="refresh" id="btnMap">Map</button><button class="refresh" id="btnBlitz">Blitz</button>
       <a class="refresh" href="wrap-studio.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Wrap Studio</a>
       <button class="refresh" id="btnExport">Export CSV</button>
@@ -1252,7 +1252,7 @@ function leadCard(l){
   const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
   const smsCo=d.company||'your location',smsCold=l.prospect&&['prospect','contacted'].includes(l.status);
   const smsBody=encodeURIComponent(smsCold
-    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place branded smart coolers at no cost to the host; ${smsCo} would keep 10% of sales. Could I stop by for 10 min this week with a mockup?`
+    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place branded smart coolers at no cost to the host; ${smsCo} would keep 10% of sales. Could I stop by for 10 min this week with a mockup? Reply STOP to opt out.`
     :`Hi ${firstOf(d,l)} — Paige with Wrapt, following up on the smart cooler for ${smsCo}. Any questions I can answer, or a good day to swing by with the mockup?`);
   const tags=[];
   const tier=tierOf(l);
