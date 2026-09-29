@@ -37,7 +37,7 @@ I'm Paige, owner of Wrapt, a local company here in Franklin. We place AI smart c
 
 \${introLine(d.venue_type)}
 
-How it works: we install it, stock it and service it every week. \${co} keeps 15% of every sale, paid monthly with a statement. There's nothing to buy and nothing to manage.
+How it works: we install it, stock it and service it every week. \${co} keeps 10% of every sale, paid monthly with a statement. There's nothing to buy and nothing to manage.
 
 Would you be open to a quick 10-minute look? I'm happy to stop by or send details.
 
@@ -69,7 +69,7 @@ Owner, Wrapt
   replace: "const _k=l=>reachOf(l)-Math.min(distOf(l)??15,30)*1.5;cand.sort((a,b)=>_k(b)-_k(a));" },
 
 // ---- 10. Remove the discontinued 30-day out from the follow-up email and door scripts ----
-{ name: '10a. Follow-up email: no 30-day out', find: "how the 15% works, or the 30-day out if it ever isn't a fit.", replace: "how the 15% works, or how the two-page agreement works." },
+{ name: '10a. Follow-up email: no 30-day out', find: "how the 10% works, or the 30-day out if it ever isn't a fit.", replace: "how the 10% works, or how the two-page agreement works." },
 { name: '10b. Gym pitch', find: "Costs you nothing, and there's a 30-day out if you ever want it gone.", replace: "Costs you nothing." },
 { name: '10c. Hotel pitch', find: "No cost, 30-day out.", replace: "No cost to the hotel." },
 { name: '10d. Apartment pitch', find: "There's a 30-day out. ", replace: "" },
