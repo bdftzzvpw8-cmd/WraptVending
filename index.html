@@ -475,7 +475,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
         <a class="btn ghost" href="#roi">See what your space earns</a>
       </div>
       <div class="hero-proof">
-        <div><b data-count="15" data-suffix="%">0%</b><span>Commission on every sale</span></div>
+        <div><b>Weekly</b><span>Stocked &amp; serviced by us</span></div>
         <div><b data-count="24" data-suffix="hr">0</b><span>Proposal turnaround</span></div>
         <div><b data-count="0" data-prefix="$">$0</b><span>Cost to host locations</span></div>
       </div>
@@ -631,7 +631,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
         </div>
         <div class="roi-row"><span>Est. sales per day</span><b id="outDaily">$—</b></div>
         <div class="roi-row"><span>Monthly gross sales</span><b id="outGross">$—</b></div>
-        <div class="roi-row" id="rowShare"><span id="shareLbl">Your commission (15%)</span><b id="outShare">$—</b></div>
+        <div class="roi-row" id="rowShare"><span id="shareLbl">Your est. commission</span><b id="outShare">$—</b></div>
         <div class="roi-big">
           <label id="bigLbl">Added value to your location / year</label>
           <b id="outNet">$—</b>
@@ -1150,7 +1150,7 @@ function calcROI(){
   const gross=daily*30.4;
   const hostMonthly=gross*CONFIG.hostShare;
   const net=hostMonthly*12;
-  $('shareLbl').textContent='Your commission ('+Math.round(CONFIG.hostShare*100)+'%) / mo';
+  $('shareLbl').textContent='Your est. commission / mo';
   $('outShare').textContent=fmt(hostMonthly);
   // Site grade from projected monthly gross
   const g=gross>=4500?'A+':gross>=3200?'A':gross>=2200?'A−':gross>=1500?'B+':gross>=1000?'B':gross>=600?'C+':'C';
