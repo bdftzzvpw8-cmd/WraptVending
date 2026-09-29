@@ -1010,7 +1010,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
 const CONFIG = {
   phone: "+16159482976",              // Wrapt call/text line
   calendly: "", // add Calendly URL later to re-enable booking links
-  hostShare: 0.10,                    // host commission; applied to gross here, though it is paid on net sales after processing fees
+  hostShare: 0.10,                    // host commission, paid on net sales
+  processingFee: 0.06,                // assumed processing fees taken out before commission
 };
 /* ============================================================ */
 // Wire every tel:, sms:, and Calendly link from CONFIG
@@ -1147,7 +1148,7 @@ function calcROI(){
   const rate=.06*mult*Math.min(hours/14,1.35);
   const daily=traffic*rate*price;
   const gross=daily*30.4;
-  const hostMonthly=gross*CONFIG.hostShare;
+  const hostMonthly=gross*(1-CONFIG.processingFee)*CONFIG.hostShare;
   const net=hostMonthly*12;
   // Site grade from projected monthly gross
   const g=gross>=4500?'A+':gross>=3200?'A':gross>=2200?'A−':gross>=1500?'B+':gross>=1000?'B':gross>=600?'C+':'C';
@@ -1283,7 +1284,7 @@ $('btnNext').addEventListener('click',async()=>{
       if(traffic){
         const mult=MULT[$('fVenue').value]||0.95, price=3.25, hours=14;
         const gross=traffic*(.06*mult*Math.min(hours/14,1.35))*price*30.4;
-        const net=gross*CONFIG.hostShare*12;
+        const net=gross*(1-CONFIG.processingFee)*CONFIG.hostShare*12;
         const g=gross>=4500?'A+':gross>=3200?'A':gross>=2200?'A−':gross>=1500?'B+':gross>=1000?'B':gross>=600?'C+':'C';
         $('hRoi').value=JSON.stringify({venue:$('fVenue').value,zip:$('fCity').value||'',traffic,hours,price:'$3.25',grade:g,monthlyGross:fmt(gross),annualValue:fmt(net),basis:'form estimate'});
       }else{
