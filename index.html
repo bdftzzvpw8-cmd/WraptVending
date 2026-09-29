@@ -631,7 +631,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
         </div>
         <div class="roi-row"><span>Est. sales per day</span><b id="outDaily">$—</b></div>
         <div class="roi-row"><span>Monthly gross sales</span><b id="outGross">$—</b></div>
-        <div class="roi-row" id="rowShare"><span id="shareLbl">Your est. commission</span><b id="outShare">$—</b></div>
         <div class="roi-big">
           <label id="bigLbl">Added value to your location / year</label>
           <b id="outNet">$—</b>
@@ -1150,8 +1149,6 @@ function calcROI(){
   const gross=daily*30.4;
   const hostMonthly=gross*CONFIG.hostShare;
   const net=hostMonthly*12;
-  $('shareLbl').textContent='Your est. commission / mo';
-  $('outShare').textContent=fmt(hostMonthly);
   // Site grade from projected monthly gross
   const g=gross>=4500?'A+':gross>=3200?'A':gross>=2200?'A−':gross>=1500?'B+':gross>=1000?'B':gross>=600?'C+':'C';
   const ge=$('outGrade');
