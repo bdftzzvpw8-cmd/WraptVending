@@ -3,7 +3,7 @@
      GET  /.netlify/functions/brief?text=1    → plain-text version (quick read on the phone)
      POST /.netlify/functions/brief           → kick the background worker; replies {queued:true, since}
                                                 Command then polls GET until generated_at moves past `since`.
-   Auth: same X-Dash-Key header Command already sends (no-key mode if DASH_KEY is unset). */
+   Auth: same X-Dash-Key header Command already sends (refused when DASH_KEY is unset). */
 import { getLatestBrief, kickWorker, briefText, authOk, json, useSite } from './lib/wrapt-agents.mjs';
 
 export default async (req, context) => {

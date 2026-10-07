@@ -8,10 +8,16 @@
                          the waitlist, and month-start host statements.
 
    Rules of the house:
-     • Never changes a lead. Reads /leads and command.html; writes only
-       its own brief (Netlify Blobs store "wrapt-agents").
-     • Never sends anything. Drafts are approved and sent by a human
-       from Command (Text / Email buttons open sms: / mailto:).
+     • The brief agents never change a lead: they read /leads, the ops
+       "prospects" doc and command.html, and write only the brief (Blobs
+       store "wrapt-agents"). Other code built on this library does write:
+       the inbox agent appends note lines, follow-up dates, COI flags and the
+       sender's own email to cards through /lead-status (contact details the
+       model reads out of an email are only suggested); ack.mjs stamps the
+       card after its auto-reply. Status moves beyond Contacted stay suggestions.
+     • Drafts are never sent: Paige approves and sends them from Command
+       (Text / Email buttons open sms: / mailto:). The only automatic sends are
+       the opt-in ack email (ack.mjs) and the brief to BRIEF_TO.
      • Mirrors Command's own logic (tiers, last-touch stamps, follow-up
        rules, 14-day install clock) so the brief and the app agree.
 
@@ -20,18 +26,22 @@
      DASH_KEY            same key the existing functions check; required (blank = every endpoint refuses)
      ANTHROPIC_API_KEY   optional — turns on AI-written drafts (template drafts without it)
      AGENT_MODEL         optional — default claude-sonnet-5-5
+     INBOX_MODEL         optional — model for inbox email extraction, default claude-haiku-4-5
+     AGENT_DAILY_LLM_MAX optional — Claude calls per Central day across all features, default 200
      AGENT_MAX_DRAFTS    optional — default 8 drafts per run
      HOME_LATLNG         optional — "lat,lng" of home base for door-run ranking
-     BRIEF_TO            optional — email the brief here each run (needs SMTP_* below)
+     BRIEF_TO            optional — email the brief here each run, at most once per 30 min (needs SMTP_* below)
      BRIEF_FROM, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS   optional — nodemailer transport
    ===================================================================== */
 import { dashKeyCheck } from './dash-key.mjs';
+import { claudeCall, textOf } from './claude.mjs';
 
 export const CFG = {
   site: (process.env.URL || 'https://wraptvending.com').replace(/\/$/, ''),
   dashKey: process.env.DASH_KEY || '',
   anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   model: process.env.AGENT_MODEL || 'claude-sonnet-5-5',
+  inboxModel: process.env.INBOX_MODEL || 'claude-haiku-4-5',
   maxDrafts: Math.max(0, +(process.env.AGENT_MAX_DRAFTS || 8)),
   // Home base for door-run ranking. Default ≈ Legacy Cool Springs, 2000 Aureum Dr, Franklin — set HOME_LATLNG to pin it.
   home: parseLatLng(process.env.HOME_LATLNG) || [35.9125, -86.8140],
@@ -53,10 +63,10 @@ export function useSite(context) {
 }
 /* fire the background worker and return at once (used by the schedule and by Command's "Run now") */
 export async function kickWorker(trigger = 'manual') {
-  const r = await fetch(`${CFG.site}/.netlify/functions/agents-run?trigger=${encodeURIComponent(trigger)}`, {
+  const r = await fetch(`${CFG.site}/.netlify/functions/agents-run-background?trigger=${encodeURIComponent(trigger)}`, {
     method: 'POST', headers: { 'X-Dash-Key': CFG.dashKey, 'content-type': 'application/json' }, body: '{}',
   });
-  if (r.status !== 202 && !r.ok) throw new Error(`agents-run: HTTP ${r.status}`);
+  if (r.status !== 202 && !r.ok) throw new Error(`agents-run-background: HTTP ${r.status}`);
   return r.status;
 }
 
@@ -418,18 +428,12 @@ export async function draftWithClaude(items) {
     venue_type: it.venue, city: it.city, pipeline_status: it.status, why_now: it.why, kind: it.kind,
     note_history: it.note_full || '', product_interests: it.product_interests || '', referral: it.referral || false,
   }));
-  const r = await fetchJSON('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': CFG.anthropicKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      // no temperature: current Claude models reject non-default sampling. Low effort keeps thinking short so the run fits its timeout.
-      model: CFG.model, max_tokens: 8000, output_config: { effort: 'low' }, system: DRAFT_SYSTEM,
-      messages: [{ role: 'user', content: `Today is ${todayISO()}. Draft one text and one email for each of these leads:\n${JSON.stringify(payload, null, 1)}` }],
-    }),
-  }, 60000);
-  if (!r.ok) throw new Error(`claude: HTTP ${r.status} ${r.json?.error?.message || r.text.slice(0, 200)}`);
-  if (r.json?.stop_reason === 'refusal' || r.json?.stop_reason === 'max_tokens') throw new Error(`claude: stopped (${r.json.stop_reason})`);
-  const text = (r.json?.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+  const j = await claudeCall({
+    // no temperature: current Claude models reject non-default sampling. Low effort keeps thinking short so the run fits its timeout.
+    model: CFG.model, max_tokens: 8000, output_config: { effort: 'low' }, system: DRAFT_SYSTEM,
+    messages: [{ role: 'user', content: `Today is ${todayISO()}. Draft one text and one email for each of these leads:\n${JSON.stringify(payload, null, 1)}` }],
+  }, { apiKey: CFG.anthropicKey, timeoutMs: 60000 }); // background worker only (15-min limit)
+  const text = textOf(j);
   const m = text.match(/\[[\s\S]*\]/);
   if (!m) throw new Error('claude: no JSON array in reply');
   const arr = JSON.parse(m[0]);
@@ -489,7 +493,8 @@ export async function getLatestBrief(store) {
   try { const s = await getStoreSafe(store); return await s.get('brief/latest', { type: 'json' }); } catch { return null; }
 }
 
-export async function runAgents({ trigger = 'scheduled', store = null, now = new Date(), fetchers = {} } = {}) {
+// aiDrafts:false → template drafts only (the inline fallback inside a 30-second scheduled function can't wait on Claude)
+export async function runAgents({ trigger = 'scheduled', store = null, now = new Date(), fetchers = {}, aiDrafts = true } = {}) {
   const t0 = Date.now(), errors = [];
   const load = async (name, fn, fallback) => { try { return await fn(); } catch (e) { errors.push(`${name}: ${e.message}`); return fallback; } };
 
@@ -508,7 +513,7 @@ export async function runAgents({ trigger = 'scheduled', store = null, now = new
   if (targets.length) {
     drafts_source = 'template';
     targets.forEach(it => { drafts[it.id] = templateDraft(it); });
-    if (CFG.anthropicKey) {
+    if (CFG.anthropicKey && aiDrafts) {
       try { const ai = await draftWithClaude(targets); Object.assign(drafts, ai); drafts_source = Object.keys(ai).length ? 'claude' : 'template'; }
       catch (e) { errors.push(e.message); }
     }
@@ -529,7 +534,13 @@ export async function runAgents({ trigger = 'scheduled', store = null, now = new
     await s.setJSON(`brief/${brief.day}`, brief);
   } catch (e) { errors.push(`store: ${e.message}`); }
 
-  if (process.env.BRIEF_TO) { try { await emailBrief(brief); } catch (e) { errors.push(`email: ${e.message}`); } }
+  if (process.env.BRIEF_TO) { // every "Run now" would otherwise send another email: at most one per 30 minutes
+    try {
+      const s = await getStoreSafe(store), last = (await s.get('brief/emailed_at', { type: 'json' }).catch(() => null))?.ts;
+      if (last && now - new Date(last) < 30 * 60e3) brief.email_skipped = `brief emailed at ${last}; next one after 30 minutes`;
+      else { await emailBrief(brief); await s.setJSON('brief/emailed_at', { ts: now.toISOString() }).catch(() => {}); }
+    } catch (e) { errors.push(`email: ${e.message}`); }
+  }
   return brief;
 }
 

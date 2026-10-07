@@ -7,7 +7,7 @@ import { CFG, authOk, json, useSite } from './lib/wrapt-agents.mjs';
 import { readPhotos, photoPatch, leadFromClient, llmReady } from './lib/notes.mjs';
 
 async function fetchPhoto(pid) {
-  const r = await fetch(`${CFG.site}/.netlify/functions/photo?id=${encodeURIComponent(pid)}`, { headers: { 'X-Dash-Key': CFG.dashKey } });
+  const r = await fetch(`${CFG.site}/.netlify/functions/photo?id=${encodeURIComponent(pid)}`, { headers: { 'X-Dash-Key': CFG.dashKey }, signal: AbortSignal.timeout(5000) }); // leaves the model call room inside the sync limit
   if (!r.ok) throw new Error(`photo ${pid}: HTTP ${r.status}`);
   const ct = (r.headers.get('content-type') || '').toLowerCase();
   const buf = Buffer.from(await r.arrayBuffer());
@@ -40,5 +40,5 @@ export default async (req, context) => {
     if (b.mode === 'receipt' || !lead) return json({ readings });
     const { patch, lines } = photoPatch(lead, readings, { now: new Date() });
     return json({ readings, lines, patch });
-  } catch (e) { return json({ error: e.message }, 502); }
+  } catch (e) { return json({ error: e.message }, e.code === 'BUDGET' ? 429 : 502); }
 };

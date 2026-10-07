@@ -4,7 +4,7 @@
   "short_name": "Command",
   "description": "Wrapt field CRM \u2014 prospects, routes, ops.",
   "start_url": "/command.html",
-  "scope": "/",
+  "scope": "/command",
   "display": "standalone",
   "background_color": "#F3F1EC",
   "theme_color": "#FFFFFF",
@@ -19,7 +19,13 @@
       "src": "/img/command-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/img/command-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

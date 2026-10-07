@@ -1,10 +1,3 @@
-[functions]
-
-  [functions.emails]
-  included_files = [
-    "./emails/**"
-  ]
-
 [build]
 publish = "."
 functions = "netlify/functions"
@@ -32,6 +25,11 @@ for = "/*"
   Referrer-Policy = "strict-origin-when-cross-origin"
   Permissions-Policy = "camera=(self), microphone=(), geolocation=(self)"
   Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+  # One policy for the whole site (Netlify would enforce two overlapping policies as their intersection).
+  # Origins in use: Google Fonts everywhere; Command's map loads Leaflet from cdnjs and tiles from OpenStreetMap.
+  # Inline <script>/handlers exist on every page, so 'unsafe-inline' stays; the win is no other script/connect
+  # origins, no plugins, no <base> hijack, forms post only here, and no framing.
+  Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://cdnjs.cloudflare.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 
 # the field CRM and the private tools: never cached by the CDN, never indexed
 [[headers]]
@@ -39,6 +37,20 @@ for = "/command.html"
 
   [headers.values]
   Cache-Control = "no-store"
+  X-Robots-Tag = "noindex, nofollow"
+
+# same page via its pretty URL
+[[headers]]
+for = "/command"
+
+  [headers.values]
+  Cache-Control = "no-store"
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/brand-guide.html"
+
+  [headers.values]
   X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
@@ -71,40 +83,30 @@ for = "/.netlify/functions/*"
   [headers.values]
   Cache-Control = "no-store"
 
+# file names aren't fingerprinted, so no "immutable": a day fresh, then served stale while it revalidates
+[[headers]]
+for = "/img/*"
+
+  [headers.values]
+  Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+# social crawlers keep their own copy; keep ours short so a replaced image shows up within a day
 [[headers]]
 for = "/og.png"
 
   [headers.values]
-  Cache-Control = "public, max-age=604800"
-
-[context]
-
-  [context.production]
-
-    [context.production.functions]
-
-      [context.production.functions.emails]
-      included_files = [
-        "./emails/**"
-      ]
-
-  [context.master]
-
-    [context.master.functions]
-
-      [context.master.functions.emails]
-      included_files = [
-        "./emails/**"
-      ]
+  Cache-Control = "public, max-age=86400"
 
 # --- wrapt agents (added by setup.mjs) ---
-[functions."agents-run"]
+[functions."agents-run-background"]
   node_bundler = "esbuild"
 [functions."agents-daily"]
   node_bundler = "esbuild"
 [functions."brief"]
   node_bundler = "esbuild"
 [functions."inbox"]
+  node_bundler = "esbuild"
+[functions."inbox-worker-background"]
   node_bundler = "esbuild"
 [functions."inbox-queue"]
   node_bundler = "esbuild"

@@ -17,5 +17,5 @@ export default async (req) => {
     const ex = await extractNote({ kind: 'dictation', text, lead, now: new Date() });
     const { patch, lines, suggestion } = buildPatch(lead, ex, { kind: 'dictation', now: new Date(), auto: false });
     return json({ lines, patch, suggestion, extract: ex });
-  } catch (e) { return json({ error: e.message }, 502); }
+  } catch (e) { return json({ error: e.message }, e.code === 'BUDGET' ? 429 : 502); }
 };

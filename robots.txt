@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+# Command, proposal, wrap studio and the brand guide are kept out of search by their noindex headers/meta.
+# They are deliberately NOT disallowed here: a blocked crawler never sees the noindex and can still list the bare URL.
+Disallow: /_private/
+Disallow: /netlify/
 
 Sitemap: https://wraptvending.com/sitemap.xml

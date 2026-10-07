@@ -9,10 +9,11 @@
 
    Blob keys (store "wrapt-agents"), one key per item so concurrent
    webhooks never clobber each other:
-     inbox/seen/<sha1(message_id)>   → ts                (dedupe)
+     inbox/seen/<sha1(message_id)>   → ts, status        (dedupe; 'processing' until handled)
      inbox/t/<sha1(message_id)>      → lead id           (thread → lead memory)
      inbox/q/<qid>                   → queued email      (needs a home)
-     inbox/s/<sid>                   → status suggestion (one tap in Command)
+     inbox/s/<sid>                   → status suggestion (one tap in Command; may carry `contact`)
+     inbox/c/<sid>                   → contact suggestion (email/phone/decision-maker read from a body)
      inbox/log/<ts>-<rand>           → activity line     (what the agent did)
    ===================================================================== */
 import { createHash, randomBytes } from 'node:crypto';
@@ -201,11 +202,48 @@ export async function loadAllLeads() {
 }
 const who = cp => cp.name ? `${cp.name}` : (cp.email || 'them');
 
+/* Email text is written by outsiders. The card only takes what the headers prove: the sender's own address
+   (when the card has none) and the sender as decision-maker. Anything else the model read out of the body —
+   another email, a phone, a different decision-maker — becomes a one-tap suggestion, never a card change. */
+export function trustContact(lead, ex, direction, cp = {}) {
+  const contact = {};
+  if (ex.email && ex.email !== cp.email && !emailOf(lead)) contact.email = ex.email;
+  if (ex.phone && !phoneOf(lead)) contact.phone = ex.phone;
+  const dm = ex.decision_maker;
+  const dmIsSender = !!(dm && direction === 'in' && cp.name && firstName(dm.name).toLowerCase() === firstName(cp.name).toLowerCase());
+  if (dm && !dmIsSender) contact.decision_maker = dm;
+  ex.email = direction === 'in' && cp.email && !emailOf(lead) ? cp.email : '';
+  ex.phone = '';
+  ex.decision_maker = dmIsSender ? dm : (direction === 'in' && cp.name && !dmOf(lead) && ex.relevant !== false ? { name: cp.name, title: '' } : null);
+  return Object.keys(contact).length ? contact : null;
+}
+/* status suggestions → inbox/s (Command shows "Move to …?"); contact-only suggestions → inbox/c */
+async function saveSuggestion(store, { lead, suggestion, contact, from, subject, now }) {
+  if (!suggestion && !contact) return null;
+  const sid = rid(), base = { sid, ts: now.toISOString(), lead_id: lead.id, co: lead.data.company || lead.data.name, from, subject };
+  if (suggestion) await put(store, `inbox/s/${sid}`, { ...base, status: suggestion.status, reason: suggestion.reason, ...(contact ? { contact } : {}) });
+  else await put(store, `inbox/c/${sid}`, { ...base, contact });
+  return sid;
+}
+const PLACEMENT_WORDS = /cooler|vending|machine|wrapt|proposal|agreement|install|placement/i;
+
 /* ---------- 5. the pipeline for one message ---------- */
-export async function processMessage(msg, { store, leads = null, now = new Date(), loadLeads = loadAllLeads, write = writeLead } = {}) {
+// The seen-marker is a claim while processing and only becomes final once the message is filed, queued or
+// dropped. If anything throws, the claim is released so the next delivery retries; a claim older than
+// 10 minutes (a run that died mid-way) is retried too.
+export async function processMessage(msg, opts = {}) {
+  const { store, now = new Date() } = opts;
   const seenKey = `inbox/seen/${sha(msg.message_id)}`;
-  if (await get(store, seenKey)) return { action: 'duplicate', message_id: msg.message_id };
-  await put(store, seenKey, { ts: now.toISOString(), subject: msg.subject });
+  const seen = await get(store, seenKey);
+  if (seen && (seen.status !== 'processing' || now - new Date(seen.ts) < 10 * 60e3)) return { action: 'duplicate', message_id: msg.message_id };
+  await put(store, seenKey, { ts: now.toISOString(), subject: msg.subject, status: 'processing' });
+  try {
+    const r = await handleMessage(msg, opts);
+    await put(store, seenKey, { ts: now.toISOString(), subject: msg.subject, status: 'done', action: r.action });
+    return r;
+  } catch (e) { await del(store, seenKey); throw e; }
+}
+async function handleMessage(msg, { store, leads = null, now = new Date(), loadLeads = loadAllLeads, write = writeLead } = {}) {
   const auto = isAutomated(msg);
   if (auto) { await log(store, { action: 'skipped', why: auto, from: msg.from.email, subject: msg.subject }); return { action: 'skipped', why: auto }; }
   const { direction, counterpart } = directionOf(msg);
@@ -214,16 +252,17 @@ export async function processMessage(msg, { store, leads = null, now = new Date(
   const { best, candidates } = await matchLead(msg, counterpart, leads, { threadLookup: async ref => (await get(store, `inbox/t/${sha(ref)}`))?.lead || null });
   const lead = best?.lead || null;
   const text = `${msg.subject ? 'Subject: ' + msg.subject + '\n' : ''}${msg.text}`.slice(0, 6000);
+  // no card, no near match and nothing about a placement → personal/other mail: drop it before paying for a model call
+  if (!lead && !candidates.length && !PLACEMENT_WORDS.test(text)) {
+    await log(store, { action: 'dropped', why: 'no match, not about a placement', from: counterpart.email, subject: msg.subject }); return { action: 'dropped', why: 'no match' };
+  }
   let ex;
-  try { ex = await extractNote({ kind: 'email', text, direction, from: `${counterpart.name} <${counterpart.email}>`, subject: msg.subject, lead, now }); }
-  catch (e) { // no model → still file the exchange, plainly
+  try { ex = await extractNote({ kind: 'email', text, direction, from: `${counterpart.name} <${counterpart.email}>`, subject: msg.subject, lead, now, timeoutMs: 55000 }); } // background function
+  catch (e) { // no model (or over the daily budget) → still file the exchange, plainly
     ex = { relevant: true, touch: 'Emailed', summary: (msg.subject || msg.text.slice(0, 120)).replace(/\s+/g, ' ').slice(0, 150), decision_maker: null, followup: '', followup_reason: '', coi_requested: /certificate of insurance|\bCOI\b|proof of insurance/i.test(text), status_suggest: '', status_reason: '', email: '', phone: '', current_vending: '', objections: [], confidence: 0.3, _fallback: e.message };
   }
   if (!lead && ex.relevant === false) { await log(store, { action: 'dropped', why: 'not relevant', from: counterpart.email, subject: msg.subject }); return { action: 'dropped', why: 'not relevant' }; }
   if (!lead) {
-    if (candidates.length === 0 && ex.confidence < 0.4 && !/cooler|vending|machine|wrapt|proposal|agreement|install|placement/i.test(text)) {
-      await log(store, { action: 'dropped', why: 'no match, not about a placement', from: counterpart.email, subject: msg.subject }); return { action: 'dropped', why: 'no match' };
-    }
     const qid = rid();
     const item = { qid, ts: now.toISOString(), direction, from: counterpart, subject: msg.subject, text: msg.text.slice(0, 2500), message_id: msg.message_id, refs: msg.refs.slice(0, 5), extract: ex, candidates };
     await put(store, `inbox/q/${qid}`, item);
@@ -231,44 +270,47 @@ export async function processMessage(msg, { store, leads = null, now = new Date(
     return { action: 'queued', qid, candidates };
   }
   // matched: write the note the way Command would
-  const email = counterpart.email, cpName = counterpart.name;
-  if (direction === 'in' && email && !emailOf(lead)) ex.email = ex.email || email; // the sender IS the contact
-  if (direction === 'in' && cpName && !ex.decision_maker && !dmOf(lead) && ex.relevant) ex.decision_maker = { name: cpName, title: '' };
+  const email = counterpart.email;
+  const contact = trustContact(lead, ex, direction, counterpart); // the sender IS the contact; body-read details are only suggested
   const { patch, lines, suggestion } = buildPatch(lead, ex, { kind: 'email', direction, who: who(counterpart), now, auto: true });
   await write(lead.id, asAppend(patch, lines));
   Object.assign(lead, patch); // keep the in-memory copy current for any further messages in this run
   await put(store, `inbox/t/${sha(msg.message_id)}`, { lead: lead.id });
-  let sid = null;
-  if (suggestion) { sid = rid(); await put(store, `inbox/s/${sid}`, { sid, ts: now.toISOString(), lead_id: lead.id, co: lead.data.company || lead.data.name, status: suggestion.status, reason: suggestion.reason, from: email, subject: msg.subject }); }
-  await log(store, { action: 'filed', lead_id: lead.id, co: lead.data.company || lead.data.name, direction, from: email, subject: msg.subject, score: best.score, why: best.why, line: lines[0], suggestion: suggestion?.status || null, fallback: ex._fallback || null });
-  return { action: 'filed', lead_id: lead.id, score: best.score, why: best.why, lines, patch, suggestion, sid };
+  const sid = await saveSuggestion(store, { lead, suggestion, contact, from: email, subject: msg.subject, now });
+  await log(store, { action: 'filed', lead_id: lead.id, co: lead.data.company || lead.data.name, direction, from: email, subject: msg.subject, score: best.score, why: best.why, line: lines[0], suggestion: suggestion?.status || null, contact: contact ? Object.keys(contact) : null, fallback: ex._fallback || null });
+  return { action: 'filed', lead_id: lead.id, score: best.score, why: best.why, lines, patch, suggestion, contact, sid };
 }
 
 /* ---------- 6. what Command reads and resolves ---------- */
 export async function queueState(store, { limit = 30 } = {}) {
-  const qk = await listKeys(store, 'inbox/q/'), sk = await listKeys(store, 'inbox/s/'), lk = (await listKeys(store, 'inbox/log/')).sort().reverse().slice(0, limit);
-  const queue = (await Promise.all(qk.map(k => get(store, k)))).filter(Boolean).sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
-  const suggestions = (await Promise.all(sk.map(k => get(store, k)))).filter(Boolean).sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+  const qk = await listKeys(store, 'inbox/q/'), sk = await listKeys(store, 'inbox/s/'), ck = await listKeys(store, 'inbox/c/'), lk = (await listKeys(store, 'inbox/log/')).sort().reverse().slice(0, limit);
+  const byTs = (a, b) => (b.ts || '').localeCompare(a.ts || '');
+  const queue = (await Promise.all(qk.map(k => get(store, k)))).filter(Boolean).sort(byTs);
+  const suggestions = (await Promise.all(sk.map(k => get(store, k)))).filter(Boolean).sort(byTs);
+  const contacts = (await Promise.all(ck.map(k => get(store, k)))).filter(Boolean).sort(byTs); // {sid, lead_id, co, contact:{email?,phone?,decision_maker?}}
   const recent = (await Promise.all(lk.map(k => get(store, k)))).filter(Boolean);
-  return { queue, suggestions, recent };
+  return { queue, suggestions, contacts, recent };
 }
 export async function attachQueued(store, qid, leadId, { leads = null, now = new Date(), loadLeads = loadAllLeads, write = writeLead } = {}) {
   const item = await get(store, `inbox/q/${qid}`); if (!item) throw new Error('queue item not found');
   leads = leads || await loadLeads();
   const lead = leads.find(l => l.id === leadId); if (!lead) throw new Error('lead not found');
-  const ex = item.extract || {};
-  if (item.direction === 'in' && item.from?.email && !emailOf(lead)) ex.email = ex.email || item.from.email;
-  if (item.direction === 'in' && item.from?.name && !ex.decision_maker && !dmOf(lead)) ex.decision_maker = { name: item.from.name, title: '' };
+  const ex = { ...(item.extract || {}) };
+  const contact = trustContact(lead, ex, item.direction, item.from || {});
   const { patch, lines, suggestion } = buildPatch(lead, ex, { kind: 'email', direction: item.direction, who: who(item.from || {}), now, auto: true });
   await write(lead.id, asAppend(patch, lines));
   await put(store, `inbox/t/${sha(item.message_id)}`, { lead: lead.id });
   for (const ref of item.refs || []) await put(store, `inbox/t/${sha(ref)}`, { lead: lead.id });
   await del(store, `inbox/q/${qid}`);
-  let sid = null;
-  if (suggestion) { sid = rid(); await put(store, `inbox/s/${sid}`, { sid, ts: now.toISOString(), lead_id: lead.id, co: lead.data.company || lead.data.name, status: suggestion.status, reason: suggestion.reason, from: item.from?.email, subject: item.subject }); }
+  const sid = await saveSuggestion(store, { lead, suggestion, contact, from: item.from?.email, subject: item.subject, now });
   await log(store, { action: 'attached', lead_id: lead.id, co: lead.data.company || lead.data.name, from: item.from?.email, subject: item.subject, line: lines[0] });
-  return { ok: true, lead_id: lead.id, lines, patch, suggestion, sid };
+  return { ok: true, lead_id: lead.id, lines, patch, suggestion, contact, sid };
 }
 export async function dismissQueued(store, qid) { await del(store, `inbox/q/${qid}`); await log(store, { action: 'dismissed', qid }); return { ok: true }; }
-export async function resolveSuggestion(store, sid, applied) { const s = await get(store, `inbox/s/${sid}`); await del(store, `inbox/s/${sid}`); await log(store, { action: applied ? 'suggestion applied' : 'suggestion dismissed', lead_id: s?.lead_id, status: s?.status }); return { ok: true }; }
+export async function resolveSuggestion(store, sid, applied) {
+  const s = (await get(store, `inbox/s/${sid}`)) || (await get(store, `inbox/c/${sid}`));
+  await del(store, `inbox/s/${sid}`); await del(store, `inbox/c/${sid}`);
+  await log(store, { action: applied ? 'suggestion applied' : 'suggestion dismissed', lead_id: s?.lead_id, status: s?.status, contact: s?.contact ? Object.keys(s.contact) : null });
+  return { ok: true };
+}
 export { sha, rid };
