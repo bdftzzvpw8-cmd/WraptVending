@@ -898,6 +898,7 @@ try{
 function saveView(){try{localStorage.setItem('w_view',JSON.stringify({f:FILTER,c:FCITY,v:FVENUE,s:SORT,t:FTIER}));}catch(e){}}
 function saveRoute(){try{sessionStorage.setItem('w_route',JSON.stringify([...ROUTE]));}catch(e){}}
 async function load(silent){
+  LAST_ERR='';LAST_ERR_MSG='';
   if(!silent)$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   let c=null;try{c=JSON.parse(localStorage.getItem('w_cache')||'null');}catch(e2){}
   let savedKey='';try{savedKey=localStorage.getItem('w_key')||'';}catch(e2){}
@@ -921,7 +922,7 @@ async function load(silent){
     return true;
   }catch(e){
     if(LAST_ERR!=='auth'&&!String(e.message).match(/^\d+$/))LAST_ERR='offline';
-    if(LAST_ERR==='offline'){
+    if(LAST_ERR==='offline'||/^server 5/.test(LAST_ERR)){ // a 5xx is an outage, not a bad key: keep working from the saved list
       if(c&&c.j){
         OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();
         return true;
@@ -938,28 +939,41 @@ const RENAMES={'pros-a35':['Camden Gulch','Harlowe Apartments'],'pros-x14':['Fra
 function dLocal(s){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(s);}
 /* ---------- prospects added from the field (stored whole in the ops "prospects" doc, incl. their own status/notes) ---------- */
 let FIELD={items:[]},FIELD_LOCAL=false;
+/* agents (inbox, ack) write to lead-status under the same id: the phone's copy leads, server note lines it lacks are appended, blanks filled */
+function mergeFieldMeta(pm,sm){
+  const m=Object.assign({},sm,pm),have=new Set(String(pm.note||'').split('\n'));
+  const extra=String(sm.note||'').split('\n').filter(x=>x.trim()&&!have.has(x));
+  m.note=extra.length?(pm.note?pm.note+'\n':'')+extra.join('\n'):(pm.note||'');
+  for(const k of ['followup','email','phone','coi'])m[k]=pm[k]||sm[k]||'';
+  return m;
+}
 function fieldLeads(meta){
-  return (FIELD.items||[]).map(p=>{const m=Object.assign({},meta[p.id]||{},p.meta||{});return {
+  return (FIELD.items||[]).map(p=>{const m=mergeFieldMeta(p.meta||{},meta[p.id]||{});return {
     id:p.id,created_at:null,prospect:true,field:true,
     data:{name:'',company:p.company||'',venue_type:p.venue_type||'',city:p.city||'',address:p.address||'',phone:p.phone||'',website:p.website||'',size:'',brand:'',intel:p.intel||'',lead_type:'Prospect'},
     fit:p.fit||70,flag:'',lat:p.lat,lng:p.lng,geoApprox:!p.lat,
     status:m.status||'prospect',payout:m.payout||'',followup:m.followup||'',metaPhone:m.phone||'',metaEmail:m.email||'',signed_at:m.signed_at||'',coi:m.coi||'',note:m.note||''};});
 }
+/* unsynced local copies of whole docs (prospects, mileage, expenses): while dirty, the phone's copy wins and is pushed */
+function isDirty(doc){try{return localStorage.getItem('w_dirty_'+doc)==='1'}catch(_){return false}}
+function setDirty(doc,on){try{on?localStorage.setItem('w_dirty_'+doc,'1'):localStorage.removeItem('w_dirty_'+doc);}catch(_){}}
+const DOC_SEQ={};
 async function loadField(){
   let remote=null;
   try{const r=await fetch(FN+'/ops?doc=prospects',{headers:{'X-Dash-Key':KEY},signal:tmo(8000)});if(r.ok){const j=await r.json();if(j&&j.data&&Array.isArray(j.data.items))remote=j.data;}}catch(_){}
   let local=null;try{local=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');}catch(_){}
-  if(remote){FIELD=remote;if(local&&local.items&&local.items.length>remote.items.length){FIELD=local;saveField();}}
-  else if(local&&Array.isArray(local.items))FIELD=local;
+  if(local&&Array.isArray(local.items)&&(isDirty('prospects')||!remote)){FIELD=local;if(remote&&isDirty('prospects'))saveField();}
+  else if(remote)FIELD=remote;
   try{localStorage.setItem('w_ops_prospects',JSON.stringify(FIELD));}catch(_){}
 }
 async function saveField(){
   try{localStorage.setItem('w_ops_prospects',JSON.stringify(FIELD));}catch(_){}
+  setDirty('prospects',1);const seq=DOC_SEQ.prospects=(DOC_SEQ.prospects||0)+1;
   try{
     const r=await fetch(FN+'/ops',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({doc:'prospects',data:FIELD}),signal:tmo(8000)});
     if(!r.ok)throw new Error(r.status);
-    FIELD_LOCAL=false;
-  }catch(e){FIELD_LOCAL=true;if(String(e.message).match(/^4/))toast('Field prospects are saved on this phone only (server refused the "prospects" doc).');}
+    FIELD_LOCAL=false;if(seq===DOC_SEQ.prospects)setDirty('prospects',0);
+  }catch(e){const was=FIELD_LOCAL;FIELD_LOCAL=true;if(!was&&String(e.message).match(/^4/))toast('Field prospects are saved on this phone only (server refused the "prospects" doc).');}
 }
 function buildFrom(j){
     const meta=j.meta||{};
@@ -977,6 +991,9 @@ function buildFrom(j){
       note:meta[p.id]?.note||''
     }));
     LEADS=[...inbound,...fieldLeads(meta),...pros];
+    fillSelects();
+}
+function fillSelects(){
     const cities=[...new Set(LEADS.map(l=>l.data.city).filter(Boolean))].sort();
     const venues=[...new Set(LEADS.map(l=>l.data.venue_type).filter(Boolean))].sort();
     $('citySel').innerHTML='<option value="">All cities</option>'+cities.map(c=>`<option${c===FCITY?' selected':''}>${esc(c)}</option>`).join('');
@@ -987,6 +1004,7 @@ function getQ(){try{return JSON.parse(localStorage.getItem('w_q')||'[]')}catch(e
 function setQ(q){try{localStorage.setItem('w_q',JSON.stringify(q))}catch(e){}}
 const META_KEYS={phone:'metaPhone',email:'metaEmail'};
 function applyPatch(l,p){for(const k in p)l[META_KEYS[k]||k]=p[k];}
+function cacheMeta(id,p){try{const c=JSON.parse(localStorage.getItem('w_cache')||'null');if(!c||!c.j)return;c.j.meta=c.j.meta||{};c.j.meta[id]=Object.assign(c.j.meta[id]||{},p);localStorage.setItem('w_cache',JSON.stringify(c));}catch(e){}}
 function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(l)applyPatch(l,it.patch);});}
 function updateBanner(cachedAt){
   const q=getQ(),b=$('offBanner');
@@ -998,15 +1016,21 @@ let FLUSHING=false;
 async function flushQueue(){
   if(FLUSHING)return;FLUSHING=true;
   try{
-    let q=getQ();
-    while(q.length){
-      const it=q[0];
-      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch}),signal:tmo(8000)}).catch(()=>null);
-      if(!r)break;                       // no signal: try again later
-      if(r.status===401){forgetKey();break;}
-      if(!r.ok&&r.status<500){q.shift();setQ(q);continue;} // server rejected it: drop, don't wedge the queue
-      if(!r.ok)break;
-      q.shift();setQ(q);
+    let net=true;
+    for(let it;(it=getQ()[0]);){
+      const sent=Object.assign({},it.patch);
+      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...sent}),signal:tmo(8000)}).catch(()=>null);
+      if(!r){net=false;break;}           // no signal: try again later
+      if(r.status===401){forgetKey();net=false;break;}
+      if(!r.ok&&r.status>=500){net=false;break;}
+      // sent (or rejected: drop, don't wedge the queue). Re-read — edits made while this was in flight stay queued.
+      const q=getQ(),cur=q.find(x=>x.id===it.id&&x.t===it.t);
+      if(cur){for(const k in sent)if(JSON.stringify(cur.patch[k])===JSON.stringify(sent[k]))delete cur.patch[k];if(!Object.keys(cur.patch).length)q.splice(q.indexOf(cur),1);setQ(q);}
+      else break; // queue was cleared under us (Lock / bad key)
+    }
+    if(net){ // signal's good: push any whole docs that only saved on the phone
+      if(isDirty('prospects'))saveField();
+      for(const d of ['mileage','expenses'])if(isDirty(d)){if(!OPS[d])try{OPS[d]=JSON.parse(localStorage.getItem('w_ops_'+d)||'null');}catch(_){}if(OPS[d])opsSave(d,true);}
     }
   }finally{FLUSHING=false;OFFLINE=getQ().length&&OFFLINE;updateBanner();}
 }
@@ -1015,7 +1039,7 @@ $('btnRefresh').addEventListener('click',()=>load());
 $('btnLock').addEventListener('click',()=>{
   const q=getQ().length;
   if(!confirm((q?q+' update'+(q>1?'s':'')+' haven\'t synced yet and will be lost. ':'')+'Lock Command and wipe the pipeline from this phone?'))return;
-  try{['w_key','w_cache','w_q','w_ops_mileage','w_ops_expenses','w_ops_prospects','w_trip','w_view','w_tip'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('w_route');}catch(e){}
+  try{['w_key','w_cache','w_q','w_ops_mileage','w_ops_expenses','w_ops_prospects','w_dirty_mileage','w_dirty_expenses','w_dirty_prospects','w_trip','w_view','w_tip'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('w_route');}catch(e){}
   location.reload();
 });
 
@@ -1028,17 +1052,20 @@ async function saveMeta(id,patch,hintEl){
   const l=LEADS.find(x=>x.id===id);
   const prev={};if(l)for(const k in patch)prev[k]=l[META_KEYS[k]||k];
   if(l)applyPatch(l,patch); // apply once, up front: the UI never waits on the network and late responses can't clobber newer edits
+  if(!(l&&l.field))cacheMeta(id,patch); // the saved list must match, or an offline reopen writes stale notes back
   if(l&&l.field){ // a field-added prospect carries its own status/notes inside the ops doc
     const it=(FIELD.items||[]).find(x=>x.id===id);
     if(it){it.meta=Object.assign(it.meta||{},patch);if(hintEl)hintEl.textContent='saved';renderStats();renderFilters();saveField();return;}
   }
+  // an older change for this card is still queued: ride behind it in order, never past it
+  {const q=getQ(),qi=q.find(it=>it.id===id);if(qi){Object.assign(qi.patch,patch);setQ(q);if(hintEl)hintEl.textContent='queued — will sync';updateBanner();renderStats();renderFilters();flushQueue();return;}}
   if(hintEl)hintEl.textContent='saving…';
   try{
     const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:tmo(8000)});
     if(!r.ok){
       if(r.status===401){forgetKey();return;}
       if(r.status<500){ // the server said no: put the card back the way it was and say so
-        if(l)applyPatch(l,prev);
+        if(l)applyPatch(l,prev);cacheMeta(id,prev);
         if(hintEl)hintEl.textContent='not saved';
         toast('Not saved — the server rejected that change ('+r.status+').');
         render();return;
@@ -1049,9 +1076,11 @@ async function saveMeta(id,patch,hintEl){
     renderStats();renderFilters();
   }catch(e){
     // no signal — keep the local change and queue it for sync
+    // queue only what a newer edit hasn't already superseded
+    const live={};for(const k in patch)if(!l||l[META_KEYS[k]||k]===patch[k])live[k]=patch[k];
     const q=getQ();
     const prev=q.find(it=>it.id===id);
-    if(prev)Object.assign(prev.patch,patch);else q.push({id,patch,t:Date.now()});
+    if(Object.keys(live).length){if(prev)Object.assign(prev.patch,live);else q.push({id,patch:live,t:Date.now()});}
     setQ(q);
     if(hintEl)hintEl.textContent='queued — will sync';
     OFFLINE=true;updateBanner();
@@ -1514,7 +1543,7 @@ function logDoor(id,label,extra){
   const o=OUTCOMES[label]||{};
   if(o.status&&['prospect','new','contacted'].includes(l.status))updates.status=o.status;
   else if(label!=='No answer'&&['prospect','new'].includes(l.status))updates.status='contacted'; // nobody answered → nobody was contacted
-  if(o.fu&&!l.followup)updates.followup=isoDays(o.fu);
+  if(o.fu&&(!l.followup||l.followup<=todayISO()))updates.followup=isoDays(o.fu); // overdue → reset, or Follow-ups due never empties
   saveMeta(id,updates);
   showUndo(`${label.replace(/ — .*/,'')} logged${updates.followup?' · follow-up '+updates.followup.slice(5).replace('-','/'):''}`,()=>saveMeta(id,prev));
 }
@@ -2227,10 +2256,10 @@ $('addForm').addEventListener('submit',e=>{
   else{it={id:'fld-'+Date.now().toString(36),added:todayISO(),fit:70,meta:{},...rec};if(MYLOC){it.lat=MYLOC[0];it.lng=MYLOC[1];}FIELD.items.unshift(it);}
   it.meta=it.meta||{};it.meta.note=setDmLine(it.meta.note||'',dmName,dmTitle);
   saveField();
-  // rebuild the in-memory list from the cache so the new card shows up everywhere at once
-  let c=null;try{c=JSON.parse(localStorage.getItem('w_cache')||'null');}catch(_){}
-  if(c&&c.j)buildFrom(c.j);else{const lead=fieldLeads({}).find(x=>x.id===it.id);if(lead){LEADS=LEADS.filter(x=>x.id!==it.id);LEADS.unshift(lead);}}
-  applyQueuedLocally();
+  // drop just this card in (rebuilding from the cache would undo edits made since the last full load)
+  let cm={};try{cm=(JSON.parse(localStorage.getItem('w_cache')||'null')||{}).j?.meta||{};}catch(_){}
+  const lead=fieldLeads(cm).find(x=>x.id===it.id);
+  if(lead){const i=LEADS.findIndex(x=>x.id===it.id);if(i>=0)LEADS[i]=lead;else LEADS.unshift(lead);fillSelects();}
   closeDlg('addView');
   FILTER='prospect';Q=co;$('q').value=Q;EXPANDED.add(it.id);SHOWN=80;saveView();render();window.scrollTo(0,0);
   toast(ADD_ID?'Prospect updated':'Prospect added — work it like any other card');
@@ -2247,15 +2276,16 @@ async function opsGet(doc){
   if(!r.ok)throw new Error(r.status);
   return (await r.json()).data;
 }
-async function opsSave(doc){
+async function opsSave(doc,quiet){
+  try{localStorage.setItem('w_ops_'+doc,JSON.stringify(OPS[doc]));}catch(_){}
+  setDirty(doc,1);const seq=DOC_SEQ[doc]=(DOC_SEQ[doc]||0)+1;
   try{
-    const r=await fetch(FN+'/ops',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({doc,data:OPS[doc]})});
+    const r=await fetch(FN+'/ops',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({doc,data:OPS[doc]}),signal:tmo(8000)});
     if(!r.ok)throw new Error(r.status);
-    OPS_DIRTY.delete(doc);
+    OPS_DIRTY.delete(doc);if(seq===DOC_SEQ[doc])setDirty(doc,0);
   }catch(e){
     OPS_DIRTY.add(doc);
-    try{localStorage.setItem('w_ops_'+doc,JSON.stringify(OPS[doc]));}catch(_){}
-    toast('No signal — saved on this phone, syncs next time Ops opens with service.');
+    if(!quiet)toast('No signal — saved on this phone, syncs next time Ops opens with service.');
   }
 }
 async function opsLoad(){
@@ -2263,10 +2293,10 @@ async function opsLoad(){
     try{
       const remote=await opsGet(doc);
       let local=null;try{local=JSON.parse(localStorage.getItem('w_ops_'+doc)||'null');}catch(_){}
-      // an unsynced local copy with more entries wins, then pushes up
-      if(local&&(!remote||(local.trips||local.items||[]).length>(remote.trips||remote.items||[]).length)){
-        OPS[doc]=local;await opsSave(doc);
-      }else OPS[doc]=remote;
+      // an unsynced local copy wins, then pushes up; otherwise the server's copy is the truth
+      if(local&&(isDirty(doc)||!remote)){
+        OPS[doc]=local;if(isDirty(doc))await opsSave(doc);
+      }else{OPS[doc]=remote;try{localStorage.setItem('w_ops_'+doc,JSON.stringify(remote));}catch(_){}}
     }catch(e){
       try{OPS[doc]=JSON.parse(localStorage.getItem('w_ops_'+doc)||'null');}catch(_){OPS[doc]=null;}
     }

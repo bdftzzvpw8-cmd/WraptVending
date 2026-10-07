@@ -4,16 +4,14 @@
 // GET    ?list=1  (X-Dash-Key or ?k=)         -> { ids: [...] }
 // POST   { id, remove: true }                 -> delete
 import { getStore } from "@netlify/blobs";
+import { dashKeyDenied } from "./lib/dash-key.mjs";
 
 const MAX_BYTES = 4.5 * 1024 * 1024;
 
 export default async (req) => {
-  const REQUIRED_KEY = process.env.DASH_KEY || "wrapt";
   const url = new URL(req.url);
-  const keyOk =
-    req.headers.get("x-dash-key") === REQUIRED_KEY ||
-    url.searchParams.get("k") === REQUIRED_KEY;
-  if (!keyOk) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
+  const denied = dashKeyDenied(req, { allowQuery: true }); // <img src> can't send headers
+  if (denied) return denied;
 
   const store = getStore("wrapt-photos");
 

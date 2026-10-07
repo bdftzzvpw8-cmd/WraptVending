@@ -81,11 +81,14 @@ exports.handler = async (event) => {
   // Requires AUTO_REPLY=true in env vars AND an A2P 10DLC-registered Twilio number.
   // (Texting yourself works on any Twilio setup; texting customers requires registration.)
   if (SMS_OK && process.env.AUTO_REPLY === "true" && d.phone && d.contact_method !== "Email only") {
-    const first = (d.name || "").trim().split(" ")[0] || "there";
+    // Public form → strip links/domains and cap lengths so the text can't carry someone else's message.
+    const clean = (v, n) => String(v || "").replace(/(https?:\/\/|www\.)\S*/gi, "").replace(/\b[\w-]+(\.[\w-]+)*\.[a-z]{2,}\b\S*/gi, "").replace(/\s+/g, " ").trim().slice(0, n);
+    const first = clean((d.name || "").trim().split(" ")[0], 30) || "there";
+    const co = clean(d.company, 60) || "your location";
     const leadMsg =
       d.contact_method === "Call me"
-        ? `Hi ${first} — Wrapt here. Your proposal for ${d.company || "your location"} is in the works. We'll call ${d.best_time && d.best_time !== "Anytime" ? d.best_time.toLowerCase() : "shortly"}; reply here if sooner works better.`
-        : `Hi ${first} — Wrapt here. Your proposal for ${d.company || "your location"} is in the works; we'll text it shortly. Reply here with any questions.`;
+        ? `Hi ${first} — Wrapt here. Your proposal for ${co} is in the works. We'll call ${d.best_time && d.best_time !== "Anytime" ? d.best_time.toLowerCase() : "shortly"}; reply here if sooner works better.`
+        : `Hi ${first} — Wrapt here. Your proposal for ${co} is in the works; we'll text it shortly. Reply here with any questions.`;
     const to = "+1" + d.phone.replace(/\D/g, "").replace(/^1/, "");
     try {
       const r = await fetch(url, {
@@ -121,7 +124,7 @@ exports.handler = async (event) => {
       const pd = Buffer.from(JSON.stringify({
         name: d.name || "", co: d.company || "", city: d.city || "", venue: d.venue_type || "",
         wants: d.product_interests || "", grade: roiObj?.grade || "", gross: roiObj?.monthlyGross || "",
-        annual: roiObj?.annualValue || "", share: "15%",
+        annual: roiObj?.annualValue || "", share: "10%",
       }), "utf8").toString("base64");
 
       const html = `

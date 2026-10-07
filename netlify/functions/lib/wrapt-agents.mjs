@@ -17,7 +17,7 @@
 
    Env vars (set in Netlify → Site configuration → Environment variables):
      URL                 (Netlify sets this)  site origin, e.g. https://wraptvending.com
-     DASH_KEY            same key the existing functions check; blank = no-key mode
+     DASH_KEY            same key the existing functions check; required (blank = every endpoint refuses)
      ANTHROPIC_API_KEY   optional — turns on AI-written drafts (template drafts without it)
      AGENT_MODEL         optional — default claude-sonnet-5-5
      AGENT_MAX_DRAFTS    optional — default 8 drafts per run
@@ -25,6 +25,7 @@
      BRIEF_TO            optional — email the brief here each run (needs SMTP_* below)
      BRIEF_FROM, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS   optional — nodemailer transport
    ===================================================================== */
+import { dashKeyCheck } from './dash-key.mjs';
 
 export const CFG = {
   site: (process.env.URL || 'https://wraptvending.com').replace(/\/$/, ''),
@@ -203,6 +204,16 @@ export async function fetchFieldProspects() {
   } catch { return []; }
 }
 
+/* mirrors Command's mergeFieldMeta(): the phone's copy (ops "prospects" doc) wins, but lines the agents
+   appended through lead-status are kept, and blank contact fields are filled from them */
+export function mergeFieldMeta(pm, sm) {
+  const m = Object.assign({}, sm, pm), have = new Set(String(pm.note || '').split('\n'));
+  const extra = String(sm.note || '').split('\n').filter(x => x.trim() && !have.has(x));
+  m.note = extra.length ? (pm.note ? pm.note + '\n' : '') + extra.join('\n') : (pm.note || '');
+  for (const k of ['followup', 'email', 'phone', 'coi']) m[k] = pm[k] || sm[k] || '';
+  return m;
+}
+
 /* same shape Command builds in buildFrom() */
 export function buildLeads({ leads, meta }, prospects, renames = {}) {
   const inbound = leads.map(l => {
@@ -222,7 +233,7 @@ export function buildLeads({ leads, meta }, prospects, renames = {}) {
   }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   const seen = new Set(inbound.map(l => l.id));
   const pros = prospects.filter(p => p && p.id && !seen.has(p.id)).map(p => {
-    const m = Object.assign({}, meta[p.id] || {}, p.meta || {}); // field-added prospects carry their own status/notes
+    const m = p.meta ? mergeFieldMeta(p.meta, meta[p.id] || {}) : (meta[p.id] || {}); // field-added prospects carry their own status/notes
     const rn = renames[p.id];
     return {
       id: p.id, created_at: null, prospect: true,
@@ -411,11 +422,13 @@ export async function draftWithClaude(items) {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': CFG.anthropicKey, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: CFG.model, max_tokens: 4000, temperature: 0.4, system: DRAFT_SYSTEM,
+      // no temperature: current Claude models reject non-default sampling. Low effort keeps thinking short so the run fits its timeout.
+      model: CFG.model, max_tokens: 8000, output_config: { effort: 'low' }, system: DRAFT_SYSTEM,
       messages: [{ role: 'user', content: `Today is ${todayISO()}. Draft one text and one email for each of these leads:\n${JSON.stringify(payload, null, 1)}` }],
     }),
   }, 60000);
   if (!r.ok) throw new Error(`claude: HTTP ${r.status} ${r.json?.error?.message || r.text.slice(0, 200)}`);
+  if (r.json?.stop_reason === 'refusal' || r.json?.stop_reason === 'max_tokens') throw new Error(`claude: stopped (${r.json.stop_reason})`);
   const text = (r.json?.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
   const m = text.match(/\[[\s\S]*\]/);
   if (!m) throw new Error('claude: no JSON array in reply');
@@ -572,8 +585,6 @@ export async function emailBrief(b) {
 
 /* ---------- auth for the HTTP endpoint: same header Command sends ---------- */
 export function authOk(req) {
-  if (!CFG.dashKey) return true; // no-key mode, same as the existing functions
-  const k = req.headers.get('x-dash-key') || new URL(req.url).searchParams.get('key') || '';
-  return k === CFG.dashKey;
+  return dashKeyCheck(req).ok; // header only; refuses everything when DASH_KEY is unset
 }
 export const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });

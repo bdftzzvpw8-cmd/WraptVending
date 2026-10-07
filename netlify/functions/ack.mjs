@@ -6,7 +6,7 @@
                     the site's existing email function already uses (a Gmail app password alone is enough: host defaults to smtp.gmail.com)
      ACK_CC         optional — copy Paige (default paige@wraptvending.com). Referral leads are never auto-answered.
    Stamps the card "[M/D h:mmap] Auto-reply sent — thanks + proposal link" so the pipeline knows. */
-import { CFG, fetchLeads, buildLeads, lastTouchDays, emailOf, firstName, useSite, getStoreSafe, json, smtpConfig, makeTransport } from './lib/wrapt-agents.mjs';
+import { CFG, fetchLeads, buildLeads, lastTouchDays, emailOf, firstName, useSite, getStoreSafe, json, smtpConfig, makeTransport, todayISO } from './lib/wrapt-agents.mjs';
 import { stamp } from './lib/notes.mjs';
 import { writeLead } from './lib/inbox-core.mjs';
 
@@ -21,11 +21,15 @@ export function introLine(vt) { // mirrors Command's introLine()
   if (/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt)) return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
   return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
 }
+// The form is public: anyone can type a stranger's email and put a pitch in "company". Strip links and
+// domains, cap lengths, and keep form text out of the subject so the auto-reply can't carry someone else's message.
+export const cleanField = (s, n) => String(s || '').replace(/(https?:\/\/|www\.)\S*/gi, '').replace(/\b[\w-]+(\.[\w-]+)*\.[a-z]{2,}\b\S*/gi, '')
+  .replace(/[<>\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 export function ackEmail(l) {
-  const d = l.data, co = d.company || 'your location', first = firstName(d.name) || 'there';
-  const pd = b64u(JSON.stringify({ name: d.name || '', co: d.company || '', city: d.city || '', venue: d.venue_type || '', wants: d.product_interests || '', grade: '', gross: '', annual: '', share: '10%' }));
+  const d = l.data, co = cleanField(d.company, 60) || 'your location', first = cleanField(firstName(d.name), 30) || 'there';
+  const pd = b64u(JSON.stringify({ name: cleanField(d.name, 60), co: cleanField(d.company, 60), city: cleanField(d.city, 40), venue: cleanField(d.venue_type, 60), wants: cleanField(d.product_interests, 80), grade: '', gross: '', annual: '', share: '10%' }));
   const link = `${CFG.site}/proposal.html#${pd}`;
-  const subject = `Your smart cooler at ${co} — Paige, Wrapt`;
+  const subject = 'Your smart cooler — Paige, Wrapt';
   const text = `Hi ${first},
 
 Thanks for reaching out about a cooler at ${co} — I'm Paige, owner of Wrapt here in Franklin.
@@ -58,17 +62,23 @@ export async function runAck({ store = null, now = new Date(), transport = null,
   if (!enabled || !out.smtp) { out.skipped = cands.map(l => `${l.id}: ${!enabled ? 'ACK_ENABLED is not 1' : 'SMTP not configured'}`); return out; }
   const tr = transport || await makeTransport();
   const from = smtpConfig().from, cc = process.env.ACK_CC ?? CFG.paige.email;
+  const dayKey = `ack-day/${todayISO(now)}`, dayMax = Math.max(0, +(process.env.ACK_DAILY_MAX || 10));
+  let dayCount = (await store.get(dayKey, { type: 'json' }).catch(() => null))?.n || 0;
   for (const l of cands) {
     const key = `ack/${l.id}`;
     if (await store.get(key, { type: 'json' }).catch(() => null)) { out.skipped.push(`${l.id}: already acknowledged`); continue; }
+    if (dayCount >= dayMax) { out.skipped.push(`${l.id}: daily cap of ${dayMax} reached (ACK_DAILY_MAX)`); continue; }
     await store.setJSON(key, { ts: now.toISOString(), to: emailOf(l), status: 'sending' }); // claim first: two overlapping runs can't both send
+    const m = ackEmail(l);
     try {
-      const m = ackEmail(l);
       await tr.sendMail({ from, to: emailOf(l), cc: cc || undefined, replyTo: CFG.paige.email, subject: m.subject, text: m.text });
-      await write(l.id, { note: (l.note ? l.note.replace(/\s+$/, '') + '\n' : '') + `${stamp(now)} Auto-reply sent — thanks + proposal link (${emailOf(l)})` });
-      await store.setJSON(key, { ts: now.toISOString(), to: emailOf(l), status: 'sent', subject: m.subject });
-      out.sent.push(l.id);
-    } catch (e) { out.errors.push(`${l.id}: ${e.message}`); await store.delete(key).catch(() => {}); }
+    } catch (e) { out.errors.push(`${l.id}: ${e.message}`); await store.delete(key).catch(() => {}); continue; } // not sent → free the claim to retry
+    // Sent. From here on the claim stays, so a failed note write can never cause a second email.
+    dayCount++; await store.setJSON(dayKey, { n: dayCount }).catch(() => {});
+    await store.setJSON(key, { ts: now.toISOString(), to: emailOf(l), status: 'sent', subject: m.subject }).catch(() => {});
+    out.sent.push(l.id);
+    try { await write(l.id, { append: `${stamp(now)} Auto-reply sent — thanks + proposal link (${emailOf(l)})` }); }
+    catch (e) { out.errors.push(`${l.id}: sent, but the card note failed: ${e.message}`); }
   }
   return out;
 }

@@ -1,18 +1,17 @@
 // Ops documents (mileage log, expense log, ops settings, field prospects) stored in Netlify Blobs.
 // GET  /.netlify/functions/ops?doc=mileage          -> { data: {...} | null }
 // POST /.netlify/functions/ops  { doc, data }       -> replace the document
-// Auth: X-Dash-Key header must match DASH_KEY env var (defaults to "wrapt").
+// Auth: X-Dash-Key header must match DASH_KEY env var (no default: unset = refused).
 
 import { getStore } from "@netlify/blobs";
+import { dashKeyDenied } from "./lib/dash-key.mjs";
 
 const DOCS = ["mileage", "expenses", "opsettings", "prospects"];
 const MAX_BYTES = 400 * 1024;
 
 export default async (req) => {
-  const REQUIRED_KEY = process.env.DASH_KEY || "wrapt";
-  if (req.headers.get("x-dash-key") !== REQUIRED_KEY) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
-  }
+  const denied = dashKeyDenied(req);
+  if (denied) return denied;
   const store = getStore("wrapt-ops");
 
   if (req.method === "GET") {

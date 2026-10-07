@@ -1,6 +1,7 @@
 // POST: records a pageview { src } — called by a beacon on the public site.
 // GET (with X-Dash-Key): returns counts for the Command dashboard.
 import { getStore } from "@netlify/blobs";
+import { dashKeyDenied } from "./lib/dash-key.mjs";
 
 const SOURCES = ["card", "pamphlet", "direct", "search", "social", "other"];
 const EVENTS = ["calc_used", "form_start", "form_step2", "form_submit"];
@@ -51,10 +52,8 @@ export default async (req) => {
   }
 
   if (req.method === "GET") {
-    const REQUIRED_KEY = process.env.DASH_KEY || "wrapt";
-    if (req.headers.get("x-dash-key") !== REQUIRED_KEY) {
-      return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
-    }
+    const denied = dashKeyDenied(req);
+    if (denied) return denied;
     const c = (await store.get("counts", { type: "json" })) || { total: 0, bySrc: {}, byDay: {} };
     // compute last-7-days total
     let wk = 0;

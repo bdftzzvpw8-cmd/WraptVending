@@ -1,10 +1,11 @@
 // GET /.netlify/functions/leads
 // Returns all wrapt-lead submissions merged with pipeline status/notes.
-// Auth: X-Dash-Key header must match DASH_KEY env var (defaults to "wrapt").
+// Auth: X-Dash-Key header must match DASH_KEY env var (no default: unset = refused).
 // Env vars required: DASH_KEY, NETLIFY_AUTH_TOKEN (personal access token).
 // SITE_ID is provided automatically by Netlify.
 
 import { getStore } from "@netlify/blobs";
+import { dashKeyDenied } from "./lib/dash-key.mjs";
 
 // Pipeline meta lives in per-lead blobs ("m:<id>") so two devices saving at
 // once can't clobber each other. The old single "meta" blob is still read as
@@ -44,10 +45,8 @@ export async function fetchAllSubmissions(formId, headers) {
 }
 
 export default async (req, context) => {
-  const REQUIRED_KEY = process.env.DASH_KEY || "wrapt";
-  if (req.headers.get("x-dash-key") !== REQUIRED_KEY) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
-  }
+  const denied = dashKeyDenied(req);
+  if (denied) return denied;
   const token = (process.env.NETLIFY_AUTH_TOKEN || "").trim();
   const siteId = process.env.SITE_ID || context?.site?.id;
   if (!token) return Response.json({ error: "TOKEN_MISSING: NETLIFY_AUTH_TOKEN env var is empty on this deploy. Add it, then redeploy." }, { status: 500 });

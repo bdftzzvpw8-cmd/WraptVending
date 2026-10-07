@@ -20,7 +20,7 @@ let LLM = null;
 export function setLLM(fn) { LLM = fn; } // fn({system,user,images?,maxTokens,model}) → text
 export function llmReady() { return !!(LLM || CFG.anthropicKey); }
 
-export async function claudeText({ system, user, images = [], maxTokens = 1500, model = CFG.model, temperature = 0.2 }) {
+export async function claudeText({ system, user, images = [], maxTokens = 1500, model = CFG.model }) {
   if (LLM) return LLM({ system, user, images, maxTokens, model });
   if (!CFG.anthropicKey) throw new Error('ANTHROPIC_API_KEY not set');
   const content = [];
@@ -31,10 +31,13 @@ export async function claudeText({ system, user, images = [], maxTokens = 1500, 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', signal: ctl.signal,
       headers: { 'content-type': 'application/json', 'x-api-key': CFG.anthropicKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model, max_tokens: maxTokens, temperature, system, messages: [{ role: 'user', content }] }),
+      // No temperature (current models 400 on non-default sampling). Thinking is on by default and counts against
+      // max_tokens, so keep effort low and leave room above the JSON's own size.
+      body: JSON.stringify({ model, max_tokens: Math.max(maxTokens, 4000), output_config: { effort: 'low' }, system, messages: [{ role: 'user', content }] }),
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) throw new Error(`claude: HTTP ${r.status} ${j?.error?.message || ''}`.trim());
+    if (j?.stop_reason === 'refusal' || j?.stop_reason === 'max_tokens') throw new Error(`claude: stopped (${j.stop_reason})`);
     return (j?.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
   } finally { clearTimeout(t); }
 }

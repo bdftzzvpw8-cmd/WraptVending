@@ -186,6 +186,8 @@ async function del(store, key) { try { await store.delete(key); } catch { /* ign
 async function listKeys(store, prefix) { try { const r = await store.list({ prefix }); return (r.blobs || []).map(b => b.key); } catch { return []; } }
 async function log(store, entry) { await put(store, `inbox/log/${Date.now()}-${rid()}`, { ts: new Date().toISOString(), ...entry }); }
 
+// Agents send only their new lines (append) so a note saved meanwhile in Command, or by a parallel run, is never overwritten.
+export const asAppend = (patch, lines) => { const { note, ...rest } = patch; return { ...rest, append: lines.join('\n') }; };
 export async function writeLead(id, patch) {
   const r = await fetch(`${CFG.site}/.netlify/functions/lead-status`, { method: 'POST', headers: { 'X-Dash-Key': CFG.dashKey, 'content-type': 'application/json' }, body: JSON.stringify({ id, ...patch }) });
   if (!r.ok) throw new Error(`lead-status: HTTP ${r.status}`);
@@ -233,7 +235,7 @@ export async function processMessage(msg, { store, leads = null, now = new Date(
   if (direction === 'in' && email && !emailOf(lead)) ex.email = ex.email || email; // the sender IS the contact
   if (direction === 'in' && cpName && !ex.decision_maker && !dmOf(lead) && ex.relevant) ex.decision_maker = { name: cpName, title: '' };
   const { patch, lines, suggestion } = buildPatch(lead, ex, { kind: 'email', direction, who: who(counterpart), now, auto: true });
-  await write(lead.id, patch);
+  await write(lead.id, asAppend(patch, lines));
   Object.assign(lead, patch); // keep the in-memory copy current for any further messages in this run
   await put(store, `inbox/t/${sha(msg.message_id)}`, { lead: lead.id });
   let sid = null;
@@ -258,7 +260,7 @@ export async function attachQueued(store, qid, leadId, { leads = null, now = new
   if (item.direction === 'in' && item.from?.email && !emailOf(lead)) ex.email = ex.email || item.from.email;
   if (item.direction === 'in' && item.from?.name && !ex.decision_maker && !dmOf(lead)) ex.decision_maker = { name: item.from.name, title: '' };
   const { patch, lines, suggestion } = buildPatch(lead, ex, { kind: 'email', direction: item.direction, who: who(item.from || {}), now, auto: true });
-  await write(lead.id, patch);
+  await write(lead.id, asAppend(patch, lines));
   await put(store, `inbox/t/${sha(item.message_id)}`, { lead: lead.id });
   for (const ref of item.refs || []) await put(store, `inbox/t/${sha(ref)}`, { lead: lead.id });
   await del(store, `inbox/q/${qid}`);
