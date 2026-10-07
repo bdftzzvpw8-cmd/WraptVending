@@ -136,12 +136,14 @@ else {
   else if (!secret) { say('   No secret given — stopping before anything that depends on it. Nothing in steps 4–6 was changed.'); rl.close(); process.exit(1); }
 }
 vars.PAIGE_EMAILS = have('PAIGE_EMAILS') ? existing.PAIGE_EMAILS : 'paige@wraptvending.com';
-vars.HOME_LATLNG = have('HOME_LATLNG') ? existing.HOME_LATLNG : '35.927426,-86.817106'; // Legacy Cool Springs, 2000 Aureum Dr
-say(`   Defaults: site ${siteUrl} · Paige's email ${vars.PAIGE_EMAILS} · home base ${vars.HOME_LATLNG}`);
+// No hardcoded location: the repo is public, and Netlify's secret scan fails the build when an env value appears in it.
+// Unset = the agents' built-in default home base (see CFG.home in netlify/functions/lib/wrapt-agents.mjs).
+vars.HOME_LATLNG = have('HOME_LATLNG') ? existing.HOME_LATLNG : '';
+say(`   Defaults: site ${siteUrl} · Paige's email ${vars.PAIGE_EMAILS} · home base ${vars.HOME_LATLNG || '(built-in default)'}`);
 if (await yes('   Change any of these?', false)) {
   siteUrl = await ask('   Site URL', siteUrl);
   vars.PAIGE_EMAILS = await ask('   Paige\'s email address(es), comma-separated', vars.PAIGE_EMAILS);
-  vars.HOME_LATLNG = await ask('   Home base lat,lng', vars.HOME_LATLNG);
+  vars.HOME_LATLNG = await ask('   Home base lat,lng (blank = built-in default)', vars.HOME_LATLNG);
 }
 if (have('ANTHROPIC_API_KEY')) say('   ANTHROPIC_API_KEY: already set on the site — keeping it.');
 else {
@@ -152,6 +154,7 @@ const smtpNames = Object.keys(existing).filter(k => /SMTP|EMAIL|MAIL|GMAIL/i.tes
 if (smtpNames.length) say(`   Existing email settings found: ${smtpNames.join(', ')} — the acknowledgment and brief email can use these (set ACK_ENABLED=1 to turn auto-replies on).`);
 
 say('\n   Will set on the Netlify site:');
+if (!vars.HOME_LATLNG) delete vars.HOME_LATLNG;
 Object.entries(vars).forEach(([k, v]) => say(`     ${k} = ${k === 'ANTHROPIC_API_KEY' ? v.slice(0, 12) + '…' : v}`));
 let envSet = false;
 if (hasCli && (await yes('   Set these now with the Netlify CLI?', true))) {
