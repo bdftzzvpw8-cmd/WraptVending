@@ -1,0 +1,93 @@
+/* WRAPT INSTANT ACKNOWLEDGMENT — the one outbound email that is safe to automate.
+   Every 5 minutes: any site lead still "New", from the last 72h, with an email, no touch logged
+   and no acknowledgment on record → a short personal note in Paige's voice with the proposal link.
+   Deterministic template (no model) so an unsupervised send can't improvise. Opt-in:
+     ACK_ENABLED=1  plus SMTP settings — SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS / BRIEF_FROM, or the EMAIL_* / GMAIL_* names
+                    the site's existing email function already uses (a Gmail app password alone is enough: host defaults to smtp.gmail.com)
+     ACK_CC         optional — copy Paige (default paige@wraptvending.com). Referral leads are never auto-answered.
+   Stamps the card "[M/D h:mmap] Auto-reply sent — thanks + proposal link" so the pipeline knows. */
+import { CFG, fetchLeads, buildLeads, lastTouchDays, emailOf, firstName, useSite, getStoreSafe, json, smtpConfig, makeTransport, todayISO } from './lib/wrapt-agents.mjs';
+import { stamp } from './lib/notes.mjs';
+import { writeLead } from './lib/inbox-core.mjs';
+
+const b64u = s => Buffer.from(s, 'utf8').toString('base64');
+export function introLine(vt) { // mirrors Command's introLine()
+  vt = vt || '';
+  if (/Gym|fitness|Pickleball/i.test(vt)) return 'Members can grab a protein shake, electrolyte drink or a cold water on the way out: tap a card, grab it, walk off. No front-desk time, no cash, no coins.';
+  if (/Apartment|Senior/i.test(vt)) return 'It works as a 24/7 resident amenity for the lobby or clubroom: tap a card, grab a drink or snack, done. Your team never handles money or restocking.';
+  if (/Hotel/i.test(vt)) return 'Guests can grab drinks and snacks any hour: tap a card, grab, auto-checkout. It reads as your amenity, and the front desk never has to touch it.';
+  if (/Office|Corporate|coworking/i.test(vt)) return 'Employees and tenants get cold drinks and snacks without leaving the building: tap a card, grab, auto-checkout. Nothing for your team to manage.';
+  if (/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt)) return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better and costs you nothing.';
+  if (/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt)) return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
+  return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
+}
+// The form is public: anyone can type a stranger's email and put a pitch in "company". Strip links and
+// domains, cap lengths, and keep form text out of the subject so the auto-reply can't carry someone else's message.
+export const cleanField = (s, n) => String(s || '').replace(/(https?:\/\/|www\.)\S*/gi, '').replace(/\b[\w-]+(\.[\w-]+)*\.[a-z]{2,}\b\S*/gi, '')
+  .replace(/[<>\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+export function ackEmail(l) {
+  const d = l.data, co = cleanField(d.company, 60) || 'your location', first = cleanField(firstName(d.name), 30) || 'there';
+  const pd = b64u(JSON.stringify({ name: cleanField(d.name, 60), co: cleanField(d.company, 60), city: cleanField(d.city, 40), venue: cleanField(d.venue_type, 60), wants: cleanField(d.product_interests, 80), grade: '', gross: '', annual: '', share: '10%' }));
+  const link = `${CFG.site}/proposal.html#${pd}`;
+  const subject = 'Your smart cooler — Paige, Wrapt';
+  const text = `Hi ${first},
+
+Thanks for reaching out about a cooler at ${co} — I'm Paige, owner of Wrapt here in Franklin.
+
+The short version: we place a custom-wrapped smart cooler in your space at zero cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement. ${introLine(d.venue_type)}
+
+Here's a proposal built from what you shared:
+${link}
+
+I'll follow up personally within a day to find a time to stop by for five minutes with a mockup in your colors. If a day already works for you, reply here or text me at ${CFG.paige.phone}.
+
+${CFG.paige.name}
+Owner, Wrapt
+${CFG.paige.phone} · wraptvending.com`;
+  return { subject, text, link };
+}
+export function ackCandidates(leads, now = new Date()) {
+  return leads.filter(l => !l.prospect && l.status === 'new' && emailOf(l) && l.created_at && now - new Date(l.created_at) < 72 * 3600e3
+    && !/referral/i.test(l.data.lead_type || '') && lastTouchDays(l, now) == null && !/Auto-reply sent/.test(l.note || ''));
+}
+export function smtpReady() { return smtpConfig().ok; }
+
+export async function runAck({ store = null, now = new Date(), transport = null, write = writeLead, leads = null } = {}) {
+  store = await getStoreSafe(store);
+  leads = leads || buildLeads(await fetchLeads(), [], {});
+  const cands = ackCandidates(leads, now);
+  const enabled = process.env.ACK_ENABLED === '1';
+  const out = { enabled, smtp: smtpReady(), candidates: cands.map(l => l.id), sent: [], skipped: [], errors: [] };
+  if (!cands.length) return out;
+  if (!enabled || !out.smtp) { out.skipped = cands.map(l => `${l.id}: ${!enabled ? 'ACK_ENABLED is not 1' : 'SMTP not configured'}`); return out; }
+  const tr = transport || await makeTransport();
+  const from = smtpConfig().from, cc = process.env.ACK_CC ?? CFG.paige.email;
+  const dayKey = `ack-day/${todayISO(now)}`, dayMax = Math.max(0, +(process.env.ACK_DAILY_MAX || 10));
+  let dayCount = (await store.get(dayKey, { type: 'json' }).catch(() => null))?.n || 0;
+  for (const l of cands) {
+    const key = `ack/${l.id}`;
+    if (await store.get(key, { type: 'json' }).catch(() => null)) { out.skipped.push(`${l.id}: already acknowledged`); continue; }
+    if (dayCount >= dayMax) { out.skipped.push(`${l.id}: daily cap of ${dayMax} reached (ACK_DAILY_MAX)`); continue; }
+    await store.setJSON(key, { ts: now.toISOString(), to: emailOf(l), status: 'sending' }); // claim first: two overlapping runs can't both send
+    const m = ackEmail(l);
+    try {
+      await tr.sendMail({ from, to: emailOf(l), cc: cc || undefined, replyTo: CFG.paige.email, subject: m.subject, text: m.text });
+    } catch (e) { out.errors.push(`${l.id}: ${e.message}`); await store.delete(key).catch(() => {}); continue; } // not sent → free the claim to retry
+    // Sent. From here on the claim stays, so a failed note write can never cause a second email.
+    dayCount++; await store.setJSON(dayKey, { n: dayCount }).catch(() => {});
+    await store.setJSON(key, { ts: now.toISOString(), to: emailOf(l), status: 'sent', subject: m.subject }).catch(() => {});
+    out.sent.push(l.id);
+    try { await write(l.id, { append: `${stamp(now)} Auto-reply sent — thanks + proposal link (${emailOf(l)})` }); }
+    catch (e) { out.errors.push(`${l.id}: sent, but the card note failed: ${e.message}`); }
+  }
+  return out;
+}
+
+export default async (req, context) => {
+  useSite(context);
+  const r = await runAck({});
+  console.log(`[wrapt-ack] enabled:${r.enabled} smtp:${r.smtp} candidates:${r.candidates.length} sent:${r.sent.length}${r.skipped.length ? ' skipped: ' + r.skipped.join(' | ') : ''}${r.errors.length ? ' errors: ' + r.errors.join(' | ') : ''}`);
+  return json(r);
+};
+
+export const config = { schedule: '*/5 * * * *' };

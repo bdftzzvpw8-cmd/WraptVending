@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Wrapt Command</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232B2B28'/%3E%3Crect x='5' y='7' width='22' height='18' fill='none' stroke='%23F3F1EC' stroke-width='2.5'/%3E%3Ctext x='16' y='21.5' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='12' fill='%23F3F1EC'%3EW%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script>try{if(localStorage.getItem('w_theme')==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
+<script>try{const t=localStorage.getItem('w_theme');if(t==='dark'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark';}catch(e){}</script>
 <link rel="manifest" href="command-manifest.json">
 <meta name="theme-color" content="#FFFFFF" id="metaTheme">
 <link rel="apple-touch-icon" href="img/command-icon-180.png">
@@ -20,13 +20,13 @@
 <style>
 :root{
   --bg:#FFFFFF;--panel:#FFFFFF;--panel2:#EAE7E0;--line:#D7D2C7;
-  --brass:#111111;--brass-hi:#55534E;--taupe:#A39C8F;--gold:#B37922;--gold-hi:#C98A2E;--gold-deep:#8F5E16;--cream:#111111;--muted:#55534E;--goldbar:#B37922;
-  --good:#111111;--blue:#55534E;--purple:#8B857A;--teal:#A39C8F;--red:#A33B3B;
+  --brass:#111111;--brass-hi:#55534E;--taupe:#766F63;--gold:#B37922;--gold-hi:#C98A2E;--gold-deep:#8F5E16;--cream:#111111;--muted:#55534E;--goldbar:#B37922;
+  --good:#111111;--blue:#55534E;--purple:#6F6960;--teal:#766F63;--red:#A33B3B;
 }
 html[data-theme="dark"]{
   --hdrbg:rgba(21,20,18,.94);
   --bg:#151412;--panel:#201E1B;--panel2:#2B2825;--line:#3A3733;
-  --brass:#F3F1EC;--brass-hi:#C9C2B4;--taupe:#8B857A;--gold:#C98A2E;--gold-hi:#D9993C;--gold-deep:#D9993C;--cream:#F3F1EC;--muted:#A39C8F;--goldbar:#C98A2E;
+  --brass:#F3F1EC;--brass-hi:#C9C2B4;--taupe:#9A9388;--gold:#C98A2E;--gold-hi:#D9993C;--gold-deep:#D9993C;--cream:#F3F1EC;--muted:#A39C8F;--goldbar:#C98A2E;
   --good:#F3F1EC;--blue:#A39C8F;--purple:#8B857A;--teal:#8B857A;--red:#D96B5B;
 }
 html[data-theme="dark"] .gate-card,html[data-theme="dark"] .lead{box-shadow:none}
@@ -54,13 +54,14 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .head-in{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .head-in .logo{font-size:22px}
 .head-in .logo small{font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:var(--brass);font-weight:400}
-.refresh{background:transparent;border:2px solid var(--line);color:var(--muted);padding:8px 14px;cursor:pointer;font-size:13px}
+.refresh{background:transparent;border:2px solid var(--line);color:var(--muted);padding:8px 14px;cursor:pointer;font-size:13px;min-height:40px}
 .refresh:hover{border-color:var(--gold);color:var(--gold-deep)}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 0 4px}
-.stat{background:var(--panel);border:2px solid var(--line);padding:10px 12px}
-.stat label{font-family:'Space Mono';font-size:9.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.stat{background:var(--panel);border:2px solid var(--line);padding:10px 12px;text-align:left;cursor:pointer;color:inherit}
+.stat:hover{border-color:var(--gold)}
+.stat label{font-family:'Space Mono';font-size:10.5px;display:block;cursor:inherit;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
 .stat b{display:block;font-family:'Archivo';font-size:24px;font-weight:900;margin-top:1px}
 .stat b.g{color:var(--brass-hi)}
 
@@ -72,9 +73,10 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .fbar .inp{flex:0 0 auto;width:auto;min-width:118px;padding:9px 10px;font-size:13px}
 .hdr-actions{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .hdr-actions::-webkit-scrollbar{display:none}
-.ftab{background:var(--panel);border:2px solid var(--line);color:var(--muted);padding:7px 14px;font-size:12.5px;cursor:pointer;white-space:nowrap;transition:.15s}
+.ftab{background:var(--panel);border:2px solid var(--line);color:var(--muted);padding:7px 14px;font-size:13px;min-height:40px;cursor:pointer;white-space:nowrap;transition:.15s}
 .ftab.on{border-color:var(--gold);color:var(--gold-deep);background:rgba(179,121,34,.08)}
-.ftab .n{font-family:'Space Mono';font-size:10.5px;opacity:.8}
+.ftab .n{font-family:'Space Mono';font-size:11px;opacity:.85}
+.ftab.on .n{opacity:1}
 .search{margin-bottom:12px}
 
 /* LEAD CARDS */
@@ -82,37 +84,46 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .lead.u-hot{border-left:6px solid var(--gold)}
 .lead.u-due{border-left:6px solid var(--red)}
 .l-photo{width:100%;max-height:170px;object-fit:cover;border:2px solid var(--cream);margin-top:10px;display:block;background:var(--panel2)}
-.lead:hover{border-color:#A39C8F}
+@media(hover:hover){.lead:hover{border-color:#A39C8F}}
+.l-meta a{display:inline-block;padding:6px 0;margin:-6px 0}
 .l-top{display:flex;align-items:flex-start;gap:12px}
 .score{
   flex-shrink:0;width:52px;height:52px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;font-family:'Archivo';font-weight:900;font-size:21px;line-height:1;
   border:2px solid var(--line);background:var(--panel);
 }
-.score small{font-family:'Space Mono';font-size:8px;letter-spacing:.1em;color:var(--muted);margin-top:2px}
+.score small{font-family:'Space Mono';font-size:10px;letter-spacing:.1em;color:var(--muted);margin-top:2px}
 .score.hot{color:var(--gold-deep);border-color:var(--gold);border-width:2px}
 .score.warm{color:var(--cream)}
 .score.cool{color:var(--muted)}
 /* compact rows */
 .lrow{padding:0;overflow:hidden;cursor:pointer;touch-action:pan-y}
-.lr{display:flex;align-items:center;gap:9px;padding:11px 12px;transition:transform .15s ease}
+.lr{display:flex;align-items:center;gap:9px;padding:11px 12px;transition:transform .15s ease;position:relative;z-index:1;background:var(--panel)}
+.lrow[data-hint]::before{position:absolute;top:50%;transform:translateY(-50%);font:700 12px/1 'Space Mono',monospace;letter-spacing:.04em;color:var(--taupe);pointer-events:none}
+.lrow[data-hint="r"]::before{content:'No answer →';left:10px}
+.lrow[data-hint="l"]::before{content:'← Tomorrow';right:10px}
+.lr-main{flex:1 1 auto;min-width:0;display:block;text-align:left;background:none;border:0;color:inherit;padding:4px 0;cursor:pointer;font:inherit}
+.lr-main:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.lr-name{display:block}
+.lr .pill{letter-spacing:.06em;padding:3px 7px}
+.lr-sub{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
 .lr-cb{display:flex;align-items:center;padding:12px 8px;margin:-12px 0 -12px -8px}
-.lr-cb input{width:17px;height:17px;accent-color:#B37922}
+.lr-cb input{width:20px;height:20px;accent-color:#B37922}
 .lr-score{flex:0 0 auto;min-width:36px;text-align:center;border:2px solid var(--line);font-family:'Archivo';font-weight:900;font-size:14px;padding:4px 3px;color:var(--muted)}
 .lr-score.hot{color:var(--gold-deep);border-color:var(--gold)}
 .lr-score.warm{color:var(--cream)}
 .lr-score.cool{color:var(--taupe)}
-.lr-name{flex:1 1 auto;min-width:0;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lr-meta{flex:0 0 auto;font-family:'Space Mono';font-size:10.5px;color:var(--taupe);max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lr-b{flex:0 0 auto;font-family:'Space Mono';font-size:9px;letter-spacing:.06em;border:1px solid var(--line);color:var(--taupe);padding:2px 6px}
+.lr-name{min-width:0;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-meta{flex:0 0 auto;font-family:'Space Mono';font-size:11px;color:var(--taupe);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-b{flex:0 0 auto;font-family:'Space Mono';font-size:10px;letter-spacing:.06em;border:1px solid var(--line);color:var(--taupe);padding:2px 6px}
 .lr-b.red{color:var(--red);border-color:var(--red);font-weight:700}
 .lr .pill{flex:0 0 auto}
-.fu-chip{font-family:'Space Mono';font-size:10px;padding:6px 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--cream)}
+.fu-chip{font-family:'Space Mono';font-size:11px;min-width:40px;justify-content:center;padding:6px 12px;min-height:40px;display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--cream)}
 .fu-chip:active{border-color:var(--gold)}
 .l-main{flex:1;min-width:0}
 .l-name{font-weight:600;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .l-name .co{color:var(--muted);font-weight:400}
-.pill{font-family:'Space Mono';font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:2.5px 9px;border:1px solid}
+.pill{font-family:'Space Mono';font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:2.5px 9px;border:1px solid}
 .pill.new{color:var(--gold-deep);border-color:var(--gold);font-weight:700}
 .pill.prospect{color:var(--taupe);border-color:var(--taupe)}
 .pill.contacted{color:var(--blue);border-color:var(--blue)}
@@ -123,7 +134,7 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .l-meta{font-size:12.5px;color:var(--muted);margin-top:3px}
 .l-meta b{color:var(--cream);font-weight:500}
 .l-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.tag{font-family:'Space Mono';font-size:10.5px;color:var(--muted);background:var(--panel);border:2px solid var(--line);padding:3px 8px}
+.tag{font-family:'Space Mono';font-size:11px;color:var(--muted);background:var(--panel);border:2px solid var(--line);padding:3px 8px}
 .tag.pain{color:var(--gold-deep);border-color:var(--gold);font-weight:700}
 .tag.roi{color:var(--gold-deep);border-color:var(--gold)}
 .l-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
@@ -142,10 +153,10 @@ select.status{
 .l-note.open{display:block}
 .l-note textarea{width:100%;background:var(--panel);border:2px solid var(--line);color:var(--cream);padding:10px 12px;font-size:13px;resize:vertical;min-height:60px}
 .l-note textarea:focus{border-color:var(--gold);outline:none}
-.l-note .save-hint{font-family:'Space Mono';font-size:10px;color:var(--muted);margin-top:4px;min-height:14px}
-.l-time{font-family:'Space Mono';font-size:10px;color:var(--muted);text-align:right;flex-shrink:0}
+.l-note .save-hint{font-family:'Space Mono';font-size:11px;color:var(--muted);margin-top:4px;min-height:14px}
+.l-time{font-family:'Space Mono';font-size:11px;color:var(--muted);text-align:right;flex-shrink:0}
 .stale{color:var(--red);font-weight:500}
-.age-flag{font-family:'Space Mono';font-size:9.5px;color:var(--red);border:1px solid rgba(163,59,59,.55);padding:2.5px 8px;letter-spacing:.08em}
+.age-flag{font-family:'Space Mono';font-size:10.5px;color:var(--red);border:1px solid rgba(163,59,59,.55);padding:2.5px 8px;letter-spacing:.08em}
 
 .empty{color:var(--muted);text-align:center;padding:60px 0}
 .loading{text-align:center;color:var(--muted);padding:60px 0;font-family:'Space Mono';font-size:12px;letter-spacing:.14em}
@@ -163,20 +174,61 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
   .l-time{display:none}
 }
 @media(max-width:640px){.inp,select.inp,input.inp,.l-note textarea,select.status,input[type=date],.l-edit input{font-size:16px}}
+/* ---- 10/10 pass: layout ---- */
+.head-in{min-width:0}
+.head-in>div{min-width:0}
+.head-in .logo{margin:0}
+.hdr-actions{min-width:0}
+header{padding-top:calc(12px + env(safe-area-inset-top))}
+#hdrRight{display:flex;gap:8px;align-items:center;min-width:0}
+#moreMenu{position:absolute;right:14px;top:calc(100% - 4px);background:var(--panel);border:2px solid var(--cream);box-shadow:0 12px 32px rgba(0,0,0,.18);display:flex;flex-direction:column;min-width:200px;z-index:70}
+#moreMenu[hidden]{display:none}
+#moreMenu button,#moreMenu a{background:none;border:0;border-bottom:1px solid var(--line);color:var(--cream);padding:13px 16px;text-align:left;font-size:14px;cursor:pointer;text-decoration:none;min-height:46px;display:flex;align-items:center;gap:10px}
+#moreMenu button:last-child{border-bottom:0}
+#moreMenu button:hover,#moreMenu a:hover{background:var(--panel2)}
+.hdr-actions .refresh{white-space:nowrap}
+@media(min-width:641px){.hdr-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px 0}}
+@media(max-width:640px){
+  .hdr-actions{position:fixed;left:0;right:0;bottom:0;z-index:65;display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--hdrbg,rgba(255,255,255,.96));backdrop-filter:blur(10px);border-top:2px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));overflow:visible;max-width:none;margin:0}
+  .hdr-actions .refresh{border:0;min-height:50px;font-size:13px;font-weight:600;color:var(--cream);padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .hdr-actions .refresh .ic{font-size:18px;line-height:1}
+  .hdr-actions .refresh:active{background:var(--panel2)}
+  main{padding-bottom:12px}
+  footer{margin-bottom:calc(66px + env(safe-area-inset-bottom));padding:22px 0 24px;font-size:11px}
+  #routeBar{bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  #undoToast{bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  .score{width:46px;height:46px;font-size:18px}
+  .l-top>label{padding:10px 6px 10px 0!important}
+}
+@media(min-width:641px){.hdr-actions .refresh .ic{display:none}}
+@media(prefers-reduced-motion:reduce){.skel{animation:none}.lr,.lead,.act,.ftab,.btn{transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tip{border:2px dashed var(--gold);background:var(--panel);padding:12px 14px;margin-bottom:12px;font-size:13.5px;line-height:1.5}
+.tip b{font-family:'Space Mono';font-size:10.5px;letter-spacing:.14em;color:var(--gold-deep);display:block;margin-bottom:4px}
+/* add / edit a prospect from the field */
+#addView{display:none;position:fixed;inset:0;z-index:95;background:var(--bg);overflow-y:auto}
+#addView .f{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+#addView .f span{font-family:'Space Mono';font-size:10.5px;letter-spacing:.14em;color:var(--taupe)}
+#addView .row2{display:flex;gap:8px}
+#addView .row2>.f{flex:1;min-width:0}
+.lead.field:not(.u-due):not(.u-hot){border-left:6px solid var(--gold-hi)}
+.l-body{margin-top:2px}
+.lead{position:relative}
+.lead:not(.lrow) .l-name{padding-right:48px}
 /* door-outcome chips, inline editors, follow-up row, undo toast */
 .l-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
-.chips-lbl{font-size:9px;letter-spacing:.14em;color:var(--taupe);margin-right:2px}
+.chips-lbl{font-size:10.5px;letter-spacing:.14em;color:var(--taupe);margin-right:2px}
 .l-fu{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .l-edit{margin-top:8px;display:none;flex-direction:column;gap:8px;padding:10px;border:2px dashed var(--gold)}
 .l-edit.open{display:flex}
 .l-edit-f{display:flex;flex-direction:column;gap:3px}
-.l-edit-f span{font-size:9px;letter-spacing:.14em;color:var(--taupe)}
+.l-edit-f span{font-size:10.5px;letter-spacing:.14em;color:var(--taupe)}
 .l-more{border-top:1px dashed var(--line);padding-top:10px}
-.pitch-lbl{font-size:9px;letter-spacing:.14em;color:var(--taupe);margin-top:8px}
+.pitch-lbl{font-size:10.5px;letter-spacing:.14em;color:var(--taupe);margin-top:8px}
 .pitch-lbl:first-child{margin-top:0}
 #undoToast{display:none;position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:120;background:var(--cream);color:var(--bg);padding:10px 14px;gap:14px;align-items:center;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
 #undoToast button{background:var(--gold);border:0;color:#221B0E;font-weight:700;padding:8px 14px;cursor:pointer;min-height:40px;font-size:13px}
-#funnel{font-size:10.5px;letter-spacing:.04em;color:var(--muted);padding:2px 0 6px;line-height:1.7}
+#funnel{font-size:11.5px;letter-spacing:.04em;color:var(--muted);padding:2px 0 6px;line-height:1.7}
 #funnel b{color:var(--cream)}
 </style>
 </head>
@@ -196,31 +248,36 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
 
 <header>
   <div class="wrap head-in">
-    <span class="logo">WRAPT</span><span class="mono" style="font-size:9px;letter-spacing:.24em;color:var(--taupe);margin-left:10px">COMMAND</span>
-    <div style="display:flex;gap:8px">
-      <div class="hdr-actions"><button class="refresh" id="btnTheme" title="Light / dark" aria-label="Toggle dark mode">◐</button><button class="refresh" id="btnOps">Ops</button><button class="refresh" id="btnMap">Map</button><button class="refresh" id="btnBlitz">Blitz</button>
-      <a class="refresh" href="wrap-studio.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Wrap Studio</a>
-      <button class="refresh" id="btnExport">Export CSV</button>
-      <button class="refresh" id="btnRefresh">Refresh</button>
-      <button class="refresh" id="btnLock" title="Sign out and wipe this phone's copy of the pipeline">Lock</button></div>
+    <h1 class="logo">WRAPT</h1><span class="mono" style="font-size:10px;letter-spacing:.24em;color:var(--taupe);margin-left:10px;flex:1">COMMAND</span>
+    <div id="hdrRight">
+      <button class="refresh" id="btnMore" aria-haspopup="menu" aria-expanded="false" aria-label="More" title="More">⋯</button>
     </div>
   </div>
+  <div id="moreMenu" role="menu" hidden>
+    <button role="menuitem" id="btnRefresh">↻ Refresh leads</button>
+    <button role="menuitem" id="btnTheme" aria-label="Toggle dark mode">◐ Light / dark</button>
+    <a role="menuitem" href="wrap-studio.html" target="_blank" rel="noopener">✎ Wrap Studio</a>
+    <button role="menuitem" id="btnExport">⇩ Export CSV</button>
+    <button role="menuitem" id="btnLock" title="Sign out and wipe this phone's copy of the pipeline">⏻ Lock Command</button>
+  </div>
 </header>
+<!-- primary actions: a toolbar on desktop, a thumb bar at the bottom on phones (lives outside the header: its backdrop-filter would trap position:fixed) -->
+<nav class="hdr-actions wrap" aria-label="Command"><button class="refresh" id="btnAdd" title="Add a prospect you found in the field"><span class="ic" aria-hidden="true">+</span>Add</button><button class="refresh" id="btnBlitz"><span class="ic" aria-hidden="true">⇢</span>Door Run</button><button class="refresh" id="btnMap"><span class="ic" aria-hidden="true">◎</span>Map</button><button class="refresh" id="btnOps"><span class="ic" aria-hidden="true">≡</span>Ops</button></nav>
 
 <main class="wrap">
-  <div id="offBanner" style="display:none;background:var(--red);color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 12px;border-radius:8px;margin-bottom:10px"></div>
-  <div class="stats" id="stats"></div>
+  <div id="offBanner" role="status" aria-live="polite" style="display:none;background:var(--red);color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 12px;border-radius:8px;margin-bottom:10px"></div>
+  <div class="stats" id="stats" aria-label="Pipeline numbers"></div>
   <div id="funnel" class="mono"></div>
-  <div class="filters" id="filters"></div>
+  <div class="filters" id="filters" role="tablist" aria-label="Pipeline views"></div>
   <div class="search">
-    <input class="inp" id="q" placeholder="Search name, business, city, notes…" style="width:100%">
+    <input class="inp" id="q" type="search" aria-label="Search" placeholder="Search name, business, city, notes…" style="width:100%" autocomplete="off">
     <div class="fbar">
-      <select class="inp" id="tierSel">
+      <select class="inp" id="tierSel" aria-label="Tier">
         <option value="">All tiers</option><option value="A">Tier A</option><option value="B">Tier B</option><option value="C">Tier C</option>
       </select>
-      <select class="inp" id="citySel"><option value="">All cities</option></select>
-      <select class="inp" id="venueSel"><option value="">All venues</option></select>
-      <select class="inp" id="sortSel">
+      <select class="inp" id="citySel" aria-label="City"><option value="">All cities</option></select>
+      <select class="inp" id="venueSel" aria-label="Venue type"><option value="">All venues</option></select>
+      <select class="inp" id="sortSel" aria-label="Sort">
         <option value="new">Newest first</option>
         <option value="score">Score high→low</option>
         <option value="city">City A→Z</option>
@@ -233,99 +290,130 @@ footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 40px
       <button class="ftab" id="clearFilters" style="white-space:nowrap">Clear</button>
     </div>
   </div>
-  <div id="blitz" style="display:none;position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto">
+  <div id="blitz" role="dialog" aria-modal="true" aria-label="Door run" style="display:none;position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto">
     <div style="max-width:560px;margin:0 auto;padding:18px 16px 40px">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--cream);padding-bottom:12px">
-        <b style="font-family:'Archivo';text-transform:uppercase;letter-spacing:-.01em">Blitz Run</b>
+        <b style="font-family:'Archivo';text-transform:uppercase;letter-spacing:-.01em">Door Run</b>
         <div style="display:flex;gap:8px;align-items:center">
-          <span class="mono" id="bzProg" style="font-size:11px;color:var(--gold-deep)"></span>
+          <span class="mono" id="bzProg" style="font-size:12px;color:var(--gold-deep)" aria-live="polite"></span>
           <button class="refresh" id="bzEnd">End</button>
         </div>
       </div>
       <div id="bzBody"></div>
     </div>
   </div>
-  <input type="file" id="photoInput" accept="image/*" multiple hidden>
+  <input type="file" id="photoInput" accept="image/*" multiple hidden aria-hidden="true">
   <style>.leaflet-popup-content-wrapper{background:#fff!important;color:#111!important;border-radius:8px!important;box-shadow:0 8px 24px rgba(0,0,0,.25)!important}.leaflet-popup-content button{background:#F3F1EC;border:1px solid #C9C2B4;border-radius:6px;font-family:inherit}</style>
-  <div id="opsView" style="display:none;position:fixed;inset:0;z-index:88;background:var(--bg);overflow-y:auto">
+  <div id="opsView" role="dialog" aria-modal="true" aria-label="Ops — mileage and expenses" style="display:none;position:fixed;inset:0;z-index:88;background:var(--bg);overflow-y:auto">
     <div style="max-width:560px;margin:0 auto;padding:14px 16px 60px">
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
         <button class="refresh" id="opsClose">← Back</button>
-        <span class="mono" style="font-size:10px;letter-spacing:.14em;color:var(--taupe)">OPS · MILEAGE &amp; EXPENSES</span>
+        <span class="mono" style="font-size:11px;letter-spacing:.14em;color:var(--taupe)">OPS · MILEAGE &amp; EXPENSES</span>
       </div>
 
       <!-- MILEAGE -->
       <div style="background:var(--panel);border:2px solid var(--cream);padding:16px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:baseline">
           <b style="font-family:'Archivo';font-size:18px;text-transform:uppercase">Mileage</b>
-          <span class="mono" style="font-size:10px;color:var(--taupe)" id="miMonth"></span>
+          <span class="mono" style="font-size:11px;color:var(--taupe)" id="miMonth"></span>
         </div>
         <button class="btn" id="tripBtn" style="margin-top:12px">▶ Start trip</button>
-        <div id="tripStat" class="mono" style="font-size:11px;color:var(--gold-deep);margin-top:8px;min-height:16px"></div>
+        <div id="tripStat" class="mono" aria-live="polite" style="font-size:12px;color:var(--gold-deep);margin-top:8px;min-height:16px"></div>
         <div id="tripPurpose" style="display:none;gap:6px;flex-wrap:wrap;margin-top:8px">
-          <span class="mono" style="font-size:10px;color:var(--taupe);width:100%">SAVE TRIP AS:</span>
+          <span class="mono" style="font-size:11px;color:var(--taupe);width:100%">SAVE TRIP AS:</span>
           <button class="act" data-tp="Prospecting">Prospecting</button>
           <button class="act" data-tp="Stocking run">Stocking run</button>
           <button class="act" data-tp="Install / service">Install / service</button>
           <button class="act" data-tp="Other business">Other</button>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:flex-end">
-          <div><label class="mono" style="font-size:9px;color:var(--taupe)">DATE</label><input class="inp" type="date" id="miDate" style="padding:8px"></div>
-          <div style="width:74px"><label class="mono" style="font-size:9px;color:var(--taupe)">MILES</label><input class="inp" type="number" step="0.1" min="0" id="miMiles" placeholder="12.4" style="padding:8px"></div>
-          <div style="flex:1;min-width:110px"><label class="mono" style="font-size:9px;color:var(--taupe)">PURPOSE</label><select class="inp" id="miPurpose" style="padding:8px"><option>Prospecting</option><option>Stocking run</option><option>Install / service</option><option>Other business</option></select></div>
+          <div><label class="mono" for="miDate" style="font-size:10.5px;color:var(--taupe)">DATE</label><input class="inp" type="date" id="miDate" style="padding:8px"></div>
+          <div style="width:84px"><label class="mono" for="miMiles" style="font-size:10.5px;color:var(--taupe)">MILES</label><input class="inp" type="number" inputmode="decimal" step="0.1" min="0" id="miMiles" placeholder="12.4" style="padding:8px"></div>
+          <div style="flex:1;min-width:110px"><label class="mono" for="miPurpose" style="font-size:10.5px;color:var(--taupe)">PURPOSE</label><select class="inp" id="miPurpose" style="padding:8px"><option>Prospecting</option><option>Stocking run</option><option>Install / service</option><option>Other business</option></select></div>
           <button class="act" id="miAdd" style="padding:10px 14px">Add</button>
         </div>
         <div id="miList" style="margin-top:12px"></div>
         <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
-          <span class="mono" style="font-size:9px;color:var(--taupe)">RATE $/MI</span>
-          <input class="inp" type="number" step="0.005" id="miRate" style="width:80px;padding:6px 8px">
+          <label class="mono" for="miRate" style="font-size:10.5px;color:var(--taupe)">RATE $/MI</label>
+          <input class="inp" type="number" inputmode="decimal" step="0.005" id="miRate" style="width:90px;padding:8px">
           <button class="act" id="miCsv" style="margin-left:auto">Export CSV</button>
         </div>
-        <div class="mono" style="font-size:9px;color:var(--taupe);margin-top:10px">GPS TRACKING NEEDS THE SCREEN ON — KEEP COMMAND OPEN WHILE DRIVING. SET THE RATE TO THE CURRENT IRS STANDARD MILEAGE RATE.</div>
+        <div class="mono" style="font-size:10.5px;color:var(--taupe);margin-top:10px">GPS TRACKING NEEDS THE SCREEN ON — KEEP COMMAND OPEN WHILE DRIVING. SET THE RATE TO THE CURRENT IRS STANDARD MILEAGE RATE.</div>
       </div>
 
       <!-- EXPENSES -->
       <div style="background:var(--panel);border:2px solid var(--cream);padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:baseline">
           <b style="font-family:'Archivo';font-size:18px;text-transform:uppercase">Expenses</b>
-          <span class="mono" style="font-size:10px;color:var(--taupe)" id="exMonth"></span>
+          <span class="mono" style="font-size:11px;color:var(--taupe)" id="exMonth"></span>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:flex-end">
-          <div><label class="mono" style="font-size:9px;color:var(--taupe)">DATE</label><input class="inp" type="date" id="exDate" style="padding:8px"></div>
-          <div style="flex:1;min-width:110px"><label class="mono" style="font-size:9px;color:var(--taupe)">VENDOR</label><input class="inp" id="exVendor" placeholder="Costco" style="padding:8px"></div>
-          <div style="width:90px"><label class="mono" style="font-size:9px;color:var(--taupe)">AMOUNT $</label><input class="inp" type="number" step="0.01" min="0" id="exAmount" placeholder="212.40" style="padding:8px"></div>
+          <div><label class="mono" for="exDate" style="font-size:10.5px;color:var(--taupe)">DATE</label><input class="inp" type="date" id="exDate" style="padding:8px"></div>
+          <div style="flex:1;min-width:110px"><label class="mono" for="exVendor" style="font-size:10.5px;color:var(--taupe)">VENDOR</label><input class="inp" id="exVendor" placeholder="Costco" style="padding:8px" autocapitalize="words"></div>
+          <div style="width:100px"><label class="mono" for="exAmount" style="font-size:10.5px;color:var(--taupe)">AMOUNT $</label><input class="inp" type="number" inputmode="decimal" step="0.01" min="0" id="exAmount" placeholder="212.40" style="padding:8px"></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px;align-items:flex-end">
-          <div style="flex:1"><label class="mono" style="font-size:9px;color:var(--taupe)">NOTE (WHICH MACHINES / WHAT FOR)</label><input class="inp" id="exNote" placeholder="Weekly fill — W-001, W-002" style="padding:8px"></div>
-          <button class="act" id="exAdd" style="padding:10px 14px">Add</button>
+          <div style="flex:1"><label class="mono" for="exNote" style="font-size:10.5px;color:var(--taupe)">NOTE (WHICH MACHINES / WHAT FOR)</label><input class="inp" id="exNote" placeholder="Weekly fill — W-001, W-002" style="padding:8px"></div>
+          <button class="act" id="exAdd" style="padding:10px 14px">Add</button><button class="act" id="exScan" style="padding:10px 14px">Scan receipt</button>
         </div>
         <div id="exList" style="margin-top:12px"></div>
         <div style="display:flex;margin-top:12px"><button class="act" id="exCsv" style="margin-left:auto">Export CSV</button></div>
       </div>
     </div>
   </div>
-  <div id="mapView" style="display:none;position:fixed;inset:0;z-index:90;background:var(--bg)">
+  <div id="mapView" role="dialog" aria-modal="true" aria-label="Territory map" style="display:none;position:fixed;inset:0;z-index:90;background:var(--bg)">
     <div style="position:absolute;top:0;left:0;right:0;z-index:1000;display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--line)">
       <button class="refresh" id="mapClose">← Back</button>
-      <span class="mono" style="font-size:10px;letter-spacing:.14em;color:var(--taupe)">TERRITORY MAP</span>
-      <span id="mapLegend" style="margin-left:auto;font-size:10px;color:var(--taupe)"></span>
+      <span class="mono" style="font-size:11px;letter-spacing:.14em;color:var(--taupe)">TERRITORY MAP</span>
+      <span id="mapLegend" style="margin-left:auto;font-size:11px;color:var(--taupe)"></span>
     </div>
-    <div id="mapEl" style="position:absolute;inset:0;top:49px"></div>
+    <div id="mapEl" style="position:absolute;inset:0;top:49px" aria-label="Map of prospects" role="region"></div>
   </div>
-  <div id="routeBar" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;z-index:60;gap:8px;align-items:center"><button class="refresh" id="btnRouteClear" style="background:var(--panel)">Clear</button><button class="btn" id="btnRoute" style="width:auto;margin:0;box-shadow:0 8px 24px rgba(17,17,15,.25)">Route (0)</button></div>
+  <div id="addView" role="dialog" aria-modal="true" aria-label="Add a prospect">
+    <div style="max-width:560px;margin:0 auto;padding:14px 16px 60px">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+        <button class="refresh" id="addClose">← Back</button>
+        <span class="mono" id="addTitle" style="font-size:11px;letter-spacing:.14em;color:var(--taupe)">ADD A PROSPECT</span>
+      </div>
+      <p style="color:var(--muted);font-size:13px">Found a spot that isn't in the list? Add it here and work it like any other card. Standing at the door? Your location is saved with it.</p>
+      <form id="addForm" autocomplete="off" novalidate>
+        <label class="f"><span>BUSINESS *</span><input class="inp" id="adCo" required autocapitalize="words" placeholder="Harpeth Car Wash"></label>
+        <div class="row2">
+          <label class="f"><span>VENUE TYPE</span><select class="inp" id="adVenue"></select></label>
+          <label class="f"><span>CITY</span><select class="inp" id="adCity"></select></label>
+        </div>
+        <label class="f" id="adCityOtherWrap" style="display:none"><span>CITY NAME</span><input class="inp" id="adCityOther" autocapitalize="words" placeholder="Nolensville"></label>
+        <label class="f"><span>ADDRESS</span><input class="inp" id="adAddr" autocapitalize="words" placeholder="1234 Main St, Franklin, TN"></label>
+        <div class="row2">
+          <label class="f"><span>PHONE</span><input class="inp" id="adPhone" type="tel" inputmode="tel" placeholder="615-555-0100"></label>
+          <label class="f"><span>WEBSITE</span><input class="inp" id="adWeb" inputmode="url" autocapitalize="off" placeholder="harpethcarwash.com"></label>
+        </div>
+        <div class="row2">
+          <label class="f"><span>DECISION-MAKER</span><input class="inp" id="adDm" autocapitalize="words" placeholder="Dana Smith"></label>
+          <label class="f"><span>TITLE</span><input class="inp" id="adDmT" autocapitalize="words" placeholder="GM"></label>
+        </div>
+        <label class="f"><span>WHAT YOU SAW</span><input class="inp" id="adIntel" placeholder="Busy lobby, outlet by the door, no vending"></label>
+        <div id="adLoc" class="mono" style="font-size:11px;color:var(--taupe);margin-top:10px;min-height:16px"></div>
+        <div id="adErr" style="color:var(--red);font-size:13px;min-height:18px;margin-top:6px" aria-live="polite"></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><button type="submit" class="btn" id="adSave" style="margin:0;width:auto;padding:13px 22px">Save prospect</button><button type="button" class="act" id="adDelete" style="display:none;margin-left:auto">Delete</button></div>
+      </form>
+    </div>
+  </div>
+  <div id="routeBar" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;z-index:60;gap:8px;align-items:center"><button class="refresh" id="btnRouteClear" style="background:var(--panel)">Clear</button><button class="btn" id="btnRoute" style="width:auto;margin:0;box-shadow:0 8px 24px rgba(17,17,15,.25)" aria-live="polite">Route (0)</button></div>
   <div id="list"><div class="loading">AWAITING KEY…</div></div>
 </main>
 
-<footer>WRAPT COMMAND · leads refresh on open · statuses &amp; notes save automatically</footer>
+<footer>WRAPT COMMAND · leads refresh on open · statuses &amp; notes save automatically · <span id="verTag" class="mono"></span></footer>
 
 <script>
+const BUILD='2026.10.06';
 const FN='/.netlify/functions';
-let KEY='', LEADS=[], FILTER='active', Q='';
+let KEY='', LEADS=[], FILTER='today', Q='';
 const $=id=>document.getElementById(id);
 /* local calendar day (Central), never the UTC day — after 7pm the two differ */
 const todayISO=()=>new Date().toLocaleDateString('en-CA');
 const tmo=ms=>(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)?AbortSignal.timeout(ms):undefined; // older Safari: no timeout rather than a crash
-const isoDays=n=>new Date(Date.now()+n*864e5).toLocaleDateString('en-CA');
+const isoDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString('en-CA');}; // calendar days: +n*24h lands on the wrong day across DST
 function stamp(){return new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric'})+' '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');}
 const STATUSES=['prospect','new','contacted','proposal','signed','waitlist','installed','dead'];
 const SLABEL={prospect:'Prospect',new:'New',contacted:'Contacted',proposal:'Proposal',signed:'Signed',waitlist:'Waitlisted',installed:'Installed',dead:'Dead'};
@@ -786,13 +874,6 @@ async function tryKey(){
 }
 $('keyBtn').addEventListener('click',tryKey);
 $('keyInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryKey()});
-// No-key mode: if the server has no DASH_KEY set, open straight into the pipeline.
-(async()=>{
-  try{const saved=localStorage.getItem('w_key');if(saved)KEY=saved;}catch(e){}
-  const ok=await load(true);
-  if(ok){$('gate').style.display='none';}
-  else{KEY='';LEADS=[];$('gate').style.display='';$('list').innerHTML='<div class="loading">AWAITING KEY…</div>';}
-})();
 
 /* ---------- data ---------- */
 let LAST_ERR='';let LAST_ERR_MSG='';let TRAFFIC=null;let SORT='new';let FCITY='';let FVENUE='';const ROUTE=new Set();const PHOTOS=new Set();let PHOTO_ID=null;let SHOWN=80;let FTIER='';
@@ -820,11 +901,12 @@ try{
 function saveView(){try{localStorage.setItem('w_view',JSON.stringify({f:FILTER,c:FCITY,v:FVENUE,s:SORT,t:FTIER}));}catch(e){}}
 function saveRoute(){try{sessionStorage.setItem('w_route',JSON.stringify([...ROUTE]));}catch(e){}}
 async function load(silent){
+  LAST_ERR='';LAST_ERR_MSG='';
   if(!silent)$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   let c=null;try{c=JSON.parse(localStorage.getItem('w_cache')||'null');}catch(e2){}
   let savedKey='';try{savedKey=localStorage.getItem('w_key')||'';}catch(e2){}
   // cache-first: on a key this phone already used, show the saved list right away and refresh behind it
-  if(c&&c.j&&!LEADS.length&&KEY&&KEY===savedKey){OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();$('gate').style.display='none';}
+  if(c&&c.j&&!LEADS.length&&KEY===savedKey){OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);bgRender();$('gate').style.display='none';}
   try{
     const r=await fetch(FN+'/leads',{headers:{'X-Dash-Key':KEY},signal:tmo(10000)});
     if(!r.ok){
@@ -834,27 +916,102 @@ async function load(silent){
       throw new Error(r.status);
     }
     const j=await r.json();
+    await loadField();
     try{localStorage.setItem('w_cache',JSON.stringify({j:{leads:j.leads||[],meta:j.meta||{}},t:Date.now()}));}catch(e){}
-    OFFLINE=false;buildFrom(j);applyQueuedLocally();updateBanner();flushQueue();
+    OFFLINE=false;buildFrom(j);applyQueuedLocally();updateBanner();flushQueue();loadBrief();
     fetch(FN+'/track',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(t=>{if(t){TRAFFIC=t;renderStats();}}).catch(()=>{});
-    fetch(FN+'/photo?list=1',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ids){const before=[...PHOTOS].sort().join();PHOTOS.clear();j.ids.forEach(i=>PHOTOS.add(i));if([...PHOTOS].sort().join()!==before)render();}}).catch(()=>{});
-    render();
+    fetch(FN+'/photo?list=1',{headers:{'X-Dash-Key':KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.ids){const before=[...PHOTOS].sort().join();PHOTOS.clear();j.ids.forEach(i=>PHOTOS.add(i));if([...PHOTOS].sort().join()!==before)bgRender();}}).catch(()=>{});
+    bgRender();
     return true;
   }catch(e){
     if(LAST_ERR!=='auth'&&!String(e.message).match(/^\d+$/))LAST_ERR='offline';
-    if(LAST_ERR==='offline'){
+    if(LAST_ERR==='offline'||/^server 5/.test(LAST_ERR)){ // a 5xx is an outage, not a bad key: keep working from the saved list
       if(c&&c.j){
-        OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);render();
+        OFFLINE=true;buildFrom(c.j);applyQueuedLocally();updateBanner(c.t);bgRender();
         return true;
       }
     }
-    if(!silent)$('list').innerHTML='<div class="empty">Could not load leads.<br>Check NETLIFY_AUTH_TOKEN env var.</div>';
+    if(!silent)$('list').innerHTML='<div class="empty">Couldn\'t reach the pipeline. Check signal, then tap ⋯ → Refresh.</div>';
     return false;
   }
 }
 let OFFLINE=false;
 /* rebranded prospects: [current name, former name]. The former name lands in intel (still searchable) and never in customer-facing copy. */
 const RENAMES={'pros-a35':['Camden Gulch','Harlowe Apartments'],'pros-x14':['Franklin Bridge Golf Club','Forrest Crossing Golf Course'],'pros-l04':['Nashville Laundry','Bellevue Coin Laundry'],'pros-h29':['Comfort Suites Columbia I-65','Comfort Inn Columbia']};
+/* "YYYY-MM-DD" is a Central calendar day — never parse it as UTC midnight (that made the install clock slip after 7pm) */
+function dLocal(s){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(s);}
+/* ---------- prospects added from the field (stored whole in the ops "prospects" doc, incl. their own status/notes) ---------- */
+let FIELD={items:[]},FIELD_LOCAL=false;
+// start from the phone's copy: a cold offline open never runs loadField(), and a sync from an empty FIELD would wipe unsynced prospects
+try{const f=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');if(f&&Array.isArray(f.items))FIELD=f;}catch(_){}
+/* agents (inbox, ack) write to lead-status under the same id: the phone's copy leads, server note lines it lacks are appended, blanks filled */
+function mergeFieldMeta(pm,sm){
+  const m=Object.assign({},sm,pm),have=new Set(String(pm.note||'').split('\n'));
+  const extra=String(sm.note||'').split('\n').filter(x=>x.trim()&&!have.has(x));
+  m.note=extra.length?(pm.note?pm.note+'\n':'')+extra.join('\n'):(pm.note||'');
+  for(const k of ['followup','email','phone','coi'])m[k]=pm[k]||sm[k]||'';
+  return m;
+}
+function fieldLeads(meta){
+  return (FIELD.items||[]).map(p=>{const m=mergeFieldMeta(p.meta||{},meta[p.id]||{});return {
+    id:p.id,created_at:null,prospect:true,field:true,
+    data:{name:'',company:p.company||'',venue_type:p.venue_type||'',city:p.city||'',address:p.address||'',phone:p.phone||'',website:p.website||'',size:'',brand:'',intel:p.intel||'',lead_type:'Prospect'},
+    fit:p.fit||70,flag:'',lat:p.lat,lng:p.lng,geoApprox:!p.lat,
+    status:m.status||'prospect',payout:m.payout||'',followup:m.followup||'',metaPhone:m.phone||'',metaEmail:m.email||'',signed_at:m.signed_at||'',coi:m.coi||'',note:m.note||''};});
+}
+/* unsynced local copies of whole docs (prospects, mileage, expenses): while dirty, the phone's copy wins and is pushed */
+function isDirty(doc){try{return localStorage.getItem('w_dirty_'+doc)==='1'}catch(_){return false}}
+function setDirty(doc,on){try{on?localStorage.setItem('w_dirty_'+doc,'1'):localStorage.removeItem('w_dirty_'+doc);}catch(_){}}
+const DOC_SEQ={};
+/* two phones, one doc: every save sends the `updated` stamp it last saw (base). If the server copy moved on,
+   ops.js answers 409 with it; we merge (phone's items win, server-only items kept, local deletes stay deleted) and save again */
+function updOf(doc){try{return localStorage.getItem('w_ops_upd_'+doc)||''}catch(_){return ''}}
+function setUpd(doc,u){try{u?localStorage.setItem('w_ops_upd_'+doc,u):localStorage.removeItem('w_ops_upd_'+doc);}catch(_){}}
+function opKey(x){return x&&x.id?'id:'+x.id:'v:'+JSON.stringify([x&&x.d,x&&x.mi,x&&x.p,x&&x.n,x&&x.a,x&&x.v])} // trips carry no id
+function noteDel(doc,x){try{const k='w_ops_del_'+doc,a=JSON.parse(localStorage.getItem(k)||'[]');a.push(opKey(x));localStorage.setItem(k,JSON.stringify(a.slice(-200)));}catch(_){}}
+function delsOf(doc){try{return new Set(JSON.parse(localStorage.getItem('w_ops_del_'+doc)||'[]'))}catch(_){return new Set()}}
+function mergeDoc(doc,local,server){
+  if(!server)return local;if(!local)return server;
+  const f=doc==='mileage'?'trips':'items',mine=local[f]||[],have=new Set(mine.map(opKey)),del=delsOf(doc);
+  const all=[...mine,...(server[f]||[]).filter(x=>!have.has(opKey(x))&&!del.has(opKey(x)))];
+  if(doc!=='prospects')all.sort((a,b)=>String(b.d||'').localeCompare(String(a.d||''))); // logs read newest-first
+  return Object.assign({},server,local,{[f]:all});
+}
+async function opsPost(doc,data){ // → {updated} | {conflict,data,updated}; throws on no signal / other errors
+  const r=await fetch(FN+'/ops',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({doc,data,base:updOf(doc)}),signal:tmo(8000)});
+  const j=await r.json().catch(()=>({}));
+  if(r.status===409)return {conflict:true,data:j.data,updated:j.updated};
+  if(!r.ok)throw new Error(r.status);
+  return j;
+}
+async function opsPush(doc,get,set){ // one save with one merge-and-retry; returns true when the server has it
+  let j=await opsPost(doc,get());
+  if(j.conflict){set(mergeDoc(doc,get(),j.data));setUpd(doc,j.updated);try{localStorage.setItem('w_ops_'+doc,JSON.stringify(get()));}catch(_){}j=await opsPost(doc,get());if(j.conflict)throw new Error('409');}
+  setUpd(doc,j.updated);return true;
+}
+async function loadField(){
+  let remote=null,upd='';
+  try{const r=await fetch(FN+'/ops?doc=prospects',{headers:{'X-Dash-Key':KEY},signal:tmo(8000)});if(r.ok){const j=await r.json();upd=j&&j.updated||'';if(j&&j.data&&Array.isArray(j.data.items))remote=j.data;}}catch(_){}
+  let local=null;try{local=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');}catch(_){}
+  if(local&&Array.isArray(local.items)&&(isDirty('prospects')||!remote)){FIELD=local;if(remote&&isDirty('prospects'))saveField();} // keep the old stamp: the push merges if the server moved on
+  else if(remote){FIELD=remote;setUpd('prospects',upd);}
+  try{localStorage.setItem('w_ops_prospects',JSON.stringify(FIELD));}catch(_){}
+}
+async function saveField(){
+  try{localStorage.setItem('w_ops_prospects',JSON.stringify(FIELD));}catch(_){}
+  setDirty('prospects',1);const seq=DOC_SEQ.prospects=(DOC_SEQ.prospects||0)+1;
+  try{
+    const n0=(FIELD.items||[]).length;
+    await opsPush('prospects',()=>FIELD,v=>{FIELD=v&&Array.isArray(v.items)?v:FIELD;});
+    FIELD_LOCAL=false;if(seq===DOC_SEQ.prospects){setDirty('prospects',0);try{localStorage.removeItem('w_ops_del_prospects');}catch(_){}}
+    if((FIELD.items||[]).length!==n0)refreshFieldLeads(); // the merge brought in prospects added on another phone
+  }catch(e){const was=FIELD_LOCAL;FIELD_LOCAL=true;if(!was&&String(e.message).match(/^4/))toast('Field prospects are saved on this phone only (server refused the "prospects" doc).');}
+}
+function refreshFieldLeads(){
+  let cm={};try{cm=(JSON.parse(localStorage.getItem('w_cache')||'null')||{}).j?.meta||{};}catch(_){}
+  const fl=fieldLeads(cm),i=LEADS.findIndex(l=>l.field||l.prospect);
+  LEADS=LEADS.filter(l=>!l.field);LEADS.splice(i<0?LEADS.length:i,0,...fl);applyQueuedLocally();fillSelects();bgRender();
+}
 function buildFrom(j){
     const meta=j.meta||{};
     const inbound=(j.leads||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
@@ -870,7 +1027,10 @@ function buildFrom(j){
       coi:meta[p.id]?.coi||'',
       note:meta[p.id]?.note||''
     }));
-    LEADS=[...inbound,...pros];
+    LEADS=[...inbound,...fieldLeads(meta),...pros];
+    fillSelects();
+}
+function fillSelects(){
     const cities=[...new Set(LEADS.map(l=>l.data.city).filter(Boolean))].sort();
     const venues=[...new Set(LEADS.map(l=>l.data.venue_type).filter(Boolean))].sort();
     $('citySel').innerHTML='<option value="">All cities</option>'+cities.map(c=>`<option${c===FCITY?' selected':''}>${esc(c)}</option>`).join('');
@@ -881,6 +1041,7 @@ function getQ(){try{return JSON.parse(localStorage.getItem('w_q')||'[]')}catch(e
 function setQ(q){try{localStorage.setItem('w_q',JSON.stringify(q))}catch(e){}}
 const META_KEYS={phone:'metaPhone',email:'metaEmail'};
 function applyPatch(l,p){for(const k in p)l[META_KEYS[k]||k]=p[k];}
+function cacheMeta(id,p){try{const c=JSON.parse(localStorage.getItem('w_cache')||'null');if(!c||!c.j)return;c.j.meta=c.j.meta||{};c.j.meta[id]=Object.assign(c.j.meta[id]||{},p);localStorage.setItem('w_cache',JSON.stringify(c));}catch(e){}}
 function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(l)applyPatch(l,it.patch);});}
 function updateBanner(cachedAt){
   const q=getQ(),b=$('offBanner');
@@ -892,15 +1053,27 @@ let FLUSHING=false;
 async function flushQueue(){
   if(FLUSHING)return;FLUSHING=true;
   try{
-    let q=getQ();
-    while(q.length){
-      const it=q[0];
-      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...it.patch}),signal:tmo(8000)}).catch(()=>null);
-      if(!r)break;                       // no signal: try again later
-      if(r.status===401){forgetKey();break;}
-      if(!r.ok&&r.status<500){q.shift();setQ(q);continue;} // server rejected it: drop, don't wedge the queue
-      if(!r.ok)break;
-      q.shift();setQ(q);
+    let net=true;const rej=[];
+    for(let it;(it=getQ()[0]);){
+      const sent=Object.assign({},it.patch);
+      const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...sent}),signal:tmo(8000)}).catch(()=>null);
+      if(!r){net=false;break;}           // no signal: try again later
+      if(r.status===401){forgetKey();net=false;break;}
+      if(!r.ok&&r.status>=500){net=false;break;}
+      if(!r.ok)rej.push(it.id);
+      // sent (or rejected: drop, don't wedge the queue). Re-read — edits made while this was in flight stay queued.
+      const q=getQ(),cur=q.find(x=>x.id===it.id&&x.t===it.t);
+      if(cur){for(const k in sent)if(JSON.stringify(cur.patch[k])===JSON.stringify(sent[k]))delete cur.patch[k];if(!Object.keys(cur.patch).length)q.splice(q.indexOf(cur),1);setQ(q);}
+      else break; // queue was cleared under us (Lock / bad key)
+    }
+    if(net){ // signal's good: push any whole docs that only saved on the phone
+      if(isDirty('prospects')){if(!FIELD.items.length)try{const f=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');if(f&&Array.isArray(f.items))FIELD=f;}catch(_){}if(FIELD.items.length)saveField();} // never push an empty list over unsynced work
+      for(const d of ['mileage','expenses'])if(isDirty(d)){if(!OPS[d])try{OPS[d]=JSON.parse(localStorage.getItem('w_ops_'+d)||'null');}catch(_){}if(OPS[d])opsSave(d,true);}
+    }
+    if(rej.length){ // the server refused a queued change: say so, and reload so the card shows what was actually saved
+      const l=LEADS.find(x=>x.id===rej[0]);
+      toast(`A change for ${l?(l.data.company||l.data.name||'a card'):'a card'}${rej.length>1?` (+${rej.length-1} more)`:''} was rejected by the server`);
+      setTimeout(()=>load(true),0);
     }
   }finally{FLUSHING=false;OFFLINE=getQ().length&&OFFLINE;updateBanner();}
 }
@@ -909,7 +1082,7 @@ $('btnRefresh').addEventListener('click',()=>load());
 $('btnLock').addEventListener('click',()=>{
   const q=getQ().length;
   if(!confirm((q?q+' update'+(q>1?'s':'')+' haven\'t synced yet and will be lost. ':'')+'Lock Command and wipe the pipeline from this phone?'))return;
-  try{['w_key','w_cache','w_q','w_ops_mileage','w_ops_expenses','w_trip','w_view'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('w_route');}catch(e){}
+  try{['w_key','w_cache','w_q','w_ops_mileage','w_ops_expenses','w_ops_prospects','w_dirty_mileage','w_dirty_expenses','w_dirty_prospects','w_ops_upd_mileage','w_ops_upd_expenses','w_ops_upd_prospects','w_ops_del_mileage','w_ops_del_expenses','w_ops_del_prospects','w_brief','w_brief_open','w_trip','w_view','w_tip'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('w_route');}catch(e){}
   location.reload();
 });
 
@@ -920,22 +1093,37 @@ function forgetKey(){
 }
 async function saveMeta(id,patch,hintEl){
   const l=LEADS.find(x=>x.id===id);
+  const prev={};if(l)for(const k in patch)prev[k]=l[META_KEYS[k]||k];
   if(l)applyPatch(l,patch); // apply once, up front: the UI never waits on the network and late responses can't clobber newer edits
+  if(!(l&&l.field))cacheMeta(id,patch); // the saved list must match, or an offline reopen writes stale notes back
+  if(l&&l.field){ // a field-added prospect carries its own status/notes inside the ops doc
+    const it=(FIELD.items||[]).find(x=>x.id===id);
+    if(it){it.meta=Object.assign(it.meta||{},patch);if(hintEl)hintEl.textContent='saved';renderStats();renderFilters();saveField();return;}
+  }
+  // an older change for this card is still queued: ride behind it in order, never past it
+  {const q=getQ(),qi=q.find(it=>it.id===id);if(qi){Object.assign(qi.patch,patch);setQ(q);if(hintEl)hintEl.textContent='queued — will sync';updateBanner();renderStats();renderFilters();flushQueue();return;}}
   if(hintEl)hintEl.textContent='saving…';
   try{
     const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:tmo(8000)});
     if(!r.ok){
       if(r.status===401){forgetKey();return;}
-      if(r.status<500){if(hintEl)hintEl.textContent='rejected by server ('+r.status+')';renderStats();renderFilters();return;}
+      if(r.status<500){ // the server said no: put the card back the way it was and say so
+        if(l)applyPatch(l,prev);cacheMeta(id,prev);
+        if(hintEl)hintEl.textContent='not saved';
+        toast('Not saved — the server rejected that change ('+r.status+').');
+        render();return;
+      }
       throw new Error(r.status);
     }
     if(hintEl)hintEl.textContent='saved';
     renderStats();renderFilters();
   }catch(e){
     // no signal — keep the local change and queue it for sync
+    // queue only what a newer edit hasn't already superseded
+    const live={};for(const k in patch)if(!l||l[META_KEYS[k]||k]===patch[k])live[k]=patch[k];
     const q=getQ();
     const prev=q.find(it=>it.id===id);
-    if(prev)Object.assign(prev.patch,patch);else q.push({id,patch,t:Date.now()});
+    if(Object.keys(live).length){if(prev)Object.assign(prev.patch,live);else q.push({id,patch:live,t:Date.now()});}
     setQ(q);
     if(hintEl)hintEl.textContent='queued — will sync';
     OFFLINE=true;updateBanner();
@@ -967,12 +1155,20 @@ function lastTouchDays(l){
   });
   return Math.max(0,Math.floor((now-best)/864e5));
 }
+/* typed-but-not-yet-saved notes (700ms debounce): every logger flushes first, so a late save can't erase the new line */
+const NOTE_PEND={};
+function flushNote(id){
+  const p=NOTE_PEND[id];if(!p)return;clearTimeout(p.t);delete NOTE_PEND[id];
+  const l=LEADS.find(x=>x.id===id);if(l&&p.ta.value!==(l.note||''))saveMeta(id,{note:p.ta.value},p.hint);
+}
+function syncNoteBox(id){const l=LEADS.find(x=>x.id===id),ta=document.querySelector(`.lead[data-id="${CSS.escape(id)}"] [data-act="notetext"]`);if(l&&ta)ta.value=l.note||'';}
 function autoLog(id,kind){
+  flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
   const line=`[${stamp()}] ${kind}`;
   if((l.note||'').split('\n').pop()===line)return;
-  l.note=(l.note?l.note+'\n':'')+line;
-  saveMeta(id,{note:l.note});
+  saveMeta(id,{note:(l.note?l.note+'\n':'')+line});
+  syncNoteBox(id); // no re-render here, so the open card's box must show the new line or the next keystroke saves over it
 }
 
 /* ---------- render ---------- */
@@ -994,18 +1190,21 @@ function renderStats(){
   const wk=LEADS.filter(l=>l.created_at&&Date.now()-new Date(l.created_at)<7*864e5).length;
   const hot=LEADS.filter(l=>(+l.data.lead_score||0)>=70&&l.status==='new').length;
   const installed=LEADS.filter(l=>l.status==='installed').length;
-  $('stats').innerHTML=`
-    <div class="stat"><label>Active pipeline</label><b class="g">${active.length}</b></div>
-    <div class="stat"><label>New this week</label><b>${wk}</b></div>
-    <div class="stat"><label>Prospects</label><b>${LEADS.filter(l=>l.status==='prospect').length}</b></div>
-    <div class="stat"><label>Site visits (7d)</label><b>${TRAFFIC?TRAFFIC.week:'–'}</b></div>
-    <div class="stat"><label>Follow-ups due</label><b class="g">${LEADS.filter(fuDue).length}</b></div>
-    <div class="stat"><label>Card scans (all)</label><b class="g">${TRAFFIC?(TRAFFIC.bySrc.card||0)+(TRAFFIC.bySrc.pamphlet||0):'–'}</b></div>
-    <div class="stat"><label>Calc used (all)</label><b class="g">${TRAFFIC?.ev?TRAFFIC.ev.calc_used||0:'–'}</b></div>
-    <div class="stat"><label>Form starts → sent</label><b class="g">${TRAFFIC?.ev?`${TRAFFIC.ev.form_start||0} → ${TRAFFIC.ev.form_submit||0}`:'–'}</b></div>
-    <div class="stat"><label>Hot &amp; untouched</label><b class="g">${hot}</b></div>
-    <div class="stat"><label>Installed</label><b>${installed}</b></div>
-    <div class="stat" id="touchStat" style="cursor:pointer" title="Tap to change weekly goal"><label>Touches this week</label><b class="${touches7d()>=touchGoal()?'g':''}">${touches7d()} / ${touchGoal()}</b></div>`;
+  const due=LEADS.filter(fuDue).length;
+  const st=(label,val,go,cls='')=>`<button type="button" class="stat" data-go="${go}" title="Show ${label.toLowerCase()}"><label>${label}</label><b${cls?' class="'+cls+'"':''}>${val}</b></button>`;
+  $('stats').innerHTML=
+    st('Follow-ups due',due,'today',due?'':'g')+
+    st('Hot &amp; untouched',hot,'new',hot?'':'g')+
+    st('Active pipeline',active.length,'active','g')+
+    `<button type="button" class="stat" id="touchStat" title="Tap to change the weekly goal"><label>Touches this week</label><b class="${touches7d()>=touchGoal()?'g':''}">${touches7d()} / ${touchGoal()}</b></button>`+
+    st('Installed',installed,'installed')+
+    st('New this week',wk,'new')+
+    st('Prospects',LEADS.filter(l=>l.status==='prospect').length,'prospect')+
+    st('Site visits (7d)',TRAFFIC?TRAFFIC.week:'–','','g')+
+    st('Card scans (all)',TRAFFIC?(TRAFFIC.bySrc.card||0)+(TRAFFIC.bySrc.pamphlet||0):'–','','g')+
+    st('Calc used (all)',TRAFFIC?.ev?TRAFFIC.ev.calc_used||0:'–','','g')+
+    st('Form starts → sent',TRAFFIC?.ev?`${TRAFFIC.ev.form_start||0} → ${TRAFFIC.ev.form_submit||0}`:'–','','g');
+  $('stats').querySelectorAll('[data-go]').forEach(b=>{if(!b.dataset.go){b.style.cursor='default';b.removeAttribute('title');return;}b.addEventListener('click',()=>{briefReturn();FILTER=b.dataset.go;SHOWN=80;RECENT.clear();saveView();render();$('filters').scrollIntoView({behavior:'smooth',block:'start'});});});
   $('touchStat').addEventListener('click',()=>{
     const v=prompt('Weekly touch goal:',touchGoal());
     const n=parseInt(v,10);
@@ -1025,7 +1224,7 @@ function weekFunnel(){
       if(k==='NOT NOW'){const r=m[3].replace(/^NOT NOW\s*[—-]\s*/,'').trim();why[r]=(why[r]||0)+1;}
     });
   });
-  const signed=LEADS.filter(l=>l.signed_at&&now-new Date(l.signed_at)<7*864e5).length;
+  const signed=LEADS.filter(l=>l.signed_at&&now-dLocal(l.signed_at)<7*864e5).length;
   const inProp=LEADS.filter(l=>l.status==='proposal').length;
   return {c,why,signed,inProp};
 }
@@ -1054,11 +1253,11 @@ function renderFilters(){
   counts.today=todayPlan().length;
   const tabs=[['today','Today'],['active','Active'],['prospect','Prospects'],['referral','Referrals'],['new','New'],['contacted','Contacted'],['proposal','Proposal'],['signed','Signed'],['waitlist','Waitlist'],['installed','Installed'],['dead','Dead'],['all','All']];
   $('filters').innerHTML=tabs.map(([k,lbl])=>
-    `<button class="ftab${FILTER===k?' on':''}" data-f="${k}">${lbl} <span class="n">${counts[k]??0}</span></button>`).join('');
-  $('filters').querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{FILTER=b.dataset.f;SHOWN=80;RECENT.clear();saveView();render();}));
+    `<button class="ftab${FILTER===k?' on':''}" role="tab" aria-selected="${FILTER===k}" data-f="${k}">${lbl} <span class="n">${counts[k]??0}</span></button>`).join('');
+  $('filters').querySelectorAll('.ftab').forEach(b=>b.addEventListener('click',()=>{briefReturn();FILTER=b.dataset.f;SHOWN=80;RECENT.clear();saveView();render();}));
 }
 /* Today plan: due follow-ups + install deadlines + hot inbound, then untouched Tier A prospects ranked by fit + a known decision-maker, penalised by distance */
-const SUGGEST=new Set();
+const SUGGEST=new Set();let PLAN_IDS=[];
 function todayPlan(){
   const due=LEADS.filter(isToday);
   SUGGEST.clear();
@@ -1066,7 +1265,11 @@ function todayPlan(){
   const _k=l=>(l.fit||0)+(dmOf(l)?8:0)-Math.min(distOf(l)??15,30)*1.5-(l.geoApprox?4:0);cand.sort((a,b)=>_k(b)-_k(a));
   const sug=cand.slice(0,8);
   sug.forEach(l=>SUGGEST.add(l.id));
-  return [...due,...sug];
+  const plan=[...due,...sug],have=new Set(plan.map(l=>l.id));
+  // a door logged from Today stays in its slot (same RECENT rule as the other tabs), instead of vanishing under your thumb
+  PLAN_IDS.forEach((pid,i)=>{if(RECENT.has(pid)&&!have.has(pid)){const l=LEADS.find(x=>x.id===pid);if(l){plan.splice(Math.min(i,plan.length),0,l);have.add(pid);}}});
+  PLAN_IDS=plan.map(l=>l.id);
+  return plan;
 }
 let LOC_TRIED=false;
 function visible(){
@@ -1133,10 +1336,10 @@ Great talking with you about ${co}. Here's your proposal \u2014 it's built from 
 
 ${url}
 
-The short version: we place a custom-wrapped smart cooler in your space at zero cost, we stock and service it weekly, and ${co} keeps 10% of net sales \u2014 paid monthly with a statement.
+The short version: we place a smart cooler in your space at zero cost (wrapped in your branding if you want it), we stock and service it weekly, and after a 90-day trial ${co} keeps 10% of NGR \u2014 paid monthly with a statement for every month the cooler sells $1,000 or more.
 
 Two next steps if you like what you see:
-1. I'll send a wrap mockup in your branding for approval.
+1. If you want the wrap, I'll send a mockup in your branding for approval.
 2. We pick an install window \u2014 it takes about an hour.
 
 Reply here or text me anytime at 615.948.2976.
@@ -1175,14 +1378,14 @@ function doorTouched(l){return /\] (No answer|Left card|Come back|Interested|NOT
 function mailIntro(l){
   const d=l.data,co=d.company||'your location';const em=d.email||l.metaEmail||'';
   const visited=l.prospect&&doorTouched(l);
-  const subj=visited?'Following up from my visit \u2014 a smart cooler for '+co:'Cold drinks at '+co+' \u2014 10% of net sales to you';
+  const subj=visited?'Following up from my visit \u2014 a smart cooler for '+co:'Cold drinks at '+co+' \u2014 10% of NGR to you';
   const body=`Hi ${firstOf(d,l)},
 
-${visited?`I stopped by ${co} ${lastTouchDays(l)===0?'today':'this week'} and wanted to follow up in writing. `:''}I'm Paige, owner of Wrapt here in Franklin. We place glass-front smart coolers in local businesses at no cost to the host \u2014 wrapped in your branding, so it looks like yours.
+${visited?`I stopped by ${co} ${lastTouchDays(l)===0?'today':'this week'} and wanted to follow up in writing. `:''}I'm Paige, owner of Wrapt here in Franklin. We place glass-front smart coolers in local businesses at no cost to the host, with an optional wrap in your branding so it looks like yours.
 
 ${introLine(d.venue_type)}
 
-We install it, stock it and service it weekly. ${co} keeps 10% of net sales, paid monthly with a statement. Nothing to buy, nothing to manage.
+We install it, stock it and service it weekly. After a 90-day trial, ${co} keeps 10% of NGR, paid monthly with a statement. Nothing to buy, nothing to manage.
 
 Could I stop by for 10 minutes this week with a mockup in ${poss(co)} colors? Reply with a day that works, or tell me who I should ask for.
 
@@ -1193,20 +1396,20 @@ Owner, Wrapt
 }
 /* ---------- door scripts ---------- */
 const PITCH_MAP=[
- [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 10% of net sales, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
- [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — wrapped in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 10% of net sales. No cost to the hotel. Is the GM the right person to show a mockup to?`],
- [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We wrap it in {co}'s branding so it photographs like part of the community, the property keeps 10% of net sales, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
- [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — wrapped in {co}'s branding so it looks factory. You keep 10% of net sales, we stock and service it, zero cost. Can I show you a mockup with your logo on it?`],
- [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and it's wrapped in {co}'s branding. You keep 10% of net sales, we do all the stocking and service. Free. Where do folks sit while the dryers run?`],
- [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler wrapped in {co}'s branding: tap, grab a water or tea, done. It upgrades the client experience, you keep 10% of net sales, and we stock and service it — costs you nothing. Want to see the wrap mockup with your logo?`],
- [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We place branded smart coolers — wrapped in {co}'s look — where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 10% of net sales at no cost. Who owns workplace amenities here?`],
- [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, wrapped to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 10% of net sales, and there's no cost. Who would I talk to about placements?`],
- [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler wrapped in {co}'s look: tap, grab, go, no cash handling for your team. 10% of net sales goes back to the ministry, we stock and service it, zero cost. Who handles facilities decisions?`],
- [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. It's wrapped in {co}'s branding, you keep 10% of net sales, and we handle stocking and service. No cost to you. Where do people congregate between games?`],
- [/Public|civic|Library/i,`Hi, I'm Paige — I own Wrapt here in Franklin. We place a smart cooler for visitors and staff: tap a card, grab a drink or snack, no cash for your team to handle. Wrapped in {co}'s look, 10% of net sales back to the facility, we stock and service it, and there's no cost or purchase order — we can provide a certificate of insurance. Who handles vendor placements here?`],
- [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. Wrapped in {co}'s branding, you keep 10% of net sales, we stock and service everything. Free. Could I show you a mockup?`],
+ [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We can wrap it in {co}'s branding so it looks like yours, you keep 10% of NGR, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
+ [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — we can wrap it in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 10% of NGR. No cost to the hotel. Is the GM the right person to show a mockup to?`],
+ [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We can wrap it in {co}'s branding so it photographs like part of the community, the property keeps 10% of NGR, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
+ [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — and we can wrap it in {co}'s branding so it looks factory. You keep 10% of NGR, we stock and service it, zero cost. Can I show you a mockup with your logo on it?`],
+ [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and we can wrap it in {co}'s branding. You keep 10% of NGR, we do all the stocking and service. Free. Where do folks sit while the dryers run?`],
+ [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler, wrapped in {co}'s branding if you like: tap, grab a water or tea, done. It upgrades the client experience, you keep 10% of NGR, and we stock and service it — costs you nothing. Want to see the wrap mockup with your logo?`],
+ [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We place smart coolers — wrapped in {co}'s look if you want — where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 10% of NGR at no cost. Who owns workplace amenities here?`],
+ [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, and we can wrap it to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 10% of NGR, and there's no cost. Who would I talk to about placements?`],
+ [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler, wrapped in {co}'s look if you like: tap, grab, go, no cash handling for your team. 10% of NGR goes back to the ministry, we stock and service it, zero cost. Who handles facilities decisions?`],
+ [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. We can wrap it in {co}'s branding, you keep 10% of NGR, and we handle stocking and service. No cost to you. Where do people congregate between games?`],
+ [/Public|civic|Library/i,`Hi, I'm Paige — I own Wrapt here in Franklin. We place a smart cooler for visitors and staff: tap a card, grab a drink or snack, no cash for your team to handle. Wrap it in {co}'s look if you like, 10% of NGR back to the facility, we stock and service it, and there's no cost or purchase order — we can provide a certificate of insurance. Who handles vendor placements here?`],
+ [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. We can wrap it in {co}'s branding, you keep 10% of NGR, we stock and service everything. Free. Could I show you a mockup?`],
 ];
-const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We wrap it edge-to-edge in {co}'s branding so it looks like yours, you keep 10% of net sales, and we handle all stocking and service. It costs you nothing. Where would this get the most traffic?`;
+const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We can wrap it in {co}'s branding so it looks like yours, you keep 10% of NGR, and we handle all stocking and service. It costs you nothing. Where would this get the most traffic?`;
 function pitchFor(l){
   const vt=l.data.venue_type||'';
   const hit=PITCH_MAP.find(([re])=>re.test(vt));
@@ -1233,7 +1436,7 @@ const OBJECTIONS=[
  [`"We already have a vending company."`,`Keep them. Ours is a cold cooler, not a snack machine — it goes where theirs isn't: the lobby, the second floor, the waiting area. When is their term up? I'll make a note.`],
  [`"No room."`,`Three feet of wall and a regular outlet — a hotel-room fridge stood on end. Show me the spot you think it won't fit.`],
  [`"Power?"`,`One standard 110V outlet, same draw as a kitchen fridge. If the outlet is a few feet off, we bring the cord cover.`],
- [`"Who eats theft or spoilage?"`,`We do. The door only unlocks after a card is tapped, so every grab is paid for, and the inventory is ours — expired or damaged product is our loss. Your 10% is on net sales of what sells.`],
+ [`"Who eats theft or spoilage?"`,`We do. The door only unlocks after a card is tapped, so every grab is paid for, and the inventory is ours — expired or damaged product is our loss. Your 10% is on NGR of what sells.`],
  [`"How long am I locked in?"`,`It's a multi-year placement — we're putting a machine and a custom wrap on your wall, so we ask for three to five years. Two pages, statement every month. If the mix isn't working we change the mix, not the deal.`],
 ];
 function pitchHtml(l){
@@ -1242,7 +1445,7 @@ function pitchHtml(l){
     +`<div class="mono pitch-lbl">IF IT'S NOT THE DECISION-MAKER</div><div>${esc(GATEKEEPER)}</div>`
     +`<details style="margin-top:8px"><summary class="mono pitch-lbl" style="cursor:pointer;margin-top:0">OBJECTIONS ▾</summary>${OBJECTIONS.map(([q,a])=>`<div style="margin-top:6px"><b>${esc(q)}</b><br>${esc(a)}</div>`).join('')}</details>`;
 }
-function installDaysLeft(l){if(!l.signed_at)return null;return 14-Math.floor((Date.now()-new Date(l.signed_at))/864e5)}
+function installDaysLeft(l){if(!l.signed_at)return null;return 14-Math.floor((Date.now()-dLocal(l.signed_at))/864e5)}
 function isToday(l){return fuDue(l)||(l.status==='signed'&&l.signed_at&&installDaysLeft(l)<=4)||(!l.prospect&&(+l.data.lead_score||0)>=70&&['new','contacted'].includes(l.status))}
 function leadCard(l){
   const d=l.data, s=+d.lead_score||0;
@@ -1252,7 +1455,7 @@ function leadCard(l){
   const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
   const smsCo=d.company||'your location',smsCold=l.prospect&&['prospect','contacted'].includes(l.status);
   const smsBody=encodeURIComponent(smsCold
-    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place branded smart coolers at no cost to the host; ${smsCo} would keep 10% of net sales. Could I stop by for 10 min this week with a mockup?`
+    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place smart coolers at no cost to the host (wrapped in your branding if you like); ${smsCo} would keep 10% of NGR. Could I stop by for 10 min this week with a mockup?`
     :`Hi ${firstOf(d,l)} — Paige with Wrapt, following up on the smart cooler for ${smsCo}. Any questions I can answer, or a good day to swing by with the mockup?`);
   const tags=[];
   const tier=tierOf(l);
@@ -1266,12 +1469,12 @@ function leadCard(l){
   if(fuDue(l))tags.push(`<span class="age-flag">FOLLOW-UP DUE</span>`);
   if(l.status==='signed'&&l.signed_at){
     const dl=installDaysLeft(l);
-    const by=new Date(new Date(l.signed_at).getTime()+14*864e5).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const by=new Date(dLocal(l.signed_at).getTime()+14*864e5).toLocaleDateString('en-US',{month:'short',day:'numeric'});
     tags.push(dl<0?`<span class="age-flag">INSTALL OVERDUE ${-dl}D</span>`
       :`<span class="tag" style="${dl<=4?'color:var(--red);border-color:var(--red);font-weight:700':'color:var(--gold-deep);border-color:var(--gold)'}">INSTALL BY ${by.toUpperCase()} · ${dl}D LEFT</span>`);
   }
   if(l.status==='waitlist')tags.push(`<span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">WAITLISTED · NEEDS A MACHINE</span>`);
-  if(['proposal','signed','waitlist','installed'].includes(l.status)&&l.coi)tags.push(`<span class="tag${l.coi==='requested'?' pain':''}">${l.coi==='requested'?'COI REQUESTED — SEND IT':'COI SENT ✓'}</span>`);
+  if(['proposal','signed','waitlist','installed'].includes(l.status)&&l.coi)tags.push(`<span class="tag${l.coi==='requested'?' pain':''}">${l.coi==='requested'?'INSURANCE FORM REQUESTED — SEND IT':'INSURANCE FORM SENT ✓'}</span>`);
   if(isReferral(l))tags.push('<span class="tag pain">REFERRAL</span>');
   if(d.current_vending)tags.push(`<span class="tag${d.current_vending.includes('underperform')?' pain':''}">${esc(d.current_vending)}</span>`);
   if(d.product_interests)tags.push(`<span class="tag">${esc(d.product_interests)}</span>`);
@@ -1289,16 +1492,20 @@ function leadCard(l){
   }));
   const mapsQ=d.address||`${(isReferral(l)&&d.referred_business)||d.company||''} ${d.city||''} TN`;
   const urgency=fuDue(l)?' u-due':(!l.prospect&&s>=70&&['new','contacted'].includes(l.status)?' u-hot':'');
-  return `<div class="lead${urgency}" data-id="${esc(l.id)}">
+  return `<div class="lead${urgency}${l.field?' field':''}" data-id="${esc(l.id)}">
     <div class="l-top">
-      ${l.prospect?`<label style="display:flex;align-items:center;margin-right:4px;padding:12px 8px 12px 0"><input type="checkbox" data-act="route" style="width:18px;height:18px;accent-color:#B37922"${ROUTE.has(l.id)?' checked':''}></label>${l.flag?`<div class="score" style="color:var(--red);border-color:var(--red)">✕<small>${l.flag==='closed'?'CLOSED':'DUPE'}</small></div>`:`<div class="score ${scoreTier(l.fit||0)}">${l.fit||'P'}<small>FIT</small></div>`}`:`<div class="score ${scoreTier(s)}">${s}<small>SCORE</small></div>`}
+      ${l.prospect?`<label style="display:flex;align-items:center;margin-right:4px;padding:12px 8px 12px 0"><input type="checkbox" data-act="route" aria-label="Add to route" style="width:18px;height:18px;accent-color:#B37922"${ROUTE.has(l.id)?' checked':''}></label>${l.flag?`<div class="score" style="color:var(--red);border-color:var(--red)">✕<small>${l.flag==='closed'?'CLOSED':'DUPE'}</small></div>`:`<div class="score ${scoreTier(l.fit||0)}">${l.fit||'P'}<small>FIT</small></div>`}`:`<div class="score ${scoreTier(s)}">${s}<small>SCORE</small></div>`}
       <div class="l-main">
-        <div class="l-name">${esc(d.name||d.company||'Unknown')}${d.name&&d.company?` <span class="co">· ${esc(d.company)}</span>`:''} <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span></div>
+        <div class="l-name" tabindex="-1">${esc(d.name||d.company||'Unknown')}${d.name&&d.company?` <span class="co">· ${esc(d.company)}</span>`:''} <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span><button class="act" data-act="collapse" aria-label="Collapse" title="Collapse" style="position:absolute;top:10px;right:10px;padding:6px 12px;min-height:40px;min-width:40px;justify-content:center;font-size:13px">▴</button></div>
         <div class="l-meta"><b>${esc(d.venue_type||'?')}</b> in <b>${esc(d.city||'?')}</b>${fmtDist(l)?` · <b style="color:var(--gold-deep)">${fmtDist(l)}</b>`:''}${l.prospect?'':` · ${esc(d.daily_traffic||'?')} daily · ${esc(d.timeline||'?')}${d.role?' · '+esc(d.role):''}`}</div>
         ${isReferral(l)&&d.referred_business?`<div class="l-meta" style="margin-top:2px">Referred: <b>${esc(d.referred_business)}</b>${d.referred_contact?' · ask for '+esc(d.referred_contact):''}</div>`:''}
         <div class="l-meta" style="margin-top:2px"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener" style="color:var(--gold-deep);text-decoration:underline">${d.address?esc(d.address):'Map'}</a></div>
         ${l.prospect&&d.intel?`<div class="l-meta" style="margin-top:2px;color:var(--taupe)">${esc(d.intel)}</div>`:''}
         ${l.prospect&&dmOf(l)?`<div class="l-meta" style="margin-top:2px">Ask for <b>${esc(dmOf(l).name)}</b>${dmOf(l).title?' · '+esc(dmOf(l).title):''}</div>`:''}
+      </div>
+      <div class="l-time">${l.created_at?ago(l.created_at):'<span style="color:var(--taupe)">OUTBOUND</span>'}</div>
+    </div>
+    <div class="l-body">
         ${['prospect','new','contacted'].includes(l.status)?`<div class="l-quick" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
           <button class="act" data-act="ql" data-ql="No answer">No answer</button>
           <button class="act" data-act="ql" data-ql="Left card">Left card</button>
@@ -1313,10 +1520,10 @@ function leadCard(l){
           ${tel?`<a class="act primary" href="tel:${tel}">Call</a><a class="act" href="sms:${tel}?&body=${smsBody}">Text</a>`:''}
           ${l.prospect&&['prospect','contacted'].includes(l.status)&&(d.email||l.metaEmail)?`<a class="act primary" href="${mailIntro(l)}">Email intro</a>`:''}
           ${l.prospect?`<button class="act" data-act="pitch">Pitch</button>`:''}
-          <button class="act" data-act="note">Note</button>
+          <button class="act" data-act="note">Note</button><button class="act" data-smart-toggle>✦ AI note</button>
           <button class="act" data-act="photo">+ Photo${photosOf(l.id).length?` (${photosOf(l.id).length})`:''}</button>
-          <select class="status" data-act="status">${STATUSES.map(x=>`<option value="${x}"${x===l.status?' selected':''}>${SLABEL[x]}</option>`).join('')}</select>
-          ${['proposal','signed','waitlist','installed'].includes(l.status)?`<button class="act" data-act="coi">COI: ${l.coi==='sent'?'sent ✓':l.coi==='requested'?'requested':'–'}</button>`:''}
+          <select class="status" data-act="status" aria-label="Status">${STATUSES.map(x=>`<option value="${x}"${x===l.status?' selected':''}>${SLABEL[x]}</option>`).join('')}</select>
+          ${['proposal','signed','waitlist','installed'].includes(l.status)?`<button class="act" data-act="coi" title="Certificate of insurance">Insurance form: ${l.coi==='sent'?'sent ✓':l.coi==='requested'?'requested':'–'}</button>`:''}
           <button class="act" data-act="more">${MORE_OPEN.has(l.id)?'Less ▴':'More ▾'}</button>
         </div>
         <div class="l-actions l-more" style="display:${MORE_OPEN.has(l.id)?'flex':'none'}">
@@ -1325,7 +1532,8 @@ function leadCard(l){
           ${l.prospect?`<button class="act" data-act="contact">${dmOf(l)?'Contact ✎':'+ Contact'}</button><button class="act" data-act="phonenum">${l.metaPhone?'Phone ✎':'+ Phone'}</button><button class="act" data-act="emailaddr">${l.metaEmail?'Email ✎':'+ Email'}</button>`:''}
           ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
           <a class="act" href="proposal.html#${pd}" target="_blank" rel="noopener">Proposal</a>
-          <a class="act" href="wrap-studio.html?biz=${encodeURIComponent((isReferral(l)&&d.referred_business)||d.company||d.name||'')}" target="_blank" rel="noopener">Mock</a>
+          <a class="act" href="wrap-studio.html?biz=${encodeURIComponent((isReferral(l)&&d.referred_business)||d.company||d.name||'')}" target="_blank" rel="noopener">See wrap</a>
+          ${l.field?`<button class="act" data-act="editfield">Edit details</button>`:''}
           ${l.prospect?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent((d.company||'')+' '+(d.city||'')+' TN phone')}">Find #</a>`:''}
           ${l.prospect&&/Apartment|Office|Corporate|Senior/.test(d.venue_type||'')?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('"'+(d.company||'')+'" '+(d.city||'')+' "property manager" OR "community manager" OR "leasing"')}">Find PM</a>`:''}
         </div>
@@ -1333,16 +1541,15 @@ function leadCard(l){
         ${photosOf(l.id).length?`<div class="l-gallery" style="display:flex;gap:6px;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch">${photosOf(l.id).map((pid,_,all)=>{const u=photoSrc(pid);const multi=all.length>1;return `<a href="${u||'#'}" data-pid="${esc(pid)}" target="_blank" rel="noopener" style="${multi?'flex:0 0 auto':'flex:1 1 100%'}"><img class="l-photo" data-pid="${esc(pid)}" style="${multi?'width:130px;height:98px;':'width:100%;'}margin-top:0" loading="lazy" src="${u}" alt="location photo"></a>`}).join('')}</div>`:''}
         ${l.prospect?`<div class="l-pitch" style="display:${PITCH_OPEN.has(l.id)?'block':'none'};margin-top:8px;padding:10px 12px;background:var(--panel2);border:1px dashed var(--gold);border-radius:8px;font-size:13px;line-height:1.5">${pitchHtml(l)}<div style="margin-top:8px"><button class="act" data-act="copypitch">Copy pitch</button></div></div>`:''}
         ${['dead','installed'].includes(l.status)?'':`<div class="l-fu">
-          <span class="mono" style="font-size:9px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
-          <input type="date" class="inp" data-act="followup" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px;min-height:40px">
+          <span class="mono" style="font-size:10.5px;letter-spacing:.14em;color:var(--taupe)">FOLLOW-UP</span>
+          <input type="date" class="inp" data-act="followup" aria-label="Follow-up date" value="${esc(l.followup||'')}" style="width:auto;padding:6px 8px;min-height:40px">
           <button class="fu-chip" data-fuq="1">+1d</button><button class="fu-chip" data-fuq="3">+3d</button><button class="fu-chip" data-fuq="7">+1w</button>${l.followup?`<button class="fu-chip" data-fuclear title="Clear follow-up">✕</button>`:''}
         </div>`}
+        ${smartHtml(l)}
         <div class="l-note${(l.note||NOTE_OPEN.has(l.id))?' open':''}">
-          <textarea data-act="notetext" placeholder="Call notes, objections, next step…">${esc(l.note)}</textarea>
+          <textarea data-act="notetext" aria-label="Notes" placeholder="Call notes, objections, next step…">${esc(l.note)}</textarea>
           <div class="save-hint"></div>
         </div>
-      </div>
-      <div class="l-time">${l.created_at?ago(l.created_at):'<span style="color:var(--taupe)">OUTBOUND</span>'}</div>
     </div>
   </div>`;
 }
@@ -1359,15 +1566,14 @@ function compactRow(l){
     :idl!=null&&idl<=4?`<span class="lr-b red">${idl<0?'OVERDUE':idl+'D'}</span>`
     :l.flag?'<span class="lr-b red">✕</span>'
     :ltd!=null?`<span class="lr-b">${ltd===0?'TODAY':ltd+'D'}</span>`:'';
-  return `<div class="lead lrow${fuDue(l)?' u-due':''}" data-id="${esc(l.id)}" data-compact="1">
+  const sub=[dist||esc(d.city||''),(FILTER==='today'||fuDue(l))&&l.prospect&&dmOf(l)?`<span class="lr-b">ASK ${esc(firstName(dmOf(l).name).toUpperCase())}</span>`:'',badge].filter(Boolean);
+  const name=d.company||d.name||'Unknown';
+  return `<div class="lead lrow${fuDue(l)?' u-due':''}${l.field?' field':''}" data-id="${esc(l.id)}" data-compact="1">
     <div class="lr">
-      ${l.prospect?`<label class="lr-cb" data-stop="1"><input type="checkbox" data-act="route"${ROUTE.has(l.id)?' checked':''}></label>`:''}
-      <span class="lr-score ${l.flag?'':tier}"${l.flag?' style="color:var(--red);border-color:var(--red)"':''}>${score}</span>
-      <span class="lr-name">${esc(d.company||d.name||'Unknown')}</span>
-      <span class="lr-meta">${dist||esc(d.city||'')}</span>
-      ${FILTER==='today'&&l.prospect&&dmOf(l)?`<span class="lr-b">ASK ${esc(firstName(dmOf(l).name).toUpperCase())}</span>`:''}
-      ${badge}
-      <span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span>
+      ${l.prospect?`<label class="lr-cb" data-stop="1"><input type="checkbox" data-act="route" aria-label="Add ${esc(name)} to route"${ROUTE.has(l.id)?' checked':''}></label>`:''}
+      <span class="lr-score ${l.flag?'':tier}"${l.flag?' style="color:var(--red);border-color:var(--red)"':''} aria-hidden="true">${score}</span>
+      <button type="button" class="lr-main" aria-label="Open ${esc(name)}, ${esc(SLABEL[l.status]||l.status)}${fuDue(l)?', follow-up due':''}"><span class="lr-name">${esc(name)}</span>${sub.length?`<span class="lr-sub"><span class="lr-meta">${sub[0]}</span>${sub.slice(1).join('')}</span>`:''}</button>
+      ${l.status==='prospect'?'':`<span class="pill ${esc(l.status)}">${SLABEL[l.status]||esc(l.status)}</span>`}
     </div>
   </div>`;
 }
@@ -1375,27 +1581,40 @@ function compactRow(l){
 const OUTCOMES={'No answer':{fu:2},'Left card':{fu:5},'Interested — wants proposal':{fu:1,status:'proposal'},'Come back later':{fu:3}};
 const NOTNOW=['Has vendor contract','No space / power','Corporate decides','Not interested','Closed'];
 let UNDO_T=null;
-function showUndo(msg,undo){
+function showUndo(msg,undo,btn){
   let t=$('undoToast');
-  if(!t){t=document.createElement('div');t.id='undoToast';document.body.appendChild(t);}
-  t.innerHTML=`<span>${esc(msg)}</span><button type="button">Undo</button>`;
+  if(!t){t=document.createElement('div');t.id='undoToast';t.setAttribute('role','status');t.setAttribute('aria-live','polite');document.body.appendChild(t);}
+  t.innerHTML=`<span>${esc(msg)}</span>${undo?`<button type="button">${esc(btn||'Undo')}</button>`:''}`;
   t.style.display='flex';clearTimeout(UNDO_T);
-  t.querySelector('button').addEventListener('click',()=>{t.style.display='none';undo();render();if($('blitz').style.display==='block')blitzRender();});
-  UNDO_T=setTimeout(()=>{t.style.display='none';},6000);
+  if(undo)t.querySelector('button').addEventListener('click',()=>{t.style.display='none';undo();render();if($('blitz').style.display==='block')blitzRender();});
+  UNDO_T=setTimeout(()=>{t.style.display='none';},undo?(btn?15000:6000):4500);
 }
+function toast(msg){showUndo(msg,null);}
+/* undo snapshot: the current value of every key a patch is about to change */
+function prevOf(l,patch){const p={};for(const k in patch)p[k]=l[META_KEYS[k]||k]||'';return p;}
 function logDoor(id,label,extra){
+  flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
   const prev={note:l.note||'',status:l.status,followup:l.followup||''};
   const updates={note:(l.note?l.note+'\n':'')+`[${stamp()}] ${label}${extra?' — '+extra:''}`};
   RECENT.add(id);
   const o=OUTCOMES[label]||{};
   if(o.status&&['prospect','new','contacted'].includes(l.status))updates.status=o.status;
-  else if(['prospect','new'].includes(l.status))updates.status='contacted';
-  if(o.fu&&!l.followup)updates.followup=isoDays(o.fu);
+  else if(label!=='No answer'&&['prospect','new'].includes(l.status))updates.status='contacted'; // nobody answered → nobody was contacted
+  if(o.fu&&(!l.followup||l.followup<=todayISO()))updates.followup=isoDays(o.fu); // overdue → reset, or Follow-ups due never empties
   saveMeta(id,updates);
   showUndo(`${label.replace(/ — .*/,'')} logged${updates.followup?' · follow-up '+updates.followup.slice(5).replace('-','/'):''}`,()=>saveMeta(id,prev));
 }
+/* Today: a logged door closes its card and hands focus to the next row (no reaching for ▴ one-handed) */
+function afterLog(id){
+  if(FILTER!=='today'||!EXPANDED.has(id)){render();return;}
+  EXPANDED.delete(id);render();
+  const row=document.querySelector(`.lead[data-id="${CSS.escape(id)}"]`);
+  const nx=row&&row.nextElementSibling&&row.nextElementSibling.classList.contains('lead')?row.nextElementSibling:row;
+  const b=nx&&nx.querySelector('.lr-main');if(b){b.focus({preventScroll:true});nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
 function logNotNow(id,reason){
+  flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
   const prev={note:l.note||'',status:l.status,followup:l.followup||''};
   RECENT.add(id);
@@ -1458,27 +1677,461 @@ function wireSwipe(card,id){
     row.style.transform='translateX('+dx+'px)';
     card.style.background=Math.abs(dx)>60?'var(--panel2)':'';
     card.style.borderLeftColor=dx>60?'var(--gold)':dx<-60?'var(--taupe)':'';
+    card.dataset.hint=dx>20?'r':dx<-20?'l':''; // say what letting go will do
     card.dataset.swiped=Math.abs(dx)>60?'1':'';
   },{passive:true});
-  const reset=()=>{row.style.transform='';card.style.background='';card.style.borderLeftColor='';};
+  const reset=()=>{row.style.transform='';card.style.background='';card.style.borderLeftColor='';delete card.dataset.hint;};
   card.addEventListener('touchcancel',()=>{reset();dx=0;swiping=false;setTimeout(()=>{card.dataset.swiped='';},50);});
   card.addEventListener('touchend',()=>{
     reset();
     if(!swiping)return;
-    const commit=Math.max(100,row.offsetWidth*0.4); // a drifting thumb-scroll must not log a door
+    const commit=Math.min(100,Math.max(72,row.offsetWidth*0.28)); // deliberate: ~30% of the row, never past the 110px clamp (the old 40% could never be reached)
     if(dx>commit){logDoor(id,'No answer');render();}
     else if(dx<-commit)snooze(id,1,true);
     dx=0;swiping=false;
     setTimeout(()=>{card.dataset.swiped='';},50);
   });
 }
+/* ===== MORNING BRIEF (pipeline + deal-watch agents) =====
+   Paste this whole block into command.html just above:  function render(){
+   Then add two one-liners (see README):
+     1. in load(), right after  flushQueue();            →  loadBrief();
+     2. in render(), right after $('list').innerHTML=…;  →  if(FILTER==='today')$('list').insertAdjacentHTML('afterbegin',briefHtml());wireBrief();
+   The panel only shows on the Today tab. Nothing here changes a lead until Paige taps Text / Email
+   (which stamps the note exactly like the card buttons do). */
+let BRIEF=null,BRIEF_BUSY=false,BRIEF_OPEN=false,BRIEF_ERR='',BRIEF_CACHED=false;
+// opens folded to its one-line summary (Today's rows come first); Show/Hide is remembered on this phone
+try{BRIEF_OPEN=localStorage.getItem('w_brief_open')==='1';}catch(e){}
+// last brief, for a cold open with no signal
+try{const c=JSON.parse(localStorage.getItem('w_brief')||'null');if(c&&c.generated_at){BRIEF=c;BRIEF_CACHED=true;}}catch(e){}
+function keepBrief(b){BRIEF=b;BRIEF_CACHED=false;try{localStorage.setItem('w_brief',JSON.stringify(b));}catch(e){}}
+/* screen-reader announcements that survive the panel being rebuilt */
+function announce(msg){let r=$('srLive');if(!r){r=document.createElement('div');r.id='srLive';r.setAttribute('aria-live','polite');r.setAttribute('role','status');r.style.cssText='position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap';document.body.appendChild(r);}r.textContent='';setTimeout(()=>{r.textContent=msg;},50);}
+/* background refreshes (sync, brief, inbox, photo list) never rebuild the list under a field Paige is typing in:
+   they wait for that field to lose focus. Taps and other direct actions still call render() straight away. */
+let BG_PEND=false;
+function typingInList(){const a=document.activeElement;return !!(a&&$('list').contains(a)&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit)$/.test(a.type))));}
+function bgRender(){
+  if(!typingInList()){render();return;}
+  if(BG_PEND)return;BG_PEND=true;
+  document.activeElement.addEventListener('blur',()=>setTimeout(()=>{if(BG_PEND){BG_PEND=false;bgRender();}},250),{once:true});
+}
+/* brief / inbox data arrived: swap just the panel, the rows below don't move or lose focus */
+function refreshBrief(){
+  if(FILTER!=='today')return;
+  const p=$('briefPanel');
+  if(!p||p.contains(document.activeElement)&&typingInList()){bgRender();return;}
+  p.outerHTML=briefHtml();wireBrief();
+}
+(function(){const s=document.createElement('style');s.textContent=`
+#briefPanel{background:var(--panel);border:2px solid var(--gold);padding:14px 16px;margin-bottom:14px;min-height:96px}
+#briefPanel .b-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#briefPanel .b-head .mono{flex:1;min-width:120px}
+#briefPanel .b-sum{font-weight:600;font-size:15px;margin:8px 0 2px;line-height:1.35}
+#briefPanel .b-delta{font-size:11px;color:var(--taupe);margin-bottom:4px}
+#briefPanel .b-sec{margin-top:12px}
+#briefPanel details>summary::-webkit-details-marker{display:none}
+#briefPanel details>summary{user-select:none;-webkit-tap-highlight-color:transparent}
+#briefPanel .b-it{border-top:1px solid var(--line);padding:9px 0 8px}
+#briefPanel .b-it:first-of-type{border-top:0}
+#briefPanel .b-co{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#briefPanel .b-co .tag{font-size:10.5px;padding:2px 6px}
+#briefPanel .b-why{font-size:12.5px;margin-top:2px;line-height:1.4}
+#briefPanel .b-why.hot{color:var(--red)}
+#briefPanel .b-note{font-size:11px;color:var(--taupe);margin-top:2px;white-space:pre-wrap}
+#briefPanel .b-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+#briefPanel .b-row .act{padding:8px 11px;min-height:44px;font-size:12px}
+#briefPanel .b-draft{display:none;margin-top:8px;font-size:12.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);padding:10px}
+#briefPanel .b-it.show .b-draft{display:block}
+#briefPanel .b-err{font-size:11px;color:var(--taupe);margin-top:10px}
+#briefPanel .b-empty{font-size:13px;color:var(--taupe);margin-top:6px}
+#briefPanel .ib-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+#briefPanel .ib-pick input{flex:1;min-width:140px;background:var(--bg);border:2px solid var(--line);color:var(--cream);padding:8px 10px;font-size:16px} /* 16px: smaller makes iOS zoom the page */
+#briefPanel .ib-log{font-size:11px;color:var(--taupe);line-height:1.5;margin-top:4px}
+`;document.head.appendChild(s);})();
+/* ---- inbox agent state: queued emails that need a card, status suggestions, recent activity ---- */
+let INBOXQ=null,INBOX_BUSY='',INBOX_ERR='';
+const CONTACT_DONE=new Set(); // contacts added from a status suggestion that's still open
+function contactText(c){const dm=c.decision_maker;return [c.email&&'email '+c.email,c.phone&&'phone '+c.phone,dm&&dm.name&&'DM '+dm.name+(dm.title?' ('+dm.title+')':'')].filter(Boolean).join(' · ');}
+function applyContact(l,c){
+  flushNote(l.id);const patch={};
+  if(c.email)patch.email=String(c.email).trim();
+  if(c.phone)patch.phone=String(c.phone).trim();
+  if(c.decision_maker&&c.decision_maker.name)patch.note=setDmLine(l.note,c.decision_maker.name,c.decision_maker.title||'');
+  if(!Object.keys(patch).length)return;
+  const prev=prevOf(l,patch);saveMeta(l.id,patch);syncNoteBox(l.id);bgRender();
+  showUndo('Contact added to '+(l.data.company||l.data.name||'the card'),()=>{saveMeta(l.id,prev);syncNoteBox(l.id);render();});
+}
+async function loadInbox(){
+  try{const r=await fetch(FN+'/inbox-queue',{headers:{'X-Dash-Key':KEY},signal:tmo(12000)});if(r.ok){INBOXQ=await r.json();INBOX_ERR='';}else if(r.status!==404)INBOX_ERR='Inbox unavailable ('+r.status+').';}
+  catch(_){}
+  refreshBrief();
+}
+async function inboxAct(body){
+  INBOX_BUSY=body.qid||body.sid||'x';refreshBrief();
+  try{const r=await fetch(FN+'/inbox-queue',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify(body),signal:tmo(25000)});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+    if(body.action==='attach'&&j.patch){const l=LEADS.find(x=>x.id===body.lead_id);if(l){applyPatch(l,j.patch);cacheMeta(l.id,j.patch);}} // mirror the server write locally
+  }catch(e){INBOX_ERR=e.message;}
+  INBOX_BUSY='';await loadInbox();
+  if(body.action==='attach')bgRender(); // the card's note changed
+}
+async function fetchBrief(){
+  const r=await fetch(FN+'/brief',{headers:{'X-Dash-Key':KEY},signal:tmo(12000)});
+  if(!r.ok)throw new Error(r.status===404?'Brief function not deployed yet.':'Brief unavailable ('+r.status+').');
+  return r.json();
+}
+/* GET shows the stored brief; force=true kicks the background worker, then polls until a fresh brief lands (≈10–40s) */
+async function loadBrief(force){
+  if(BRIEF_BUSY)return;BRIEF_BUSY=!!force;BRIEF_ERR='';
+  if(force){refreshBrief();announce('Running the brief…');}
+  loadInbox();
+  try{
+    if(!force){const b=await fetchBrief();if(b&&b.generated_at)keepBrief(b);else if(b&&b.empty)BRIEF_ERR='No brief yet — tap Run now.';}
+    else{
+      const k=await fetch(FN+'/brief',{method:'POST',headers:{'X-Dash-Key':KEY},signal:tmo(15000)});
+      if(!k.ok)throw new Error(k.status===404?'Brief function not deployed yet.':'Could not start the agents ('+k.status+').');
+      const since=((await k.json())||{}).since||null;
+      let fresh=null;
+      for(let i=0;i<30&&!fresh;i++){ // poll up to ~90s
+        await new Promise(r=>setTimeout(r,3000));
+        try{const b=await fetchBrief();if(b&&b.generated_at&&b.generated_at!==since)fresh=b;}catch(_){}
+      }
+      if(fresh)keepBrief(fresh);else BRIEF_ERR='Still running — pull to refresh in a minute.';
+    }
+  }catch(e){BRIEF_ERR=e.name==='TypeError'||!navigator.onLine?'No signal.':(e.message||'Brief unavailable.');}
+  if(force)announce(BRIEF_ERR||'Brief updated');
+  BRIEF_BUSY=false;refreshBrief();
+}
+/* a lead is only listed while the live pipeline still agrees with the brief (Paige may have worked it already) */
+function briefLive(sec,it){
+  const l=LEADS.find(x=>x.id===it.id);if(!l)return false;
+  const td=todayISO();
+  switch(sec){
+    case 'due':return fuDue(l);
+    case 'hot':return ['new','contacted'].includes(l.status)&&!fuDue(l);
+    case 'fresh':return l.status==='new';
+    case 'unscheduled':return ['contacted','proposal'].includes(l.status)&&!l.followup;
+    case 'door_run':return l.status==='prospect'&&lastTouchDays(l)==null&&!l.followup;
+    case 'installs':return l.status==='signed';
+    case 'coi':return l.coi==='requested';
+    case 'stale_proposals':return l.status==='proposal'&&!(l.followup&&l.followup>td)&&!fuDue(l);
+    case 'waitlist':return l.status==='waitlist';
+    case 'statements':return l.status==='installed';
+  }
+  return true;
+}
+/* [group, key, label, open by default] — urgent sections open, the long tail folded */
+const BRIEF_SECTIONS=[
+  ['pipeline','due','FOLLOW-UPS DUE',1],['pipeline','fresh','NEW FROM THE SITE',1],['pipeline','hot','HOT & UNTOUCHED',1],
+  ['dealwatch','installs','INSTALLS',1],['dealwatch','coi','COI TO SEND',1],['dealwatch','statements','HOST STATEMENTS DUE',1],
+  ['dealwatch','stale_proposals','PROPOSALS GONE QUIET',1],['pipeline','unscheduled','NO FOLLOW-UP SET',0],['dealwatch','waitlist','WAITLIST',0],['pipeline','door_run','DOOR RUN · TIER A FROM HOME',0]
+];
+const BRIEF_SEC_STATE={}; // key → true/false once Paige toggles a section (survives re-renders this session)
+function briefItemHtml(sec,it){
+  const l=LEADS.find(x=>x.id===it.id),d=l?l.data:{};
+  const tel=(d.phone||l?.metaPhone||it.phone||'').replace(/[^\d+]/g,''),em=d.email||l?.metaEmail||it.email||'',co=esc(it.co);
+  const dr=BRIEF.drafts&&BRIEF.drafts[it.id];
+  const urgent=sec==='installs'?(it.level==='overdue'||it.level==='soon'):sec==='due'?it.overdue>0:sec==='hot'||sec==='coi';
+  const tags=[`<span class="tag">${esc(SLABEL[it.status]||it.status)}</span>`];
+  if(it.tier)tags.push(`<span class="tag">Tier ${esc(it.tier)}${it.fit?' · fit '+it.fit:''}</span>`);
+  if(it.score)tags.push(`<span class="tag">score ${it.score}</span>`);
+  if(it.dm)tags.push(`<span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">ASK ${esc(firstName(it.dm).toUpperCase())}</span>`);
+  const smsHref=dr&&tel?`sms:${tel}?&body=${encodeURIComponent(dr.sms)}`:'';
+  const mailHref=dr&&em?`mailto:${encodeURIComponent(em)}?cc=${encodeURIComponent(WRAPT_EMAIL)}&subject=${encodeURIComponent(dr.email_subject)}&body=${encodeURIComponent(dr.email_body)}`:'';
+  return `<div class="b-it" data-bid="${esc(it.id)}">
+    <div class="b-co">${esc(it.co)}${it.city?` <span style="font-weight:400;color:var(--taupe);font-size:12px">· ${esc(it.city)}</span>`:''} ${tags.join('')}</div>
+    <div class="b-why${urgent?' hot':''}">${esc(it.why)}</div>
+    ${it.note_tail?`<div class="b-note">${esc(it.note_tail)}</div>`:''}
+    <div class="b-row">
+      <button class="act" data-bopen="${esc(it.id)}" aria-label="Open card: ${co}">Open card</button>
+      ${tel?`<a class="act" href="tel:${tel}" aria-label="Call ${co}">Call</a>`:''}
+      ${smsHref?`<a class="act primary" href="${smsHref}" aria-label="Text draft to ${co}">Text draft</a>`:''}
+      ${mailHref?`<a class="act" href="${mailHref}" aria-label="Email draft to ${co}">Email draft</a>`:''}
+      ${dr?`<button class="act" data-bshow="${esc(it.id)}" aria-expanded="false" aria-label="Read draft for ${co}">Read draft</button><button class="act" data-bcopy="${esc(it.id)}" aria-label="Copy text draft for ${co}">Copy text</button>`:''}
+      ${it.address?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(it.address)}" aria-label="Map: ${co}">Map</a>`:''}
+    </div>
+    ${dr?`<div class="b-draft"><b>TEXT</b>\n${esc(dr.sms)}\n\n<b>EMAIL — ${esc(dr.email_subject)}</b>\n${esc(dr.email_body)}</div>`:''}
+  </div>`;
+}
+/* the inbox agent's live section: emails that need a card, status moves it suggests, what it filed today */
+function inboxHtml(dflt){
+  if(!INBOXQ)return INBOX_ERR?`<div class="b-err">${esc(INBOX_ERR)}</div>`:'';
+  const q=INBOXQ.queue||[],s=INBOXQ.suggestions||[],c=INBOXQ.contacts||[],rec=(INBOXQ.recent||[]).filter(x=>['filed','attached'].includes(x.action));
+  const n=q.length+s.length+c.length;if(!n&&!rec.length)return '';
+  const open='inbox' in BRIEF_SEC_STATE?BRIEF_SEC_STATE.inbox:dflt!==false&&!!n; // folded brief → folded inbox; nothing to resolve → folded
+  const when=ts=>{try{return new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ','');}catch(_){return ''}};
+  const items=[];
+  s.forEach(it=>{const busy=INBOX_BUSY===it.sid;const l=LEADS.find(x=>x.id===it.lead_id);const ct=it.contact&&!CONTACT_DONE.has(it.sid)?contactText(it.contact):'';items.push(`<div class="b-it" data-sid="${esc(it.sid)}">
+      <div class="b-co">${esc(it.co||it.lead_id)} <span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">MOVE TO ${esc((SLABEL[it.status]||it.status).toUpperCase())}?</span></div>
+      <div class="b-why">${esc(it.reason||'')}${it.subject?` <span style="color:var(--taupe)">· "${esc(it.subject)}"</span>`:''}</div>
+      ${ct?`<div class="b-note">Also in the email: ${esc(ct)}</div>`:''}
+      <div class="b-row"><button class="act primary" data-ib="apply" data-sid="${esc(it.sid)}" data-lead="${esc(it.lead_id)}" data-status="${esc(it.status)}"${busy||!l?' disabled':''}>${busy?'…':'Move to '+esc(SLABEL[it.status]||it.status)}</button>${ct?`<button class="act" data-ib="apply-c" data-keep="1" data-sid="${esc(it.sid)}" data-lead="${esc(it.lead_id)}" aria-label="Add contact to ${esc(it.co||it.lead_id)}: ${esc(ct)}"${busy||!l?' disabled':''}>Add contact</button>`:''}<button class="act" data-bopen="${esc(it.lead_id)}" aria-label="Open card: ${esc(it.co||it.lead_id)}">Open card</button><button class="act" data-ib="dismiss-s" data-sid="${esc(it.sid)}"${busy?' disabled':''}>Not now</button></div></div>`);});
+  // contact details the agent read out of an email body: never written to the card until Paige says so
+  c.forEach(it=>{const busy=INBOX_BUSY===it.sid;const l=LEADS.find(x=>x.id===it.lead_id);const ct=contactText(it.contact||{});if(!ct)return;const co=it.co||it.lead_id;items.push(`<div class="b-it" data-sid="${esc(it.sid)}">
+      <div class="b-co">${esc(co)} <span class="tag" style="color:var(--gold-deep);border-color:var(--gold)">NEW CONTACT?</span></div>
+      <div class="b-why">${esc(co)}: ${esc(ct)}${it.subject?` <span style="color:var(--taupe)">· "${esc(it.subject)}"</span>`:''}</div>
+      <div class="b-row"><button class="act primary" data-ib="apply-c" data-sid="${esc(it.sid)}" data-lead="${esc(it.lead_id)}" aria-label="Add to ${esc(co)}: ${esc(ct)}"${busy||!l?' disabled':''}>${busy?'…':'Add to card'}</button><button class="act" data-bopen="${esc(it.lead_id)}" aria-label="Open card: ${esc(co)}">Open card</button><button class="act" data-ib="dismiss-s" data-sid="${esc(it.sid)}" aria-label="Dismiss contact for ${esc(co)}"${busy?' disabled':''}>Dismiss</button></div></div>`);});
+  q.forEach(it=>{const busy=INBOX_BUSY===it.qid;const ex=it.extract||{};const from=it.from||{};items.push(`<div class="b-it" data-qid="${esc(it.qid)}">
+      <div class="b-co">${esc(from.name||from.email||'Unknown sender')}${from.name&&from.email?` <span style="font-weight:400;color:var(--taupe);font-size:12px">· ${esc(from.email)}</span>`:''} <span class="tag">${it.direction==='out'?'Paige sent':'received'} ${esc(when(it.ts))}</span></div>
+      <div class="b-why">${esc(it.subject?'"'+it.subject+'" — ':'')}${esc(ex.summary||(it.text||'').slice(0,140))}</div>
+      <div class="b-note">Needs a card. ${it.candidates&&it.candidates.length?'Looks like:':'No close match — type a business name:'}</div>
+      <div class="b-row">${(it.candidates||[]).slice(0,3).map(c=>`<button class="act" data-ib="attach" data-qid="${esc(it.qid)}" data-lead="${esc(c.id)}"${busy?' disabled':''}>${esc(c.co)} <span style="color:var(--taupe)">${c.score}</span></button>`).join('')}</div>
+      <div class="ib-pick"><input type="search" placeholder="Search cards…" aria-label="Search cards to file the email from ${esc(from.name||from.email||'this sender')}" data-ibq="${esc(it.qid)}" autocomplete="off"><button class="act" data-ib="dismiss-q" data-qid="${esc(it.qid)}"${busy?' disabled':''}>Dismiss</button></div>
+      <div class="b-row" data-ibres="${esc(it.qid)}"></div></div>`);});
+  const logHtml=rec.slice(0,6).map(x=>`${esc(when(x.ts))} ${x.direction==='out'?'Paige →':'←'} <b>${esc(x.co||x.lead_id)}</b>${x.suggestion?' <span style="color:var(--gold-deep)">· suggested '+esc(SLABEL[x.suggestion]||x.suggestion)+'</span>':''}`).join('<br>');
+  return `<details class="b-sec" data-bsec="inbox"${open?' open':''}><summary class="mono pitch-lbl" style="margin-top:0;cursor:pointer;list-style:none">INBOX${n?` · ${n} TO RESOLVE`:''}${rec.length?` · ${rec.length} FILED`:''} <span style="float:right">${open?'▾':'▸'}</span></summary>
+    ${items.join('')}${rec.length?`<div class="ib-log" style="margin-top:${items.length?10:4}px">${logHtml}</div>`:''}${INBOX_ERR?`<div class="b-err">${esc(INBOX_ERR)}</div>`:''}</details>`;
+}
+function inboxSearch(qid,q){
+  const box=document.querySelector(`[data-ibres="${CSS.escape(qid)}"]`);if(!box)return;
+  q=(q||'').trim().toLowerCase();if(q.length<2){box.innerHTML='';return;}
+  const hits=LEADS.filter(l=>((l.data.company||'')+' '+(l.data.name||'')+' '+(l.data.city||'')).toLowerCase().includes(q)).slice(0,5);
+  box.innerHTML=hits.map(l=>`<button class="act" data-ib="attach" data-qid="${esc(qid)}" data-lead="${esc(l.id)}">${esc(l.data.company||l.data.name)} <span style="color:var(--taupe)">${esc(SLABEL[l.status]||l.status)}</span></button>`).join('')||'<span class="b-note">No card by that name — add it with + Add first.</span>';
+}
+function briefHtml(){
+  const t=BRIEF?new Date(BRIEF.generated_at):null;
+  const when=BRIEF?(BRIEF_CACHED&&(OFFLINE||BRIEF_ERR)?'OFFLINE · BRIEF FROM '+t.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase().replace(' ',''):'MORNING BRIEF · '+ago(t.getTime())):'MORNING BRIEF';
+  const head=(body)=>`<div id="briefPanel"><div class="b-head"><span class="mono pitch-lbl" style="margin:0">${when}</span>
+    <button class="fu-chip" data-brief="run"${BRIEF_BUSY?' disabled aria-busy="true"':''}>${BRIEF_BUSY?'Running…':'Run now'}</button>
+    <button class="fu-chip" data-brief="toggle" aria-expanded="${BRIEF_OPEN}">${BRIEF_OPEN?'Hide':'Show'}</button></div>${body}</div>`;
+  if(!BRIEF)return head(`<div class="b-empty">${esc(BRIEF_ERR||(BRIEF_BUSY?'Reading the pipeline, drafting follow-ups…':'Loading the brief…'))}</div>${inboxHtml(BRIEF_OPEN)}`);
+  if(!BRIEF_OPEN)return head(`<div class="b-sum" style="font-weight:500;font-size:13px">${esc(BRIEF.summary)}</div>${inboxHtml(false)}`);
+  const delta=Object.entries(BRIEF.delta||{}).filter(([k])=>k!=='prospect').map(([k,v])=>`${v>0?'+':''}${v} ${SLABEL[k]||k}`).join(' · ');
+  let secs='',shown=0,total=0;const drafts=[];
+  BRIEF_SECTIONS.forEach(([grp,key,label,dflt])=>{
+    const all=(BRIEF[grp]&&BRIEF[grp][key])||[];total+=all.length;
+    const live=all.filter(it=>briefLive(key,it));shown+=live.length;
+    if(!live.length)return;
+    // Today's own rows already list follow-ups due and hot leads — the brief only adds their drafts, folded
+    if(key==='due'||key==='hot'){live.forEach(it=>{if(BRIEF.drafts&&BRIEF.drafts[it.id])drafts.push([key,it]);});return;}
+    const open=key in BRIEF_SEC_STATE?BRIEF_SEC_STATE[key]:!!dflt;
+    secs+=`<details class="b-sec" data-bsec="${key}"${open?' open':''}><summary class="mono pitch-lbl" style="margin-top:0;cursor:pointer;list-style:none">${label} (${live.length}) <span style="float:right">${open?'▾':'▸'}</span></summary>${live.map(it=>briefItemHtml(key,it)).join('')}</details>`;
+  });
+  if(drafts.length){const open=!!BRIEF_SEC_STATE.drafts;
+    secs=`<details class="b-sec" data-bsec="drafts"${open?' open':''}><summary class="mono pitch-lbl" style="margin-top:0;cursor:pointer;list-style:none">DRAFTS FOR TODAY'S LIST (${drafts.length}) <span style="float:right">${open?'▾':'▸'}</span></summary>${drafts.map(([k,it])=>briefItemHtml(k,it)).join('')}</details>`+secs;}
+  const done=total-shown;
+  return head(`<div class="b-sum">${esc(BRIEF.summary)}</div>
+    <div class="b-delta">${delta?'Since last brief: '+esc(delta)+' · ':''}${BRIEF.drafts_source==='claude'?'AI drafts':BRIEF.drafts_source==='template'?'Template drafts':'No drafts'}${done?` · ${done} already handled today ✓`:''}</div>
+    ${inboxHtml()}
+    ${secs||'<div class="b-empty">Everything in the brief is handled. Knock some doors.</div>'}
+    ${BRIEF.errors&&BRIEF.errors.length?`<div class="b-err">Notes: ${esc(BRIEF.errors.join(' · '))}</div>`:''}`);
+}
+/* Open card jumps to All with a search filled in; the next tab change puts the search and filters back */
+let BRIEF_RET=null;
+function briefReturn(){
+  if(!BRIEF_RET)return;const r=BRIEF_RET;BRIEF_RET=null;
+  if(Q===r.q){Q=r.Q;$('q').value=Q;}
+  FTIER=r.FTIER;FCITY=r.FCITY;FVENUE=r.FVENUE;$('tierSel').value=FTIER;$('citySel').value=FCITY;$('venueSel').value=FVENUE;
+}
+function briefOpen(id){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const q=l.data.company||l.data.name||'';
+  if(!BRIEF_RET)BRIEF_RET={Q,FTIER,FCITY,FVENUE,q};else BRIEF_RET.q=q;
+  FILTER='all';Q=q;$('q').value=Q;
+  FTIER='';FCITY='';FVENUE='';$('tierSel').value='';$('citySel').value='';$('venueSel').value='';
+  EXPANDED.add(id);SHOWN=80;saveView();render();
+  const el=document.querySelector(`.lead[data-id="${CSS.escape(id)}"]`);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/* clipboard: only say Copied when it actually was (writeText rejects without permission / outside https) */
+function copyText(txt,btn,label){
+  const done=m=>{btn.textContent=m;announce(m);setTimeout(()=>{btn.textContent=label;},1500);};
+  try{navigator.clipboard.writeText(txt).then(()=>done('Copied ✓'),()=>done('Copy failed'));}catch(_){done('Copy failed');}
+}
+function wireBrief(){
+  const p=$('briefPanel');if(!p)return;
+  p.querySelectorAll('details[data-bsec]').forEach(d=>d.addEventListener('toggle',()=>{BRIEF_SEC_STATE[d.dataset.bsec]=d.open;const c=d.querySelector('summary span');if(c)c.textContent=d.open?'▾':'▸';}));
+  p.querySelectorAll('input[data-ibq]').forEach(inp=>inp.addEventListener('input',()=>inboxSearch(inp.dataset.ibq,inp.value)));
+  p.addEventListener('click',e=>{
+    const ib=e.target.closest('[data-ib]');
+    if(ib){
+      if(INBOX_BUSY)return;
+      const a=ib.dataset.ib;
+      if(a==='attach')inboxAct({action:'attach',qid:ib.dataset.qid,lead_id:ib.dataset.lead});
+      else if(a==='dismiss-q')inboxAct({action:'dismiss',qid:ib.dataset.qid});
+      else if(a==='dismiss-s')inboxAct({action:'resolve',sid:ib.dataset.sid,applied:false});
+      else if(a==='apply-c'){
+        const l=LEADS.find(x=>x.id===ib.dataset.lead),sid=ib.dataset.sid;if(!l)return;
+        const it=[...(INBOXQ.contacts||[]),...(INBOXQ.suggestions||[])].find(x=>x.sid===sid);if(!it||!it.contact)return;
+        applyContact(l,it.contact);
+        if(ib.dataset.keep){CONTACT_DONE.add(sid);refreshBrief();} // the status move is still waiting on its own tap
+        else inboxAct({action:'resolve',sid,applied:true});
+      }
+      else if(a==='apply'){
+        const l=LEADS.find(x=>x.id===ib.dataset.lead);if(!l)return;
+        const patch={status:ib.dataset.status};if(patch.status==='signed'&&!l.signed_at)patch.signed_at=todayISO();
+        const prev=prevOf(l,patch);saveMeta(l.id,patch);RECENT.add(l.id);render();
+        showUndo('Moved to '+(SLABEL[patch.status]||patch.status),()=>{saveMeta(l.id,prev);render();});
+        inboxAct({action:'resolve',sid:ib.dataset.sid,applied:true});
+      }
+      return;
+    }
+    const b=e.target.closest('[data-brief]');
+    if(b){if(b.dataset.brief==='run')loadBrief(true);else{BRIEF_OPEN=!BRIEF_OPEN;try{localStorage.setItem('w_brief_open',BRIEF_OPEN?'1':'0');}catch(_){};refreshBrief();const t=document.querySelector('#briefPanel [data-brief="toggle"]');if(t)t.focus();}return;}
+    const o=e.target.closest('[data-bopen]');if(o){briefOpen(o.dataset.bopen);return;}
+    const s=e.target.closest('[data-bshow]');if(s){const it=s.closest('.b-it');it.classList.toggle('show');const on=it.classList.contains('show');s.textContent=on?'Hide draft':'Read draft';s.setAttribute('aria-expanded',on);return;}
+    const c=e.target.closest('[data-bcopy]');if(c){const dr=BRIEF.drafts[c.dataset.bcopy];copyText(dr.sms,c,'Copy text');return;}
+    const a=e.target.closest('a[href^="tel:"],a[href^="sms:"],a[href^="mailto:"]');
+    if(a){const it=a.closest('.b-it');const h=a.getAttribute('href');if(it)autoLog(it.dataset.bid,h.startsWith('tel:')?'Called':h.startsWith('sms:')?'Texted':'Emailed');}
+  });
+}
+/* ===== /MORNING BRIEF ===== */
+
+/* ===== FIELD ASSIST (smart notes · read photos · scan receipt) =====
+   Pasted above  function render(){  by command-patch/apply.mjs, which also adds:
+     • <button class="act" data-smart-toggle>✦ AI note</button>  after the Note button in leadCard()
+     • ${smartHtml(l)}                                            before <div class="l-note…> in leadCard()
+     • <button class="act" id="exScan" …>Scan receipt</button>    after the Ops Add button
+   Nothing saves until Paige taps Save — the proposal goes through saveMeta exactly like a hand edit. */
+const SMART_OPEN=new Set();let SMART_BUSY=null;const SMART_RESULT={};
+(function(){const s=document.createElement('style');s.textContent=`
+.l-smart{display:none;margin-top:10px;border:1px dashed var(--gold);padding:10px 12px;background:var(--panel)}
+.l-smart.open{display:block}
+.l-smart textarea{width:100%;background:var(--bg);border:2px solid var(--line);color:var(--cream);padding:10px 12px;font-size:16px;resize:vertical;min-height:72px}
+.l-smart .b-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.l-smart .b-row .act{padding:8px 11px;min-height:44px;font-size:12px}
+.l-smart .smart-out{margin-top:8px;font-size:12.5px;line-height:1.45}
+.l-smart .smart-out .prop{background:var(--bg);border:1px solid var(--line);padding:9px 10px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px}
+.l-smart .smart-out .chg{font-family:'Space Mono';font-size:10.5px;color:var(--gold-deep);margin-top:6px}
+.l-smart .smart-out .err{color:var(--red)}
+`;document.head.appendChild(s);})();
+function smartHtml(l){
+  const n=photosOf(l.id).length;
+  return `<div class="l-smart${SMART_OPEN.has(l.id)?' open':''}" data-smart="${esc(l.id)}">
+    <span class="mono" style="font-size:10.5px;letter-spacing:.14em;color:var(--taupe)">AI NOTE — say what happened, it files it</span>
+    <textarea class="smart-in" aria-label="AI note for ${esc(l.data.company||l.data.name||'this card')}: say what happened" placeholder="Tap the mic on your keyboard: who you talked to, what they said, when to come back, anything they asked for…">${esc(SMART_RESULT[l.id]?.text||'')}</textarea>
+    <div class="b-row"><button class="act primary" data-smart-file>${SMART_BUSY===l.id?'Filing…':'File it'}</button>${n?`<button class="act" data-smart-photos>${SMART_BUSY==='p:'+l.id?'Reading…':'Read photos ('+Math.min(n,3)+')'}</button>`:''}<button class="act" data-smart-close>Close</button></div>
+    <div class="smart-out">${smartOutHtml(l.id)}</div>
+  </div>`;
+}
+function smartOutHtml(id){
+  const r=SMART_RESULT[id];if(!r)return '';
+  if(r.error)return `<div class="err">${esc(r.error)}</div>${r.offline&&r.text?'<div class="b-row"><button class="act primary" data-smart-plain>Save as plain note</button></div>':''}`;
+  if(!r.patch)return '';
+  const chg=[];
+  if(r.patch.followup)chg.push('follow-up '+r.patch.followup.slice(5).replace('-','/'));
+  if(r.patch.status)chg.push('status → '+(SLABEL[r.patch.status]||r.patch.status));
+  if(r.patch.coi)chg.push('COI requested');
+  if(r.patch.email)chg.push('email saved');if(r.patch.phone)chg.push('phone saved');
+  const read=(r.readings||[]).map(x=>`<span class="tag">${esc(x.type.replace('_',' '))}${x.confidence?' · '+Math.round(x.confidence*100)+'%':''}</span>`).join(' ');
+  return `${read?`<div>${read}</div>`:''}<div class="prop">${esc((r.lines||[]).join('\n'))}</div>${chg.length?`<div class="chg">ALSO: ${esc(chg.join(' · '))}</div>`:''}
+    <div class="b-row"><button class="act primary" data-smart-save>Save to card</button>${r.suggestion?`<button class="act" data-smart-save data-smart-status="${esc(r.suggestion.status)}">Save + move to ${esc(SLABEL[r.suggestion.status]||r.suggestion.status)}</button>`:''}<button class="act" data-smart-discard>Discard</button></div>
+    ${r.suggestion?`<div class="chg">WHY ${esc(SLABEL[r.suggestion.status]||r.suggestion.status).toUpperCase()}: ${esc(r.suggestion.reason||'')}</div>`:''}`;
+}
+function smartLeadCtx(l){return {id:l.id,prospect:!!l.prospect,co:l.data.company||'',name:l.data.name||'',venue:l.data.venue_type||'',city:l.data.city||'',status:l.status,note:l.note||'',followup:l.followup||'',email:l.data.email||l.metaEmail||'',phone:l.data.phone||l.metaPhone||'',coi:l.coi||'',signed_at:l.signed_at||''};}
+async function smartFile(id,text){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  SMART_BUSY=id;SMART_RESULT[id]={text};render();
+  try{
+    const r=await fetch(FN+'/note-ai',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({text,lead:smartLeadCtx(l)}),signal:tmo(25000)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+    SMART_RESULT[id]={text,lines:j.lines,patch:j.patch,suggestion:j.suggestion};
+  }catch(e){const off=e.name==='AbortError'||e instanceof TypeError||!navigator.onLine; // no signal: offer to file it as a plain note (that queues)
+    SMART_RESULT[id]={text,offline:off,error:off?'No signal — the AI can\'t read it right now.':e.message};}
+  SMART_BUSY=null;render();
+}
+function smartPlain(id){
+  const r=SMART_RESULT[id],l=LEADS.find(x=>x.id===id);if(!r||!r.text||!l)return;
+  flushNote(id);
+  saveMeta(id,{note:(l.note?l.note+'\n':'')+`[${stamp()}] Note: ${r.text.replace(/\s+/g,' ').trim()}`});
+  delete SMART_RESULT[id];SMART_OPEN.delete(id);RECENT.add(id);render();
+  toast(OFFLINE||!navigator.onLine?'Saved as a plain note — syncs when you have signal':'Saved as a plain note');
+}
+async function smartPhotos(id){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  const pids=photosOf(id).slice(-3);
+  SMART_BUSY='p:'+id;SMART_RESULT[id]={text:SMART_RESULT[id]?.text||''};render();
+  try{
+    const r=await fetch(FN+'/photo-ai',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({pids,lead:smartLeadCtx(l)}),signal:tmo(40000)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+    SMART_RESULT[id]={text:SMART_RESULT[id]?.text||'',lines:j.lines,patch:j.patch,readings:j.readings,suggestion:null};
+    if(!j.lines||!j.lines.length)SMART_RESULT[id]={text:'',error:'Nothing useful in those photos ('+(j.readings||[]).map(x=>x.type).join(', ')+').'};
+  }catch(e){SMART_RESULT[id]={text:SMART_RESULT[id]?.text||'',error:e.name==='AbortError'?'Took too long — try again.':e.message};}
+  SMART_BUSY=null;render();
+}
+function smartSave(id,status){
+  const r=SMART_RESULT[id],l=LEADS.find(x=>x.id===id);if(!r||!r.patch||!l)return;
+  const patch={...r.patch};
+  if(status){patch.status=status;if(status==='signed'&&!l.signed_at)patch.signed_at=todayISO();}
+  if(patch.status==='signed'&&!l.signed_at&&!patch.signed_at)patch.signed_at=todayISO();
+  flushNote(id);
+  const prev=prevOf(l,patch); // signed_at / coi / phone / email too, or Undo leaves a stale install clock behind
+  saveMeta(id,patch);
+  delete SMART_RESULT[id];SMART_OPEN.delete(id);RECENT.add(id);render();
+  showUndo('Filed'+(patch.followup?' · follow-up '+patch.followup.slice(5).replace('-','/'):'')+(patch.status?' · '+(SLABEL[patch.status]||patch.status):''),()=>{saveMeta(id,prev);render();});
+}
+/* one delegated handler: survives every re-render */
+$('list').addEventListener('click',e=>{
+  const card=e.target.closest('.lead');if(!card)return;const id=card.dataset.id;
+  if(e.target.closest('[data-smart-toggle]')){SMART_OPEN.has(id)?SMART_OPEN.delete(id):SMART_OPEN.add(id);render();const ta=document.querySelector(`.l-smart[data-smart="${CSS.escape(id)}"] textarea`);if(ta&&SMART_OPEN.has(id))ta.focus();return;}
+  if(e.target.closest('[data-smart-close]')){SMART_OPEN.delete(id);render();return;}
+  if(e.target.closest('[data-smart-file]')){if(SMART_BUSY)return;const ta=card.querySelector('.smart-in');const t=(ta?ta.value:'').trim();if(t.length<3){ta&&ta.focus();return;}smartFile(id,t);return;}
+  if(e.target.closest('[data-smart-photos]')){if(SMART_BUSY)return;smartPhotos(id);return;}
+  const sv=e.target.closest('[data-smart-save]');if(sv){smartSave(id,sv.dataset.smartStatus||'');return;}
+  if(e.target.closest('[data-smart-discard]')){delete SMART_RESULT[id];render();return;}
+  if(e.target.closest('[data-smart-plain]')){smartPlain(id);return;}
+});
+/* keep typed text across re-renders (saveMeta → renderStats doesn't re-render cards, but other actions do) */
+$('list').addEventListener('input',e=>{if(e.target.classList.contains('smart-in')){const id=e.target.closest('.lead')?.dataset.id;if(id)SMART_RESULT[id]={...(SMART_RESULT[id]||{}),text:e.target.value};}});
+
+/* ---- Ops: scan a receipt into the expense form, attach the photo once it's added ---- */
+let PENDING_RECEIPT=null;
+(function(){
+  const btn=$('exScan');if(!btn)return;
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.style.display='none';document.body.appendChild(inp);
+  btn.addEventListener('click',()=>{inp.value='';inp.click();});
+  inp.addEventListener('change',async()=>{
+    const f=inp.files&&inp.files[0];if(!f)return;
+    btn.textContent='Reading…';btn.disabled=true;
+    try{
+      const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(f);const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=u;});
+      const MAX=1200;const sc=Math.min(1,MAX/Math.max(img.width,img.height));
+      const cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      const dataUrl=cv.toDataURL('image/jpeg',0.8);
+      const r=await fetch(FN+'/photo-ai',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl,mode:'receipt'}),signal:tmo(40000)});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+      const rc=(j.readings||[]).find(x=>x.type==='receipt'&&x.receipt)?.receipt;
+      if(!rc)throw new Error('That doesn\'t read as a receipt ('+(j.readings||[]).map(x=>x.type).join(', ')+').');
+      if(rc.vendor)$('exVendor').value=rc.vendor;
+      if(rc.total)$('exAmount').value=rc.total.toFixed(2);
+      if(rc.date)$('exDate').value=rc.date;
+      $('exNote').value=[rc.category&&rc.category!=='other'?rc.category:'',rc.items].filter(Boolean).join(' — ');
+      PENDING_RECEIPT=dataUrl;
+      $('exVendor').scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(e){toast(e.name==='AbortError'?'Took too long — try again.':(e instanceof TypeError||!navigator.onLine)?'No signal — type the receipt in by hand.':e.message);}
+    btn.textContent='Scan receipt';btn.disabled=false;
+  });
+  // after Paige taps Add, attach the scanned image to the new expense (same exp:<id> key the receipt button uses)
+  // this block sits above Command's own exAdd handler in the file, so defer a tick to run after it
+  $('exAdd').addEventListener('click',()=>{
+    if(!PENDING_RECEIPT)return;
+    const before=OPS.expenses?OPS.expenses.items.length:0;
+    setTimeout(async()=>{
+      if(!PENDING_RECEIPT||!OPS.expenses||OPS.expenses.items.length!==before+1)return; // validation failed → nothing added
+      const pid='exp:'+OPS.expenses.items[0].id,img=PENDING_RECEIPT;PENDING_RECEIPT=null;
+      try{const r=await fetch(FN+'/photo',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:pid,image:img})});if(r.ok){PHOTOS.add(pid);renderOps();}}catch(_){}
+    },0);
+  },true);
+})();
+/* ===== /FIELD ASSIST ===== */
+
 function render(){
   renderStats();renderFilters();renderFunnel();
-  if(FILTER==='today'&&!MYLOC&&!LOC_TRIED){LOC_TRIED=true;locate(()=>render());}
+  if(FILTER==='today'&&!MYLOC&&!LOC_TRIED){LOC_TRIED=true;locate(()=>bgRender());}
   const arr=visible();
   const page=arr.slice(0,SHOWN);
-  const planBar=(FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:11px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested</span>${LOC_FAIL&&!MYLOC?`<button class="fu-chip" id="locRetry">Location off — retry</button>`:''}</div>`:'';
+  let tipSeen=true;try{tipSeen=!!localStorage.getItem('w_tip');}catch(e){}
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const tip=(FILTER==='today'&&!tipSeen)?`<div class="tip" id="tip"><b>HOW TODAY WORKS</b>Follow-ups due, installs coming up and hot leads first — then the best doors to knock, nearest first. Tap a row to open it. Swipe right = no answer, swipe left = snooze a day.${standalone?'':' Put Command on your phone: Share → <b style="display:inline;letter-spacing:0;font-family:inherit;font-size:inherit">Add to Home Screen</b>.'}<div style="margin-top:8px"><button class="act primary" id="tipOk" style="min-height:40px">Got it</button></div></div>`:'';
+  const planBar=tip+((FILTER==='today'&&arr.length)?`<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><button class="act primary" id="routeToday" style="padding:12px 16px">Route today's plan (${arr.length}) →</button><span style="font-size:12px;color:var(--taupe)">${LEADS.filter(fuDue).length} due · ${SUGGEST.size} suggested</span>${LOC_FAIL&&!MYLOC?`<button class="fu-chip" id="locRetry">Location off — retry</button>`:''}</div>`:'');
   $('list').innerHTML=planBar+(page.length?page.map(l=>{try{return EXPANDED.has(l.id)?leadCard(l):compactRow(l)}catch(e){console.error('card render failed',l.id,e);return `<div class="lead"><div class="l-top"><div class="l-main"><div class="l-name">${esc(l.data?.name||l.data?.company||l.id)}</div><div class="l-meta" style="color:var(--red)">Card failed to render — data issue logged to console.</div></div></div></div>`}}).join('')+(arr.length>SHOWN?`<button class="act" id="showMore" style="width:100%;justify-content:center;padding:14px;margin-top:4px">Show ${Math.min(60,arr.length-SHOWN)} more (${arr.length-SHOWN} remaining)</button>`:''):`<div class="empty">${FILTER==='prospect'?'No prospects match these filters.':FILTER==='referral'?'No referrals yet — they arrive when someone picks “A spot I know” on the site.':(Q||FCITY||FVENUE||FTIER)?'Nothing matches the current filters. <button class="act" id="emptyClear" style="margin-left:8px">Clear filters</button>':'No leads in this view yet. New site submissions land here automatically.'}</div>`);
+  const tk=$('tipOk');
+  if(tk)tk.addEventListener('click',()=>{try{localStorage.setItem('w_tip','1');}catch(e){}render();});
+  if(FILTER==='today')$('list').insertAdjacentHTML('afterbegin',briefHtml());wireBrief();
   const lr=$('locRetry');
   if(lr)lr.addEventListener('click',()=>{LOC_TRIED=true;locate(()=>render());});
   const rt=$('routeToday');
@@ -1495,6 +2148,7 @@ function render(){
         if(card.dataset.swiped)return;
         EXPANDED.add(id);render();
       });
+
       const rc0=card.querySelector('[data-act="route"]');
       if(rc0)rc0.addEventListener('change',()=>{rc0.checked?ROUTE.add(id):ROUTE.delete(id);saveRoute();updateRouteBar();});
       wireSwipe(card,id);
@@ -1508,7 +2162,7 @@ function render(){
       const patch={status:e.target.value};
       // stamp the signing date — starts the 14-day install clock
       if(e.target.value==='signed'&&l&&!l.signed_at){patch.signed_at=todayISO();l.signed_at=patch.signed_at;}
-      saveMeta(id,patch);
+      RECENT.add(id);saveMeta(id,patch);
       render();
     });
     const coiBtn=card.querySelector('[data-act="coi"]');
@@ -1517,10 +2171,13 @@ function render(){
       saveMeta(id,{coi:l.coi==='sent'?'':l.coi==='requested'?'sent':'requested'});render();
     });
     card.querySelector('[data-act="note"]').addEventListener('click',()=>{
-      const open=card.querySelector('.l-note').classList.toggle('open');
-      open?NOTE_OPEN.add(id):NOTE_OPEN.delete(id);
-      if(open)card.querySelector('[data-act="notetext"]').focus();
+      card.querySelector('.l-note').classList.add('open');NOTE_OPEN.add(id);
+      const ta=card.querySelector('[data-act="notetext"]');ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     });
+    const cb=card.querySelector('[data-act="collapse"]');
+    if(cb)cb.addEventListener('click',e=>{e.stopPropagation();EXPANDED.delete(id);render();const row=document.querySelector(`.lead[data-id="${CSS.escape(id)}"]`);if(row)row.focus();});
+    const ef=card.querySelector('[data-act="editfield"]');
+    if(ef)ef.addEventListener('click',()=>openAdd(id));
     const pt=card.querySelector('[data-act="pitch"]');
     if(pt)pt.addEventListener('click',()=>{
       const p=card.querySelector('.l-pitch');if(!p)return;
@@ -1532,7 +2189,7 @@ function render(){
     card.querySelectorAll('[data-act="chips"]').forEach(b=>b.addEventListener('click',()=>{
       card.querySelectorAll('[data-chipset]').forEach(c=>{c.style.display=(c.dataset.chipset===b.dataset.chips&&c.style.display==='none')?'flex':'none';});
     }));
-    card.querySelectorAll('[data-act="nn"]').forEach(b=>b.addEventListener('click',()=>{logNotNow(id,b.dataset.nn);render();}));
+    card.querySelectorAll('[data-act="nn"]').forEach(b=>b.addEventListener('click',()=>{logNotNow(id,b.dataset.nn);afterLog(id);}));
     const ct=card.querySelector('[data-act="contact"]');
     if(ct)ct.addEventListener('click',()=>openEdit(card,id,'contact'));
     const fc=card.querySelector('[data-fuclear]');
@@ -1540,9 +2197,9 @@ function render(){
     const cp=card.querySelector('[data-act="copypitch"]');
     if(cp)cp.addEventListener('click',()=>{
       const l=LEADS.find(x=>x.id===id);if(!l)return;
-      try{navigator.clipboard.writeText(pitchFor(l));cp.textContent='Copied ✓';setTimeout(()=>cp.textContent='Copy',1500);}catch(e){}
+      copyText(pitchFor(l),cp,'Copy');
     });
-    card.querySelectorAll('[data-act="ql"]').forEach(qb=>qb.addEventListener('click',()=>{logDoor(id,qb.dataset.ql,qb.dataset.extra||'');render();}));
+    card.querySelectorAll('[data-act="ql"]').forEach(qb=>qb.addEventListener('click',()=>{logDoor(id,qb.dataset.ql,qb.dataset.extra||'');afterLog(id);}));
     card.querySelectorAll('[data-fuq]').forEach(b=>b.addEventListener('click',()=>snooze(id,+b.dataset.fuq)));
     const fu=card.querySelector('[data-act="followup"]');
     if(fu)fu.addEventListener('change',()=>{saveMeta(id,{followup:fu.value});render();});
@@ -1560,11 +2217,11 @@ function render(){
       saveMeta(id,{payout:l.payout==='paid'?'unpaid':'paid'});render();
     });
     const ta=card.querySelector('[data-act="notetext"]');
-    let t;
     ta.addEventListener('input',()=>{
-      clearTimeout(t);
-      t=setTimeout(()=>saveMeta(id,{note:ta.value},card.querySelector('.save-hint')),700);
+      if(NOTE_PEND[id])clearTimeout(NOTE_PEND[id].t);
+      NOTE_PEND[id]={ta,hint:card.querySelector('.save-hint'),t:setTimeout(()=>flushNote(id),700)};
     });
+    ta.addEventListener('blur',()=>flushNote(id));
   });
 }
 let QT=null;$('q').addEventListener('input',e=>{Q=e.target.value;SHOWN=80;clearTimeout(QT);QT=setTimeout(render,150);});
@@ -1603,11 +2260,15 @@ $('btnRoute').addEventListener('click',()=>{
   };
   MYLOC?go():locate(go);
 });
-$('photoInput').addEventListener('change',async e=>{
+$('photoInput').addEventListener('change',e=>{
   const files=[...(e.target.files||[])];
   if(!files.length||!PHOTO_ID)return;
   const id=PHOTO_ID;PHOTO_ID=null;
-  let ok=0,fail=0;
+  uploadPhotos(id,files);
+});
+/* failed uploads stay in memory behind a Retry button — no re-shooting the photo after a dead spot */
+async function uploadPhotos(id,files){
+  let ok=0;const failed=[];
   for(const f of files){
     try{
       const img=await new Promise((res,rej)=>{const u=URL.createObjectURL(f);const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=u;});
@@ -1617,30 +2278,31 @@ $('photoInput').addEventListener('change',async e=>{
       const dataUrl=cv.toDataURL('image/jpeg',0.8);
       const pid=nextPhotoId(id);
       const r=await fetch(FN+'/photo',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:pid,image:dataUrl})});
-      if(r.ok){PHOTOS.add(pid);ok++;}else fail++;
-    }catch(err){fail++;}
+      if(r.ok){PHOTOS.add(pid);ok++;}else failed.push(f);
+    }catch(err){failed.push(f);}
   }
   if(ok){render();if($('opsView').style.display==='block')renderOps();}
-  if(fail)alert(fail+' photo'+(fail>1?'s':'')+' failed to upload'+(ok?` (${ok} succeeded)`:'')+' — check signal and try again.');
-});
+  const fail=failed.length;
+  if(fail)showUndo(fail+' photo'+(fail>1?'s':'')+' didn\'t upload'+(ok?` (${ok} did)`:'')+' — no signal?',()=>uploadPhotos(id,failed),'Retry');
+}
 let BZ=[],BZI=0,BZLOG=0,BZSKIP=0;
 function blitzStart(){
   let ids=[...ROUTE];
   if(!ids.length){
     ids=visible().filter(l=>['prospect','new','contacted'].includes(l.status)).slice(0,20).map(l=>l.id);
   }
-  if(!ids.length){alert('Nothing to blitz — select prospects with the route checkboxes, or open a filtered view.');return;}
+  if(!ids.length){toast('Nothing to run — tick prospects with the route boxes, or open a filtered view.');return;}
   BZ=ids;BZI=0;BZLOG=0;BZSKIP=0;
-  $('blitz').style.display='block';blitzRender();
+  openDlg('blitz');blitzRender();
 }
 function blitzRender(){
   if(BZI>=BZ.length){
     $('bzProg').textContent='DONE';
     $('bzBody').innerHTML=`<div style="text-align:center;padding:60px 0">
       <div style="font-family:'Archivo';font-weight:900;font-size:34px;text-transform:uppercase">Run complete.</div>
-      <p style="color:var(--muted);margin:14px 0 26px">${BZLOG} logged · ${BZSKIP} skipped · every touch saved to the pipeline</p>
+      <p style="color:var(--muted);margin:14px 0 26px">${BZLOG} logged · ${BZSKIP} skipped · every door saved to the pipeline</p>
       <button class="btn" id="bzClose" style="width:auto">Back to Command</button></div>`;
-    document.getElementById('bzClose').addEventListener('click',()=>{$('blitz').style.display='none';render();});
+    document.getElementById('bzClose').addEventListener('click',()=>{closeDlg('blitz');render();});
     return;
   }
   const l=LEADS.find(x=>x.id===BZ[BZI]);
@@ -1653,10 +2315,12 @@ function blitzRender(){
       <div class="mono" style="font-size:10px;letter-spacing:.18em;color:var(--gold-deep);text-transform:uppercase">${esc(d.venue_type||'')} · ${esc(d.city||'')}</div>
       <div style="font-family:'Archivo';font-weight:900;font-size:clamp(26px,7vw,38px);text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;margin:6px 0 10px">${esc(d.company||d.name||l.id)}</div>
       ${d.address?`<div style="color:var(--muted);font-size:14px">${esc(d.address)}</div>`:''}
+      ${dmOf(l)?`<div style="margin-top:8px;font-size:15px">Ask for <b>${esc(dmOf(l).name)}</b>${dmOf(l).title?' · '+esc(dmOf(l).title):''}</div>`:''}
+      ${lastTouchDays(l)!=null?`<div class="mono" style="font-size:11px;color:var(--taupe);margin-top:4px">LAST TOUCH ${lastTouchDays(l)===0?'TODAY':lastTouchDays(l)+'D AGO'}${l.followup?' · FOLLOW-UP '+esc(l.followup.slice(5).replace('-','/')):''}</div>`:''}
       <div style="display:flex;gap:8px;margin:16px 0 6px;flex-wrap:wrap">
         <a class="act" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQ)}" target="_blank" rel="noopener">Navigate</a>
         ${(l.metaPhone||d.phone)?`<a class="act" href="tel:${esc(l.metaPhone||d.phone)}">Call</a>`:''}
-        <a class="act" href="wrap-studio.html?biz=${encodeURIComponent(d.company||'')}" target="_blank" rel="noopener">Mock</a>
+        <a class="act" href="wrap-studio.html?biz=${encodeURIComponent(d.company||'')}" target="_blank" rel="noopener">See wrap</a>
         <button class="act" id="bzPitchBtn">Pitch</button>
       </div>
       <div id="bzPitch" style="display:none;margin:6px 0 0;padding:10px 12px;border:1px dashed var(--gold);font-size:13px;line-height:1.5">${pitchHtml(l)}</div>
@@ -1683,7 +2347,75 @@ function blitzRender(){
   document.getElementById('bzBack').addEventListener('click',()=>{if(BZI>0){BZI--;blitzRender();}});
 }
 $('btnBlitz').addEventListener('click',blitzStart);
-$('bzEnd').addEventListener('click',()=>{$('blitz').style.display='none';render();});
+$('bzEnd').addEventListener('click',()=>{closeDlg('blitz');render();});
+/* ---------- dialogs: Escape closes, focus lands on Back, returns to where you were ---------- */
+const DLG={blitz:'bzEnd',opsView:'opsClose',mapView:'mapClose',addView:'addClose'};
+let DLG_RET=null;
+function openDlg(id){DLG_RET=document.activeElement;const el=$(id);el.style.display='block';const b=$(DLG[id]);if(b)setTimeout(()=>b.focus(),30);}
+function closeDlg(id){$(id).style.display='none';if(id==='opsView')PENDING_RECEIPT=null; /* an un-added receipt scan must not attach to a later expense */if(DLG_RET&&DLG_RET.focus)DLG_RET.focus();DLG_RET=null;}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  const mm=$('moreMenu');if(mm&&!mm.hidden){mm.hidden=true;$('btnMore').setAttribute('aria-expanded','false');$('btnMore').focus();return;}
+  for(const id of Object.keys(DLG)){const el=$(id);if(el&&el.style.display==='block'){const b=$(DLG[id]);if(b)b.click();return;}}
+});
+/* ---------- ⋯ menu ---------- */
+$('btnMore').addEventListener('click',e=>{e.stopPropagation();const mm=$('moreMenu');mm.hidden=!mm.hidden;$('btnMore').setAttribute('aria-expanded',String(!mm.hidden));if(!mm.hidden)mm.querySelector('button,a').focus();});
+document.addEventListener('click',e=>{const mm=$('moreMenu');if(mm.hidden)return;if(e.target.closest('#moreMenu')||e.target.closest('#btnMore'))return;mm.hidden=true;$('btnMore').setAttribute('aria-expanded','false');});
+$('moreMenu').addEventListener('click',e=>{if(e.target.closest('button,a')){$('moreMenu').hidden=true;$('btnMore').setAttribute('aria-expanded','false');}});
+/* ---------- add / edit a prospect from the field ---------- */
+let ADD_ID=null;
+function fillSel(sel,vals,cur,otherLabel){
+  sel.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('')+(otherLabel?`<option value="__other">${otherLabel}</option>`:'');
+  if(cur&&!vals.includes(cur)){const o=document.createElement('option');o.value=cur;o.textContent=cur;o.selected=true;sel.insertBefore(o,sel.lastChild);}
+}
+function openAdd(id){
+  ADD_ID=id||null;
+  const it=id?(FIELD.items||[]).find(x=>x.id===id):null;
+  const venues=[...new Set(LEADS.map(l=>l.data.venue_type).filter(Boolean))].sort();
+  const cities=[...new Set(LEADS.map(l=>l.data.city).filter(Boolean))].sort();
+  fillSel($('adVenue'),venues.length?venues:['Gym / fitness','Apartment community','Hotel','Office / coworking','Auto repair','Laundromat','Salon / barbershop','Entertainment venue'],it?it.venue_type:'Gym / fitness');
+  fillSel($('adCity'),cities.length?cities:['Franklin','Brentwood','Spring Hill','Nashville','Columbia','Murfreesboro'],it?it.city:'Franklin','Other city…');
+  $('adCityOtherWrap').style.display='none';$('adCityOther').value='';
+  $('adCo').value=it?it.company||'':'';$('adAddr').value=it?it.address||'':'';$('adPhone').value=it?it.phone||'':'';$('adWeb').value=it?it.website||'':'';$('adIntel').value=it?it.intel||'':'';
+  const dm=it&&it.meta&&it.meta.note?dmOf({note:it.meta.note}):null;$('adDm').value=dm?dm.name:'';$('adDmT').value=dm?dm.title:'';
+  $('adErr').textContent='';$('addTitle').textContent=it?'EDIT PROSPECT':'ADD A PROSPECT';$('adSave').textContent=it?'Save changes':'Save prospect';
+  $('adDelete').style.display=it?'':'none';
+  $('adLoc').textContent=it&&it.lat?'PINNED AT '+it.lat.toFixed(4)+', '+it.lng.toFixed(4):MYLOC?'WILL PIN TO YOUR CURRENT LOCATION':'LOCATION OFF — PIN LATER FROM THE CARD';
+  if(!it&&!MYLOC)locate(()=>{if($('addView').style.display==='block'&&MYLOC&&!ADD_ID)$('adLoc').textContent='WILL PIN TO YOUR CURRENT LOCATION';});
+  openDlg('addView');setTimeout(()=>$('adCo').focus(),80);
+}
+$('adCity').addEventListener('change',()=>{const o=$('adCity').value==='__other';$('adCityOtherWrap').style.display=o?'':'none';if(o)$('adCityOther').focus();});
+$('btnAdd').addEventListener('click',()=>openAdd(null));
+$('addClose').addEventListener('click',()=>closeDlg('addView'));
+$('adDelete').addEventListener('click',()=>{
+  if(!ADD_ID||!confirm('Delete this prospect and its notes?'))return;
+  noteDel('prospects',{id:ADD_ID});FIELD.items=(FIELD.items||[]).filter(x=>x.id!==ADD_ID);LEADS=LEADS.filter(l=>l.id!==ADD_ID);EXPANDED.delete(ADD_ID);ROUTE.delete(ADD_ID);saveRoute();updateRouteBar();
+  saveField();closeDlg('addView');render();toast('Prospect deleted');
+});
+$('addForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const co=$('adCo').value.trim();if(!co){$('adErr').textContent='Business name, please.';$('adCo').focus();return;}
+  let city=$('adCity').value;if(city==='__other')city=$('adCityOther').value.trim();
+  if(!city){$('adErr').textContent='Which city?';$('adCityOther').focus();return;}
+  const norm=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const dup=LEADS.find(l=>l.id!==ADD_ID&&norm(l.data.company)===norm(co)&&norm(l.data.city)===norm(city));
+  if(dup&&!ADD_ID&&!confirm(`"${dup.data.company}" in ${city} is already in the list. Add anyway?`))return;
+  const rec={company:co,venue_type:$('adVenue').value,city,address:$('adAddr').value.trim(),phone:$('adPhone').value.trim(),website:$('adWeb').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,''),intel:$('adIntel').value.trim()};
+  const dmName=$('adDm').value.trim(),dmTitle=$('adDmT').value.trim();
+  FIELD.items=FIELD.items||[];
+  let it=ADD_ID?FIELD.items.find(x=>x.id===ADD_ID):null;
+  if(it)Object.assign(it,rec);
+  else{it={id:'fld-'+Date.now().toString(36),added:todayISO(),fit:70,meta:{},...rec};if(MYLOC){it.lat=MYLOC[0];it.lng=MYLOC[1];}FIELD.items.unshift(it);}
+  it.meta=it.meta||{};it.meta.note=setDmLine(it.meta.note||'',dmName,dmTitle);
+  saveField();
+  // drop just this card in (rebuilding from the cache would undo edits made since the last full load)
+  let cm={};try{cm=(JSON.parse(localStorage.getItem('w_cache')||'null')||{}).j?.meta||{};}catch(_){}
+  const lead=fieldLeads(cm).find(x=>x.id===it.id);
+  if(lead){const i=LEADS.findIndex(x=>x.id===it.id);if(i>=0)LEADS[i]=lead;else LEADS.unshift(lead);fillSelects();}
+  closeDlg('addView');
+  FILTER='prospect';Q=co;$('q').value=Q;EXPANDED.add(it.id);SHOWN=80;saveView();render();window.scrollTo(0,0);
+  toast(ADD_ID?'Prospect updated':'Prospect added — work it like any other card');
+});
 function updateRouteBar(){$('routeBar').style.display=ROUTE.size?'flex':'none';$('btnRoute').textContent=`Route (${ROUTE.size}) →`;}
 
 /* CSV cell: quote as needed and defuse spreadsheet formulas (=, +, -, @) that a public form could plant */
@@ -1691,31 +2423,33 @@ function csvCell(v){v=String(v??'');if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /["
 /* ---------- ops: mileage + expenses ---------- */
 const OPS={mileage:null,expenses:null};
 let OPS_LOADED=false,OPS_DIRTY=new Set();
-async function opsGet(doc){
-  const r=await fetch(FN+'/ops?doc='+doc,{headers:{'X-Dash-Key':KEY}});
+async function opsGet(doc){ // → {data, updated}
+  const r=await fetch(FN+'/ops?doc='+doc,{headers:{'X-Dash-Key':KEY},signal:tmo(8000)});
   if(!r.ok)throw new Error(r.status);
-  return (await r.json()).data;
+  const j=await r.json();return {data:j.data,updated:j.updated||''};
 }
-async function opsSave(doc){
+async function opsSave(doc,quiet){
+  try{localStorage.setItem('w_ops_'+doc,JSON.stringify(OPS[doc]));}catch(_){}
+  setDirty(doc,1);const seq=DOC_SEQ[doc]=(DOC_SEQ[doc]||0)+1;
   try{
-    const r=await fetch(FN+'/ops',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({doc,data:OPS[doc]})});
-    if(!r.ok)throw new Error(r.status);
-    OPS_DIRTY.delete(doc);
+    const before=JSON.stringify(OPS[doc]);
+    await opsPush(doc,()=>OPS[doc],v=>{if(v)OPS[doc]=v;});
+    OPS_DIRTY.delete(doc);if(seq===DOC_SEQ[doc]){setDirty(doc,0);try{localStorage.removeItem('w_ops_del_'+doc);}catch(_){}}
+    if(JSON.stringify(OPS[doc])!==before)try{renderOps();}catch(_){} // merged in entries from another phone
   }catch(e){
     OPS_DIRTY.add(doc);
-    try{localStorage.setItem('w_ops_'+doc,JSON.stringify(OPS[doc]));}catch(_){}
-    alert('No signal — saved on this phone, will sync next time Ops opens with service.');
+    if(!quiet)toast('No signal — saved on this phone, syncs next time Ops opens with service.');
   }
 }
 async function opsLoad(){
   for(const doc of ['mileage','expenses']){
     try{
-      const remote=await opsGet(doc);
+      const {data:remote,updated}=await opsGet(doc);
       let local=null;try{local=JSON.parse(localStorage.getItem('w_ops_'+doc)||'null');}catch(_){}
-      // an unsynced local copy with more entries wins, then pushes up
-      if(local&&(!remote||(local.trips||local.items||[]).length>(remote.trips||remote.items||[]).length)){
-        OPS[doc]=local;await opsSave(doc);
-      }else OPS[doc]=remote;
+      // an unsynced local copy wins, then pushes up (merging if the server moved on); otherwise the server's copy is the truth
+      if(local&&(isDirty(doc)||!remote)){
+        OPS[doc]=local;if(isDirty(doc))await opsSave(doc);
+      }else{OPS[doc]=remote;setUpd(doc,updated);try{localStorage.setItem('w_ops_'+doc,JSON.stringify(remote));}catch(_){}}
     }catch(e){
       try{OPS[doc]=JSON.parse(localStorage.getItem('w_ops_'+doc)||'null');}catch(_){OPS[doc]=null;}
     }
@@ -1787,11 +2521,11 @@ function renderOps(){
     `<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px;align-items:center">
       <span class="mono" style="font-size:10px;color:var(--taupe)">${t.d.slice(5)}</span>
       <b>${t.mi.toFixed(1)} mi</b><span style="color:var(--muted)">${esc(t.p)}</span>
-      <button class="act" data-midel="${i}" style="margin-left:auto;padding:3px 8px">✕</button></div>`).join('')
+      <button class="act" data-midel="${i}" aria-label="Delete trip" style="margin-left:auto;padding:8px 12px;min-height:40px">✕</button></div>`).join('')
     ||'<div class="mono" style="font-size:10px;color:var(--taupe);padding:8px 0">NO TRIPS LOGGED YET</div>';
   document.querySelectorAll('[data-midel]').forEach(b=>b.addEventListener('click',()=>{
     if(!confirm('Delete this trip?'))return;
-    OPS.mileage.trips.splice(+b.dataset.midel,1);opsSave('mileage');renderOps();
+    noteDel('mileage',OPS.mileage.trips[+b.dataset.midel]);OPS.mileage.trips.splice(+b.dataset.midel,1);opsSave('mileage');renderOps();
   }));
   const monthItems=ex.items.filter(t=>t.d.startsWith(mk));
   $('exMonth').textContent='THIS MONTH: '+fmt2(monthItems.reduce((s,t)=>s+t.a,0));
@@ -1801,13 +2535,13 @@ function renderOps(){
       <span class="mono" style="font-size:10px;color:var(--taupe)">${t.d.slice(5)}</span>
       <b>${esc(t.v)}</b><span>${fmt2(t.a)}</span><span style="color:var(--muted);font-size:12px">${esc(t.n||'')}</span>
       <span style="margin-left:auto;display:flex;gap:6px">
-        ${hasR?`<a class="act" style="padding:3px 8px" target="_blank" rel="noopener" data-pid="${esc('exp:'+t.id)}" href="${photoSrc('exp:'+t.id)||'#'}">Receipt ✓</a>`
-              :`<button class="act" data-exrcpt="${t.id}" style="padding:3px 8px">+ Receipt</button>`}
-        <button class="act" data-exdel="${i}" style="padding:3px 8px">✕</button></span></div>`;
+        ${hasR?`<a class="act" style="padding:8px 12px;min-height:40px" target="_blank" rel="noopener" data-pid="${esc('exp:'+t.id)}" href="${photoSrc('exp:'+t.id)||'#'}">Receipt ✓</a>`
+              :`<button class="act" data-exrcpt="${t.id}" style="padding:8px 12px;min-height:40px">+ Receipt</button>`}
+        <button class="act" data-exdel="${i}" aria-label="Delete expense" style="padding:8px 12px;min-height:40px">✕</button></span></div>`;
   }).join('')||'<div class="mono" style="font-size:10px;color:var(--taupe);padding:8px 0">NO EXPENSES LOGGED YET</div>';
   document.querySelectorAll('[data-exdel]').forEach(b=>b.addEventListener('click',()=>{
     if(!confirm('Delete this expense?'))return;
-    OPS.expenses.items.splice(+b.dataset.exdel,1);opsSave('expenses');renderOps();
+    noteDel('expenses',OPS.expenses.items[+b.dataset.exdel]);OPS.expenses.items.splice(+b.dataset.exdel,1);opsSave('expenses');renderOps();
   }));
   document.querySelectorAll('[data-exrcpt]').forEach(b=>b.addEventListener('click',()=>{
     PHOTO_ID='exp:'+b.dataset.exrcpt;$('photoInput').value='';$('photoInput').click();
@@ -1848,7 +2582,7 @@ $('exCsv').addEventListener('click',()=>{
     .concat(OPS.expenses.items.slice().reverse().map(t=>[t.d,t.v,t.a.toFixed(2),t.n||'',PHOTOS.has('exp:'+t.id)?'yes':'no'])));
 });
 $('btnOps').addEventListener('click',async()=>{
-  $('opsView').style.display='block';
+  openDlg('opsView');
   $('miDate').value=$('exDate').value=todayISO();
   if(!OPS_LOADED)await opsLoad();
   else for(const d of [...OPS_DIRTY])await opsSave(d); // retry unsynced
@@ -1860,10 +2594,7 @@ $('btnOps').addEventListener('click',async()=>{
   }
   renderOps();
 });
-$('opsClose').addEventListener('click',()=>{
-  if(TRIP&&!TRIP.pendingMi){$('opsView').style.display='none';return;} // keep tracking in background
-  $('opsView').style.display='none';
-});
+$('opsClose').addEventListener('click',()=>{closeDlg('opsView');}); // a running trip keeps tracking in the background
 
 /* ---------- territory map (Leaflet, lazy-loaded) ---------- */
 let MAP=null,MAPLAYER=null,MYMARK=null,LEAFLET_LOADING=false;
@@ -1912,8 +2643,8 @@ function drawMarkers(){
       <b>${esc(l.data.company||l.data.name||'')}</b><br>
       <span style="color:#777;font-size:12px">${esc(l.data.venue_type||'')}${tierOf(l)?' · Tier '+tierOf(l):''}${l.fit?' · Fit '+l.fit:''}${dm?' · '+dm:''}</span><br>
       <span style="font-size:12px">${esc(SLABEL[l.status]||l.status)}</span><br>
-      <button id="mr-${esc(l.id)}" onclick="mapAddRoute('${esc(l.id)}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">${ROUTE.has(l.id)?'✓ On route':'+ Route'}</button>
-      <button onclick="mapOpenCard('${esc(l.id)}')" style="margin-top:6px;padding:5px 9px;cursor:pointer">Open card</button>
+      <button id="mr-${esc(l.id)}" data-mr="${esc(l.id)}" style="margin-top:6px;padding:8px 11px;cursor:pointer;min-height:36px">${ROUTE.has(l.id)?'✓ On route':'+ Route'}</button>
+      <button data-mo="${esc(l.id)}" style="margin-top:6px;padding:8px 11px;cursor:pointer;min-height:36px">Open card</button>
     </div>`);
     m.addTo(MAPLAYER);
   });
@@ -1926,7 +2657,7 @@ function drawMarkers(){
   $('mapLegend').textContent='gold = Tier A · gray = B/C · dark = signed/installed';
 }
 $('btnMap').addEventListener('click',()=>{
-  $('mapView').style.display='block';
+  openDlg('mapView');
   loadLeaflet(()=>{
     if(!MAP){
       MAP=L.map('mapEl').setView([35.96,-86.82],10);
@@ -1938,6 +2669,7 @@ $('btnMap').addEventListener('click',()=>{
   });
 });
 $('mapClose').addEventListener('click',()=>{$('mapView').style.display='none';render();});
+$('mapEl').addEventListener('click',e=>{const a=e.target.closest('[data-mr]');if(a){mapAddRoute(a.dataset.mr);return;}const o=e.target.closest('[data-mo]');if(o)mapOpenCard(o.dataset.mo);});
 
 /* ---------- CSV export ---------- */
 $('btnExport').addEventListener('click',()=>{
@@ -1968,8 +2700,25 @@ applyThemeMeta();
 const setHdrH=()=>document.documentElement.style.setProperty('--hdrH',document.querySelector('header').offsetHeight+'px');
 setHdrH();window.addEventListener('resize',setHdrH);
 if('serviceWorker' in navigator&&location.protocol==='https:'){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  // scope /command covers /command and /command.html only — the marketing site stays outside the app's worker
+  navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{if(!/\/command$/.test(new URL(r.scope).pathname))r.unregister();})).catch(()=>{}); // drop the old site-wide ('/') registration once
+  const hadCtl=!!navigator.serviceWorker.controller;let reloadAsked=false;
+  const askReload=()=>{if(reloadAsked)return;reloadAsked=true;showUndo('New version of Command',()=>location.reload(),'Tap to reload');};
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadCtl)askReload();}); // first install isn't an "update"
+  navigator.serviceWorker.register('/sw.js',{scope:'/command'}).then(reg=>{
+    reg.addEventListener('updatefound',()=>{const w=reg.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)askReload();});});
+    setInterval(()=>reg.update().catch(()=>{}),30*60e3); // a phone that never closes the app still hears about new builds
+  }).catch(()=>{});
 }
+$('verTag').textContent='v'+BUILD;
+// Open the pipeline. Runs last, after every piece of state above exists (it used to run first and crash on a cached reopen).
+// No-key mode: if the server has no DASH_KEY set, open straight in.
+(async()=>{
+  try{const saved=localStorage.getItem('w_key');if(saved)KEY=saved;}catch(e){}
+  const ok=await load(true);
+  if(ok){$('gate').style.display='none';}
+  else{KEY='';LEADS=[];$('gate').style.display='';$('list').innerHTML='<div class="loading">AWAITING KEY…</div>';$('keyInput').focus();}
+})();
 </script>
 </body>
 </html>

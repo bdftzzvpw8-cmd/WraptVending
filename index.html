@@ -56,9 +56,9 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type": "Question", "name": "What does it cost to host a vending machine?", "acceptedAnswer": {"@type": "Answer", "text": "Nothing. Wrapt covers the machine, install, stock, and service. Hosts provide floor space and an outlet, and earn a commission on net sales, after processing fees."}},
+    {"@type": "Question", "name": "What does it cost to host a vending machine?", "acceptedAnswer": {"@type": "Answer", "text": "Nothing. Wrapt covers the machine, install, stock, and service. Hosts provide floor space and an outlet, and earn 10% of NGR (net gross revenue: sales less tax, refunds, chargebacks and processing fees). Commission starts after a 90-day trial period and is paid for every month the cooler sells $1,000 or more."}},
     {"@type": "Question", "name": "Where does Wrapt place vending machines?", "acceptedAnswer": {"@type": "Answer", "text": "Franklin, Spring Hill, Brentwood, Thompson's Station, Columbia, and the Greater Nashville, Tennessee area."}},
-    {"@type": "Question", "name": "Can the vending machine match my business branding?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every machine gets a full vinyl wrap before install — the host's own logo and colors, or Wrapt's charcoal design — included at no cost."}},
+    {"@type": "Question", "name": "Can the vending machine match my business branding?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. An optional full vinyl wrap before install — the host's own logo and colors, or Wrapt's charcoal design. Wrapt fronts the wrap and a $200 install fee and recovers them from the host's commission."}},
     {"@type": "Question", "name": "Does Wrapt sell vending machines?", "acceptedAnswer": {"@type": "Answer", "text": "No. Every Wrapt machine is owned and operated by Wrapt. We only make money when the machine performs."}},
     {"@type": "Question", "name": "Who restocks and services the machine?", "acceptedAnswer": {"@type": "Answer", "text": "Wrapt does, always. Restocks happen when the machine needs them rather than on a fixed route."}},
     {"@type": "Question", "name": "How fast can a machine be installed?", "acceptedAnswer": {"@type": "Answer", "text": "Most installs happen within two weeks of site approval and signed agreement."}}
@@ -549,7 +549,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
     <div class="models single">
       <div class="model">
         <div class="visual">
-          <img class="ph" src="img/wrapt-one.jpg" alt="Wrapt glass-front smart cooler vending machine" loading="lazy" onerror="this.remove()">
+          <img class="ph" src="img/wrapt-one.jpg" width="435" height="1200" alt="Wrapt glass-front smart cooler vending machine" loading="lazy" onerror="this.remove()">
           <span class="flag">The Wrapt One</span>
         </div>
       </div>
@@ -560,7 +560,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
           <ul>
             <li>Glass-front smart cooler — tap your card, grab, walk away; the door does the checkout</li>
             <li>Drinks, snacks, and fresh food together, stocked to what your crowd actually buys</li>
-            <li>Full vinyl wrap in your branding, approved before install</li>
+            <li>Optional full vinyl wrap in your branding, approved before install — wrap cost and a $200 install fee recovered from your commission</li>
             <li>Reports every sale and its own stock levels — serviced before it ever runs empty</li>
           </ul>
           <div class="hw"><b>Spec</b> · HAHA 440 smart cooler · Tap, grab, walk-out checkout · Refrigerated · ETL certified · Card-only · Live inventory</div>
@@ -578,7 +578,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
     <div class="sec-head">
       <div class="eyebrow"><span class="slot">C2</span> The Name Isn't an Accident</div>
       <h2>Your brand. Our shelf.</h2>
-      <p>Every machine we place gets a full vinyl wrap before install — your logo and colors, designed with you and approved before it ever arrives, at no cost. Prefer hands-off? Our clean, dark Wrapt design instead. Either way: no bare steel, no beverage-company billboards in your building.</p>
+      <p>Every machine we place can get a full vinyl wrap before install — your logo and colors, designed with you and approved before it ever arrives. We front the wrap and a $200 install fee and recover them from your commission. Prefer hands-off? Our clean, dark Wrapt design instead. Either way: no bare steel, no beverage-company billboards in your building.</p>
     </div>
   </div>
 </section>
@@ -935,7 +935,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
     </details>
     <details>
       <summary>What does it cost to host?</summary>
-      <p>Nothing. We cover the machine, the install, the stock, and the service. You provide three feet of wall space and an outlet, and you earn a commission on net sales (after processing fees), paid monthly with a statement.</p>
+      <p>Nothing. We cover the machine, the install, the stock, and the service. You provide three feet of wall space and an outlet, and you earn 10% of NGR (net gross revenue: sales less tax, refunds, chargebacks and processing fees), paid monthly with a statement. Commission starts after a 90-day trial period and is paid for every month the cooler sells $1,000 or more.</p>
     </details>
     <details>
       <summary>How is this different from old vending?</summary>
@@ -1010,7 +1010,7 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
 const CONFIG = {
   phone: "+16159482976",              // Wrapt call/text line
   calendly: "", // add Calendly URL later to re-enable booking links
-  hostShare: 0.10,                    // host commission, paid on net sales
+  hostShare: 0.10,                    // host commission, paid on NGR (net gross revenue)
   processingFee: 0.06,                // assumed processing fees taken out before commission
 };
 /* ============================================================ */
