@@ -1,11 +1,11 @@
-// Ops documents (mileage log, expense log, ops settings) stored in Netlify Blobs.
+// Ops documents (mileage log, expense log, ops settings, field prospects) stored in Netlify Blobs.
 // GET  /.netlify/functions/ops?doc=mileage          -> { data: {...} | null }
 // POST /.netlify/functions/ops  { doc, data }       -> replace the document
 // Auth: X-Dash-Key header must match DASH_KEY env var (defaults to "wrapt").
 
 import { getStore } from "@netlify/blobs";
 
-const DOCS = ["mileage", "expenses", "opsettings"];
+const DOCS = ["mileage", "expenses", "opsettings", "prospects"];
 const MAX_BYTES = 400 * 1024;
 
 export default async (req) => {
