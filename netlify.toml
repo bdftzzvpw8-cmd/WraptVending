@@ -1,5 +1,7 @@
 [build]
-publish = "."
+# build.mjs copies only the public site into dist/ (never node_modules, package files, this file or _private/)
+command = "node build.mjs"
+publish = "dist"
 functions = "netlify/functions"
 
 # working files (checklists, patch tooling) live in _private/ and must never be served
