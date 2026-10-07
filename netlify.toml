@@ -89,3 +89,22 @@ for = "/og.png"
       included_files = [
         "./emails/**"
       ]
+
+# --- wrapt agents (added by setup.mjs) ---
+[functions."agents-run"]
+  node_bundler = "esbuild"
+[functions."agents-daily"]
+  node_bundler = "esbuild"
+[functions."brief"]
+  node_bundler = "esbuild"
+[functions."inbox"]
+  node_bundler = "esbuild"
+[functions."inbox-queue"]
+  node_bundler = "esbuild"
+[functions."note-ai"]
+  node_bundler = "esbuild"
+[functions."photo-ai"]
+  node_bundler = "esbuild"
+[functions."ack"]
+  node_bundler = "esbuild"
+# --- /wrapt agents ---
