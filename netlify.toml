@@ -49,6 +49,21 @@ for = "/command"
   Cache-Control = "no-store"
   X-Robots-Tag = "noindex, nofollow"
 
+# the machines dashboard (HAHA fleet): same treatment as Command
+[[headers]]
+for = "/machines.html"
+
+  [headers.values]
+  Cache-Control = "no-store"
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+for = "/machines"
+
+  [headers.values]
+  Cache-Control = "no-store"
+  X-Robots-Tag = "noindex, nofollow"
+
 [[headers]]
 for = "/brand-guide.html"
 
@@ -119,3 +134,16 @@ for = "/og.png"
 [functions."ack"]
   node_bundler = "esbuild"
 # --- /wrapt agents ---
+
+# --- HAHA machines (lib/haha*.mjs) ---
+[functions."haha-api"]
+  node_bundler = "esbuild"
+[functions."haha-backfill"]
+  node_bundler = "esbuild"
+[functions."haha-sync"]
+  node_bundler = "esbuild"
+[functions."haha-sync-background"]
+  node_bundler = "esbuild"
+[functions."haha-webhook"]
+  node_bundler = "esbuild"
+# --- /HAHA machines ---
