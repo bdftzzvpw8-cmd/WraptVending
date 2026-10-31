@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Wrapt Machines</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232B2B28'/%3E%3Crect x='5' y='7' width='22' height='18' fill='none' stroke='%23F3F1EC' stroke-width='2.5'/%3E%3Ctext x='16' y='21.5' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='12' fill='%23F3F1EC'%3EW%3C/text%3E%3C/svg%3E">
+<script>try{const t=localStorage.getItem('w_theme');if(t==='dark'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark';}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* same tokens as Command */
+:root{
+  --bg:#FFFFFF;--panel:#FFFFFF;--panel2:#EAE7E0;--line:#D7D2C7;
+  --brass:#111111;--brass-hi:#55534E;--taupe:#766F63;--gold:#B37922;--gold-hi:#C98A2E;--gold-deep:#8F5E16;--cream:#111111;--muted:#55534E;
+  --red:#A33B3B;--grid:#E6E2DA;
+}
+html[data-theme="dark"]{
+  --hdrbg:rgba(21,20,18,.94);
+  --bg:#151412;--panel:#201E1B;--panel2:#2B2825;--line:#3A3733;
+  --brass:#F3F1EC;--brass-hi:#C9C2B4;--taupe:#9A9388;--gold:#C98A2E;--gold-hi:#D9993C;--gold-deep:#D9993C;--cream:#F3F1EC;--muted:#A39C8F;
+  --red:#D96B5B;--grid:#2E2B27;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+body{background:var(--bg);color:var(--cream);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit}
+::selection{background:var(--gold);color:#221B0E}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.mono{font-family:'Space Mono',monospace}
+.lbl{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe)}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.hide{display:none!important}
+
+#gate{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.gate-card{width:100%;max-width:360px;background:var(--panel);border:2px solid var(--line);padding:34px;text-align:center}
+.gate-card p{color:var(--muted);font-size:13px;margin:8px 0 22px}
+.gate-err{color:var(--red);font-size:13px;min-height:18px;margin-top:10px}
+.logo{font-family:'Archivo';font-weight:900;font-size:14px;letter-spacing:-.01em;text-transform:uppercase;display:inline-block;border:3px solid currentColor;padding:8px 12px 6px;line-height:1;color:var(--cream)}
+.inp{width:100%;background:var(--panel);border:2px solid var(--line);color:var(--cream);padding:11px 12px;min-height:44px}
+.inp:focus{border-color:var(--gold);outline:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--gold);color:#221B0E;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:12px 18px;border:2px solid var(--gold);cursor:pointer;min-height:44px}
+.btn:hover{background:var(--gold-hi)}
+.btn.full{width:100%;margin-top:12px}
+.btn:disabled{opacity:.55;cursor:default}
+.ghost{background:transparent;border:2px solid var(--line);color:var(--muted);padding:8px 14px;cursor:pointer;font-size:13px;min-height:40px}
+.ghost:hover{border-color:var(--gold);color:var(--gold-deep)}
+.ghost.sm{min-height:34px;padding:5px 10px;font-size:12px}
+
+header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);background:var(--hdrbg,rgba(255,255,255,.94));backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 0}
+.head-in{display:flex;align-items:center;gap:10px}
+.head-in .logo{font-size:20px}
+.head-in .tag{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Space Mono';font-size:10px;letter-spacing:.24em;color:var(--taupe)}
+@media(max-width:420px){.head-in .logo{font-size:17px}.head-in .tag{letter-spacing:.12em}}
+.env{font-family:'Space Mono';font-size:10px;letter-spacing:.12em;border:1px solid var(--line);padding:2px 6px;color:var(--taupe)}
+.env.test{border-color:var(--gold);color:var(--gold-deep)}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,1fr);background:var(--hdrbg,rgba(255,255,255,.96));backdrop-filter:blur(10px);border-top:2px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav.tabs button{background:none;border:0;color:var(--muted);min-height:50px;font-size:12.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+nav.tabs button .ic{font-size:17px;line-height:1}
+nav.tabs button[aria-selected="true"]{color:var(--gold-deep);box-shadow:inset 0 3px 0 var(--gold)}
+@media(min-width:720px){
+  body{padding-bottom:30px}
+  nav.tabs{position:static;display:flex;gap:6px;max-width:860px;margin:0 auto;padding:12px 16px 0;background:none;border:0;backdrop-filter:none}
+  nav.tabs button{flex:0 0 auto;flex-direction:row;min-height:40px;border:2px solid var(--line);padding:6px 14px;background:var(--panel)}
+  nav.tabs button .ic{display:none}
+  nav.tabs button[aria-selected="true"]{border-color:var(--gold);box-shadow:none;background:rgba(179,121,34,.08)}
+}
+
+main{padding-top:14px}
+section.view{display:none}
+section.view.on{display:block}
+.card{background:var(--panel);border:2px solid var(--line);padding:14px;margin-bottom:12px}
+.card.strong{border-color:var(--cream)}
+.card h2{font-family:'Archivo';font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:10px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card h2 .lbl{font-weight:400}
+.syncline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:13px;color:var(--muted)}
+.syncline .grow{flex:1}
+.syncline.stale{color:var(--red);font-weight:600}
+.hero{padding:6px 0 14px}
+.hero .v{font-family:'Inter';font-weight:600;font-size:52px;line-height:1.05;letter-spacing:-.02em}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.tile{background:var(--panel);border:2px solid var(--line);padding:10px 12px}
+.tile .v{font-weight:600;font-size:20px;margin-top:2px}
+.tile .s{font-size:12px;color:var(--muted)}
+@media(max-width:420px){.tiles{grid-template-columns:1fr 1fr}.tiles .tile:last-child{grid-column:span 2}.hero .v{font-size:44px}}
+
+.alert{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.alert:first-of-type{border-top:0}
+.alert .mk{flex:0 0 auto;font-family:'Space Mono';font-size:10px;letter-spacing:.08em;font-weight:700;border:1px solid currentColor;padding:2px 6px;margin-top:2px}
+.alert .mk.red{color:var(--red)}
+.alert .mk.amber{color:var(--gold-deep)}
+.alert .mk.ok{color:var(--muted)}
+.alert time{display:block;font-size:12px;color:var(--taupe)}
+
+.mrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);color:inherit;padding:11px 0;cursor:pointer}
+.mrow:first-of-type{border-top:0}
+.mrow:hover .mname{text-decoration:underline}
+.mmain{flex:1;min-width:0}
+.mname{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msub{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.mval{text-align:right;flex:0 0 auto}
+.mval b{display:block;font-weight:600}
+.dot{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono';font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.dot::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.dot.on::before{background:#3E8E5A}
+.dot.off{color:var(--red)}
+.dot.off::before{background:var(--red)}
+.badge{font-family:'Space Mono';font-size:10px;letter-spacing:.06em;border:1px solid var(--line);color:var(--taupe);padding:1px 6px;white-space:nowrap}
+.badge.red{color:var(--red);border-color:var(--red)}
+.badge.gold{color:var(--gold-deep);border-color:var(--gold)}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.controls .f{display:flex;flex-direction:column;gap:3px}
+.controls .inp{width:auto;min-width:140px;padding:8px 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{background:var(--panel);border:2px solid var(--line);color:var(--muted);padding:5px 12px;min-height:36px;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--gold);color:var(--gold-deep)}
+
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .bar{fill:var(--gold);pointer-events:none}
+.chart .hit{fill:transparent;cursor:pointer;outline:none}
+.chart .hit:hover+.bar,.chart .hit:focus+.bar{fill:var(--gold-hi)}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.chart .base{stroke:var(--line);stroke-width:1}
+.chart text{fill:var(--muted);font-family:'Space Mono',monospace;font-size:10px}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:2px solid var(--cream);padding:6px 9px;font-size:12px;white-space:nowrap;transform:translate(-50%,-100%);z-index:5}
+.tip b{display:block;font-size:14px}
+
+.tbl-wrap{overflow-x:auto;margin:0 -14px;padding:0 14px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+th{font-family:'Space Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--taupe);font-weight:400}
+td button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:4px 2px;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+td button:hover{text-decoration-color:var(--gold)}
+tfoot td{font-weight:600}
+
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.kv .tile .v{font-size:17px}
+
+/* overlay panels (machine detail, orders) — like Command's Ops view */
+.panel{display:none;position:fixed;inset:0;z-index:80;background:var(--bg);overflow-y:auto}
+.panel.on{display:block}
+.panel .bar-top{position:sticky;top:0;background:var(--hdrbg,rgba(255,255,255,.96));backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 0;z-index:2}
+.panel .bar-top .wrap{display:flex;align-items:center;gap:10px}
+.panel .body{padding:14px 0 60px}
+.order{border-top:1px solid var(--line);padding:10px 0;font-size:13.5px}
+.order:first-child{border-top:0}
+.order .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.order .h b{font-weight:600}
+.order ul{list-style:none;margin:6px 0;color:var(--muted)}
+.order .fig{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px}
+.rack{margin-bottom:10px}
+.rack .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:4px}
+.rack .it{border:1px solid var(--line);padding:6px 8px;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.rack .it.zero{border-color:var(--red);color:var(--red)}
+.list-plain{list-style:none}
+.list-plain li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.list-plain li:first-child{border-top:0}
+.empty{color:var(--muted);font-size:14px;padding:10px 0}
+.err{color:var(--red);font-size:13px;margin:8px 0}
+.warn{border-left:4px solid var(--gold);padding:8px 10px;background:rgba(179,121,34,.08);font-size:13px;margin-bottom:8px}
+
+/* statement sheet */
+.sheet{background:#fff;color:#111;border:2px solid #111;padding:22px;margin-bottom:12px}
+.sheet .logo{color:#111}
+.sheet h3{font-family:'Archivo';font-weight:900;text-transform:uppercase;font-size:20px;margin:14px 0 2px}
+.sheet .meta{font-size:13px;color:#55534E}
+.sheet table th,.sheet table td{border-bottom:1px solid #D7D2C7;color:#111;background:#fff}
+.sheet td:first-child,.sheet th:first-child{white-space:normal;position:static}
+.sheet table th{color:#766F63}
+.sheet .total td{border-top:2px solid #111;font-weight:700;font-size:15px}
+.sheet .payout{display:flex;justify-content:space-between;align-items:baseline;border:2px solid #111;padding:12px 14px;margin:14px 0}
+.sheet .payout b{font-size:28px;font-weight:600}
+.sheet .fine{font-size:11.5px;color:#55534E;margin-top:10px}
+
+/* settings */
+.host{border:2px solid var(--line);padding:12px;margin-bottom:10px}
+.host .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.host label,.fees label{display:block;margin-bottom:8px}
+.host .mlist{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.host .mlist label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);padding:4px 8px;font-size:13px;margin:0;cursor:pointer}
+.fees .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:520px){.fees .grid3,.host .grid2{grid-template-columns:1fr}}
+
+@media print{
+  @page{margin:14mm}
+  body{background:#fff;padding:0}
+  body *{visibility:hidden}
+  #stmtSheet,#stmtSheet *{visibility:visible}
+  #stmtSheet{position:absolute;left:0;top:0;width:100%;border:0;padding:0}
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <span class="logo">WRAPT</span>
+    <p class="mono" style="letter-spacing:.2em;text-transform:uppercase;font-size:10px;color:var(--brass);margin:10px 0 0">Machines</p>
+    <p>Enter the dashboard key (the same one Command uses).</p>
+    <input class="inp" type="password" id="keyInput" placeholder="Dashboard key" autocomplete="current-password">
+    <button class="btn full" id="keyBtn">Open machines</button>
+    <div class="gate-err" id="gateErr" role="alert"></div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap head-in">
+    <span class="logo">WRAPT</span><span class="tag">MACHINES</span>
+    <span class="env hide" id="envTag"></span>
+    <a class="ghost sm" href="command.html" style="text-decoration:none;display:inline-flex;align-items:center">Command</a>
+    <button class="ghost sm" id="btnTheme" aria-label="Toggle dark mode" title="Light / dark">◐</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Machines">
+  <button role="tab" data-v="today"><span class="ic" aria-hidden="true">◉</span>Today</button>
+  <button role="tab" data-v="sales"><span class="ic" aria-hidden="true">▤</span>Sales</button>
+  <button role="tab" data-v="restock"><span class="ic" aria-hidden="true">⇡</span>Restock</button>
+  <button role="tab" data-v="statements"><span class="ic" aria-hidden="true">§</span>Statements</button>
+  <button role="tab" data-v="settings"><span class="ic" aria-hidden="true">≡</span>Settings</button>
+</nav>
+
+<main class="wrap">
+  <!-- TODAY -->
+  <section class="view" id="v-today" role="tabpanel" aria-label="Today">
+    <div class="syncline" id="syncLine" role="status" aria-live="polite"></div>
+    <div class="hero"><div class="lbl">Net sales today · ex-tax, after refunds</div><div class="v" id="heroToday">—</div></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="card strong hide" id="alertsCard"><h2>Alerts <span class="lbl" id="alertCount"></span></h2><div id="alertList"></div></div>
+    <div class="card"><h2>Machines <span class="lbl" id="fleetCount"></span></h2><div id="machineList"><div class="empty">Loading…</div></div></div>
+  </section>
+
+  <!-- SALES -->
+  <section class="view" id="v-sales" role="tabpanel" aria-label="Sales">
+    <div class="chips" id="rangeChips">
+      <button class="chip" data-r="7">7 days</button><button class="chip" data-r="30">30 days</button>
+      <button class="chip" data-r="mtd">This month</button><button class="chip" data-r="last">Last month</button>
+    </div>
+    <div class="controls">
+      <div class="f"><label class="lbl" for="sFrom">From</label><input class="inp" type="date" id="sFrom"></div>
+      <div class="f"><label class="lbl" for="sTo">To</label><input class="inp" type="date" id="sTo"></div>
+      <div class="f"><label class="lbl" for="sMarket">Machine</label><select class="inp" id="sMarket"><option value="">All machines</option></select></div>
+      <button class="ghost" id="sGo">Show</button>
+    </div>
+    <div class="kv" id="salesKpis"></div>
+    <div class="card"><h2>Net sales by day <span class="lbl">tap a bar for its orders</span></h2><div class="chart" id="salesChart"></div></div>
+    <div class="card"><h2>Machine × day <span class="lbl">net · tap for orders</span></h2><div class="tbl-wrap" id="salesTable"></div></div>
+    <div class="card"><h2>Top products</h2><div class="tbl-wrap" id="topProducts"></div></div>
+  </section>
+
+  <!-- RESTOCK -->
+  <section class="view" id="v-restock" role="tabpanel" aria-label="Restock">
+    <div class="muted" style="font-size:13px;margin-bottom:10px" id="restockRule"></div>
+    <div class="card strong"><h2>Costco list <button class="ghost sm" id="btnShare">Copy / share</button></h2><div id="shopList"></div></div>
+    <div id="restockMachines"></div>
+  </section>
+
+  <!-- STATEMENTS -->
+  <section class="view" id="v-statements" role="tabpanel" aria-label="Host statements">
+    <div class="controls">
+      <div class="f"><label class="lbl" for="stHost">Host</label><select class="inp" id="stHost"></select></div>
+      <div class="f"><label class="lbl" for="stMonth">Month</label><input class="inp" type="month" id="stMonth"></div>
+      <button class="ghost" id="stGo">Build statement</button>
+      <button class="btn hide" id="stPrint">Download PDF</button>
+    </div>
+    <div id="stOut"><div class="empty">Pick a host and a month.</div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="v-settings" role="tabpanel" aria-label="Settings">
+    <div class="card strong"><h2>Sync <span class="lbl" id="cfgEnv"></span></h2>
+      <div id="syncState"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn" id="btnSync">Sync now</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:14px">
+        <div><label class="lbl" for="bfFrom">Backfill sales from</label><input class="inp" type="date" id="bfFrom" style="width:auto"></div>
+        <button class="ghost" id="btnBackfill">Start backfill</button>
+      </div>
+      <div id="bfState" class="muted" style="font-size:13px;margin-top:6px" aria-live="polite"></div>
+    </div>
+    <div class="card"><h2>Hosts <button class="ghost sm" id="btnAddHost">+ Add host</button></h2><div id="hostList"></div></div>
+    <div class="card fees"><h2>Fees &amp; restock rule</h2><div id="feeForm"></div></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><button class="btn" id="btnSaveCfg">Save settings</button><span id="cfgMsg" class="muted" style="font-size:13px" aria-live="polite"></span></div>
+    <div class="card"><h2>Alert history</h2><div id="alertFeed"></div></div>
+    <div class="card"><h2>Webhooks <span class="lbl">latest 30</span></h2><div id="webhookLog"></div></div>
+  </section>
+</main>
+
+<!-- machine detail -->
+<div class="panel" id="pMachine" role="dialog" aria-modal="true" aria-label="Machine">
+  <div class="bar-top"><div class="wrap"><button class="ghost" data-close>← Back</button><b id="pmTitle" style="font-family:'Archivo';text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></b></div></div>
+  <div class="wrap body" id="pmBody"></div>
+</div>
+<!-- orders drill-down -->
+<div class="panel" id="pOrders" role="dialog" aria-modal="true" aria-label="Orders" style="z-index:90">
+  <div class="bar-top"><div class="wrap"><button class="ghost" data-close>← Back</button><b id="poTitle" style="font-family:'Archivo';text-transform:uppercase;flex:1"></b></div></div>
+  <div class="wrap body" id="poBody"></div>
+</div>
+
+<script>
+const FN = '/.netlify/functions';
+const TZ = 'America/Chicago';
+const $ = id => document.getElementById(id);
+let KEY = '';
+try { KEY = localStorage.getItem('w_key') || ''; } catch (e) {}
+const S = { view: 'today', summary: null, config: null, sales: null, salesQuery: null };
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = c => { const n = Math.round(Number(c) || 0), a = Math.abs(n); return `${n < 0 ? '-' : ''}$${Math.floor(a / 100).toLocaleString('en-US')}.${String(a % 100).padStart(2, '0')}`; };
+const compact = c => { const d = Math.abs(c) / 100; return d >= 1000 ? `$${(d / 1000).toFixed(d >= 10000 ? 0 : 1)}K` : `$${Math.round(d)}`; };
+const dayCT = (d = new Date()) => new Date(d).toLocaleDateString('en-CA', { timeZone: TZ });
+const addDays = (ymd, n) => { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };
+const md = ymd => `${+ymd.slice(5, 7)}/${+ymd.slice(8, 10)}`;
+const wd = ymd => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+const timeCT = iso => iso ? new Date(iso).toLocaleString('en-US', { timeZone: TZ, month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+const clockCT = iso => iso ? new Date(iso).toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }) : '—';
+const ago = iso => { if (!iso) return 'never'; const m = Math.round((Date.now() - new Date(iso)) / 60e3); if (m < 1) return 'just now'; if (m < 60) return `${m} min ago`; const h = Math.floor(m / 60); return h < 48 ? `${h}h ${m % 60}m ago` : `${Math.floor(h / 24)} days ago`; };
+const dur = iso => ago(iso).replace(' ago', '');
+
+class AuthError extends Error {}
+async function api(path, opts = {}) {
+  const r = await fetch(FN + path, { ...opts, headers: { 'X-Dash-Key': KEY, 'content-type': 'application/json', ...(opts.headers || {}) } });
+  if (r.status === 401) throw new AuthError('auth');
+  let j = null;
+  try { j = await r.json(); } catch (e) { /* not JSON */ }
+  if (!r.ok) { const e = new Error(j?.error || `HTTP ${r.status}`); e.status = r.status; e.body = j; throw e; }
+  return j;
+}
+function fail(e, el) {
+  if (e instanceof AuthError) { showGate('Wrong or expired key.'); return; }
+  const msg = e.message === 'Failed to fetch' ? 'Backend unreachable — this page only works on the deployed site or under netlify dev.' : e.message;
+  if (el) el.innerHTML = `<div class="err">${esc(msg)}</div>`;
+}
+
+/* ---------- gate ---------- */
+function showGate(msg) { $('gate').style.display = 'flex'; $('gateErr').textContent = msg || ''; $('keyInput').focus(); }
+async function tryKey() {
+  const k = $('keyInput').value.trim();
+  if (!k) { $('gateErr').textContent = 'Key required.'; return; }
+  KEY = k; $('keyBtn').textContent = 'Checking…';
+  try { await loadSummary(); $('gate').style.display = 'none'; try { localStorage.setItem('w_key', KEY); } catch (e) {} show(S.view); }
+  catch (e) { KEY = ''; $('gateErr').textContent = e instanceof AuthError ? 'Wrong key.' : e.message === 'Failed to fetch' ? 'Backend unreachable.' : e.message; }
+  $('keyBtn').textContent = 'Open machines';
+}
+$('keyBtn').addEventListener('click', tryKey);
+$('keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryKey(); });
+
+/* ---------- theme ---------- */
+$('btnTheme').addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme !== 'dark';
+  if (dark) document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem('w_theme', dark ? 'dark' : 'light'); } catch (e) {}
+  if (S.view === 'sales' && S.sales) drawChart(S.sales);
+});
+
+/* ---------- tabs ---------- */
+const VIEWS = ['today', 'sales', 'restock', 'statements', 'settings'];
+function show(v) {
+  if (!VIEWS.includes(v)) v = 'today';
+  S.view = v;
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.v === v)));
+  document.querySelectorAll('section.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+  ({ today: renderToday, sales: loadSales, restock: loadRestock, statements: initStatements, settings: loadSettings })[v]();
+}
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => show(b.dataset.v)));
+addEventListener('hashchange', () => { const v = location.hash.slice(1); if (KEY && v !== S.view) show(v); });
+
+/* ---------- panels ---------- */
+let PANEL_RET = null;
+function openPanel(id) { PANEL_RET = document.activeElement; $(id).classList.add('on'); document.body.style.overflow = 'hidden'; $(id).querySelector('[data-close]').focus(); }
+function closePanel(id) { $(id).classList.remove('on'); if (!document.querySelector('.panel.on')) document.body.style.overflow = ''; if (PANEL_RET?.focus) PANEL_RET.focus(); }
+document.querySelectorAll('.panel [data-close]').forEach(b => b.addEventListener('click', () => closePanel(b.closest('.panel').id)));
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; const open = [...document.querySelectorAll('.panel.on')].pop(); if (open) closePanel(open.id); });
+
+/* ---------- TODAY ---------- */
+async function loadSummary() {
+  S.summary = await api('/haha-api?view=summary');
+  const env = S.summary.env || 'test';
+  $('envTag').textContent = env.toUpperCase(); $('envTag').className = 'env ' + env;
+  return S.summary;
+}
+async function renderToday(refetch = true) {
+  try { if (refetch || !S.summary) await loadSummary(); } catch (e) { fail(e, $('machineList')); return; }
+  const s = S.summary;
+  const sl = $('syncLine');
+  sl.className = 'syncline' + (s.sync.stale ? ' stale' : '');
+  sl.innerHTML = `<span class="grow">${s.sync.lastOk ? `Synced ${esc(ago(s.sync.lastOk))}` : 'Never synced'}${s.sync.stale && s.sync.lastRun?.errors?.length ? ` — ${esc(s.sync.lastRun.errors[0])}` : ''}</span><button class="ghost sm" id="todayRefresh">↻ Refresh</button>`;
+  $('todayRefresh').onclick = () => renderToday(true);
+  $('heroToday').textContent = money(s.totals.today.net);
+  const t = s.totals;
+  $('tiles').innerHTML = [
+    ['Last 7 days', t.week.net, `${t.week.tx} sales · gross ${money(t.week.gross)}`],
+    ['Month to date', t.mtd.net, `${t.mtd.tx} sales · gross ${money(t.mtd.gross)}`],
+    ['Gross today', t.today.gross, `${t.today.tx} sales · ${t.today.refunds} refund${t.today.refunds === 1 ? '' : 's'}`],
+  ].map(([l, v, sub]) => `<div class="tile"><div class="lbl">${l}</div><div class="v">${money(v)}</div><div class="s">${esc(sub)}</div></div>`).join('');
+
+  const al = s.alerts || [];
+  $('alertsCard').classList.toggle('hide', !al.length);
+  $('alertCount').textContent = al.length ? `${al.length} open` : '';
+  $('alertList').innerHTML = al.map(a => `<div class="alert"><span class="mk ${a.level === 'red' ? 'red' : 'amber'}">${a.level === 'red' ? 'URGENT' : 'CHECK'}</span><div>${esc(a.text)}<time>since ${esc(timeCT(a.since))}</time></div></div>`).join('');
+
+  const ms = s.machines || [];
+  $('fleetCount').textContent = ms.length ? `${ms.filter(m => m.online).length}/${ms.length} online` : '';
+  $('machineList').innerHTML = ms.length ? ms.map(m => {
+    const active = !m.status || m.status === 'ACTIVE';
+    const st = !active ? `<span class="dot">${esc(m.status.replace('_', ' '))}</span>` : m.online ? '<span class="dot on">Online</span>' : `<span class="dot off">Offline ${esc(dur(m.since))}</span>`;
+    const stock = m.stockPct != null ? `${m.stockPct}% stocked` : `${m.units} units`;
+    return `<button class="mrow" data-machine="${esc(m.id)}"><div class="mmain"><div class="mname">${esc(m.name)}</div><div class="msub">${st}<span>${esc(stock)}</span>${m.outOfStock ? `<span class="badge red">${m.outOfStock} out</span>` : ''}<span>last sale ${esc(m.lastSale ? ago(m.lastSale) : '—')}</span></div></div><div class="mval"><b>${money(m.today.net)}</b><span class="lbl">${m.today.tx} today</span></div></button>`;
+  }).join('') : `<div class="empty">No machines yet. Once HAHA_APPKEY / HAHA_APPSECRET are set, the 15-minute sync fills this in — or press Sync now under Settings.</div>`;
+  document.querySelectorAll('[data-machine]').forEach(b => b.onclick = () => openMachine(b.dataset.machine));
+}
+
+/* ---------- machine detail ---------- */
+async function openMachine(id) {
+  $('pmTitle').textContent = S.summary?.machines?.find(m => m.id === id)?.name || id;
+  $('pmBody').innerHTML = '<div class="empty">Loading…</div>';
+  openPanel('pMachine');
+  let d;
+  try { d = await api('/haha-api?view=machine&id=' + encodeURIComponent(id)); } catch (e) { fail(e, $('pmBody')); return; }
+  const m = d.machine;
+  const raw = r => Object.entries(r.raw || {}).filter(([, v]) => v == null || typeof v !== 'object').slice(0, 8).map(([k, v]) => `${esc(k)}: ${esc(v)}`).join(' · ');
+  $('pmBody').innerHTML = `
+    <div class="msub" style="margin-bottom:10px">${m.online ? '<span class="dot on">Online</span>' : `<span class="dot off">Offline ${esc(dur(m.since))}</span>`}<span>${esc(m.status || '')}</span><span>Sticker ${esc(m.id)}</span>${m.location ? `<span>${esc(typeof m.location === 'object' ? JSON.stringify(m.location) : m.location)}</span>` : ''}</div>
+    <div class="kv">
+      <div class="tile"><div class="lbl">Today</div><div class="v">${money(d.totals.today.net)}</div><div class="s">${d.totals.today.tx} sales</div></div>
+      <div class="tile"><div class="lbl">Last 7 days</div><div class="v">${money(d.totals.week.net)}</div><div class="s">${d.totals.week.tx} sales</div></div>
+      <div class="tile"><div class="lbl">Stocked</div><div class="v">${d.stockPct != null ? d.stockPct + '%' : '—'}</div><div class="s">${d.stockPct != null ? 'of planogram capacity' : 'capacity unknown'}</div></div>
+    </div>
+    <div class="card"><h2>Stock by rack</h2>${d.racks.length ? d.racks.map(r => `<div class="rack"><div class="lbl">${esc(r.rack)}</div><div class="items">${r.items.map(i => `<div class="it${i.stock <= 0 ? ' zero' : ''}"><span>${esc(i.name)}</span><b class="num">${i.stock}</b></div>`).join('')}</div></div>`).join('') : '<div class="empty">No stock data yet.</div>'}</div>
+    <div class="card"><h2>Recent sales <span class="lbl">7 days</span></h2>${d.recent.length ? `<ul class="list-plain">${d.recent.slice(0, 25).map(o => `<li><span>${esc(timeCT(o.at))} · ${esc(o.items.map(i => `${i.qty}× ${i.name}`).join(', ') || o.id)}${o.figures.refunded ? ' <span class="badge red">refund</span>' : ''}${!o.figures.counted ? ` <span class="badge">${esc(o.status)}</span>` : ''}</span><button class="ghost sm" data-od="${esc(o.day)}">${money(o.figures.net)}</button></li>`).join('')}</ul>` : '<div class="empty">No sales in 7 days.</div>'}</div>
+    <div class="card"><h2>Restock history</h2>${d.restocks.length ? `<ul class="list-plain">${d.restocks.map(r => `<li><span style="font-size:13px">${raw(r) || esc(r.id)}</span><span class="lbl">${esc(timeCT(r.firstSeen))}</span></li>`).join('')}</ul>` : '<div class="empty">No restocks recorded in the last two months.</div>'}</div>
+    <div class="card"><h2>Online history</h2>${d.online.length ? `<ul class="list-plain">${d.online.map(e => `<li><span>${e.online ? 'Came online' : 'Went offline'}</span><span class="lbl">${esc(timeCT(e.at))}</span></li>`).join('')}</ul>` : '<div class="empty">No changes recorded.</div>'}</div>`;
+  $('pmBody').querySelectorAll('[data-od]').forEach(b => b.onclick = () => openOrders({ day: b.dataset.od, market: id }));
+}
+
+/* ---------- orders drill-down: the records behind any number ---------- */
+async function openOrders({ day, market = '', product = '', refunds = false }) {
+  const mName = market ? (S.summary?.machines?.find(m => m.id === market)?.name || market) : 'All machines';
+  $('poTitle').textContent = `${md(day)} · ${mName}`;
+  $('poBody').innerHTML = '<div class="empty">Loading…</div>';
+  openPanel('pOrders');
+  let d;
+  try { d = await api(`/haha-api?view=orders&day=${day}&market=${encodeURIComponent(market)}&product=${encodeURIComponent(product)}${refunds ? '&refunds=1' : ''}`); } catch (e) { fail(e, $('poBody')); return; }
+  const os = d.orders;
+  const sum = os.reduce((a, o) => { const f = o.figures; if (f.counted) { a.net += f.net; a.gross += f.gross; a.tax += f.tax; a.n++; } return a; }, { net: 0, gross: 0, tax: 0, n: 0 });
+  $('poBody').innerHTML = `
+    <div class="kv"><div class="tile"><div class="lbl">Net</div><div class="v">${money(sum.net)}</div></div><div class="tile"><div class="lbl">Gross</div><div class="v">${money(sum.gross)}</div></div><div class="tile"><div class="lbl">Tax</div><div class="v">${money(sum.tax)}</div></div><div class="tile"><div class="lbl">Counted</div><div class="v">${sum.n} of ${os.length}</div></div></div>
+    <div class="card">${os.length ? os.map(o => `<div class="order">
+      <div class="h"><b>${esc(clockCT(o.at))}</b><span class="badge">${esc(o.status || '—')}</span>${o.figures.refunded ? '<span class="badge red">refund</span>' : ''}${!o.figures.counted ? '<span class="badge">not counted</span>' : ''}<span class="muted" style="font-size:12px">${esc(S.summary?.machines?.find(m => m.id === o.marketId)?.name || o.marketId)} · sale ${esc(o.id)}</span></div>
+      <ul>${o.items.map(i => `<li>${i.qty}× ${esc(i.name || i.productId)} @ ${money(i.price)} = ${money(i.final)}${i.refund ? ' <span class="badge red">refunded</span>' : ''}</li>`).join('')}</ul>
+      <div class="fig num"><span>gross ${money(o.gross)}</span><span>tax ${money(o.tax)}</span><span>saleTotal ${money(o.net)}</span>${o.figures.refundNet ? `<span>refund −${money(o.figures.refundNet)}</span>` : ''}<b>counts ${money(o.figures.net)}</b></div>
+      ${o.tenders.length || o.tx.length ? `<div class="muted" style="font-size:12px;margin-top:3px">${o.tenders.map(t => `${esc(t.type)} ${money(t.amount)}`).join(' · ')}${o.tx.length ? ' · Shift4 ' + o.tx.map(t => esc(t.id)).join(', ') : ''}</div>` : ''}
+    </div>`).join('') : '<div class="empty">No orders.</div>'}</div>`;
+}
+
+/* ---------- SALES ---------- */
+function setRange(r) {
+  const today = dayCT();
+  let from, to = today;
+  if (r === '7') from = addDays(today, -6);
+  else if (r === '30') from = addDays(today, -29);
+  else if (r === 'mtd') from = today.slice(0, 8) + '01';
+  else if (r === 'last') { const first = today.slice(0, 8) + '01'; to = addDays(first, -1); from = to.slice(0, 8) + '01'; }
+  $('sFrom').value = from; $('sTo').value = to;
+  document.querySelectorAll('#rangeChips .chip').forEach(c => c.classList.toggle('on', c.dataset.r === r));
+}
+document.querySelectorAll('#rangeChips .chip').forEach(c => c.addEventListener('click', () => { setRange(c.dataset.r); loadSales(true); }));
+$('sGo').addEventListener('click', () => { document.querySelectorAll('#rangeChips .chip').forEach(c => c.classList.remove('on')); loadSales(true); });
+$('sMarket').addEventListener('change', () => loadSales(true));
+
+async function loadSales(force = false) {
+  if (!$('sFrom').value) setRange('7');
+  const sel = $('sMarket');
+  if (S.summary && sel.options.length <= 1) S.summary.machines.forEach(m => sel.add(new Option(m.name, m.id)));
+  const q = `from=${$('sFrom').value}&to=${$('sTo').value}&market=${encodeURIComponent(sel.value)}`;
+  if (!force && S.sales && S.salesQuery === q) return;
+  $('salesChart').innerHTML = '<div class="empty">Loading…</div>';
+  let d;
+  try { d = await api('/haha-api?view=sales&' + q); } catch (e) { fail(e, $('salesChart')); return; }
+  S.sales = d; S.salesQuery = q;
+  const t = d.totals;
+  $('salesKpis').innerHTML = [
+    ['Net sales', money(t.net), 'ex-tax, after refunds'], ['Gross', money(t.gross), 'incl. tax'], ['Sales tax', money(t.tax), ''],
+    ['Transactions', t.tx, ''], ['Refunds', `${t.refunds} · ${money(t.refundNet)}`, 'ex-tax'],
+  ].map(([l, v, s]) => `<div class="tile"><div class="lbl">${l}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`).join('');
+  drawChart(d);
+  // machine × day table — every cell opens its orders
+  const days = d.days.slice().reverse();
+  $('salesTable').innerHTML = d.machines.length ? `<table><thead><tr><th>Machine</th><th>Total</th>${days.map(x => `<th>${wd(x)} ${md(x)}</th>`).join('')}</tr></thead><tbody>${d.machines.map(m => `<tr><td>${esc(m.name)}</td><td><b>${money(m.total.net)}</b></td>${days.map(x => { const c = m.byDay[x]; return `<td>${c ? `<button data-o="${x}|${esc(m.id)}">${money(c.net)}</button>` : '<span class="muted">—</span>'}</td>`; }).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>All</td><td>${money(t.net)}</td>${days.map(x => `<td>${d.byDay[x].tx ? `<button data-o="${x}|">${money(d.byDay[x].net)}</button>` : '—'}</td>`).join('')}</tr></tfoot></table>` : '<div class="empty">No sales in this range.</div>';
+  $('salesTable').querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const [day, market] = b.dataset.o.split('|'); openOrders({ day, market }); });
+  $('topProducts').innerHTML = d.top.length ? `<table><thead><tr><th>Product</th><th>Units</th><th>Net</th></tr></thead><tbody>${d.top.map(p => `<tr><td>${esc(p.name)}</td><td>${p.qty}</td><td>${money(p.net)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">—</div>';
+}
+
+/* single-series column chart: ≤24px bars, 4px rounded tops on a square baseline, 2px gaps, hairline grid,
+   per-bar hover/focus tooltip, click opens that day's orders; the machine × day table is the table view */
+function drawChart(d) {
+  const box = $('salesChart');
+  const W = Math.max(280, box.clientWidth || 600), H = 190, L = 44, R = 6, T = 10, B = 24;
+  const vals = d.days.map(x => Math.max(0, d.byDay[x].net));
+  const max = Math.max(...vals, 0);
+  if (!max) { box.innerHTML = '<div class="empty">No sales in this range.</div>'; return; }
+  const step = [1, 2, 2.5, 5, 10].map(f => f * 10 ** Math.floor(Math.log10(max / 4))).find(s => max / s <= 5) || max / 4;
+  const top = Math.ceil(max / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const band = (W - L - R) / d.days.length, bw = Math.max(2, Math.min(24, band - 2));
+  const ticks = []; for (let v = 0; v <= top + 1e-9; v += step) ticks.push(v);
+  const every = Math.ceil(d.days.length / Math.floor((W - L) / 46));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Net sales by day, ${esc(d.from)} to ${esc(d.to)}">`;
+  svg += ticks.map(v => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${compact(v)}</text>`).join('');
+  d.days.forEach((x, i) => {
+    const v = vals[i], cx = L + band * i + band / 2, x0 = cx - bw / 2, y0 = y(0), yv = y(v), h = y0 - yv, r = Math.min(4, h, bw / 2);
+    const path = h > 0 ? `M${x0},${y0}V${yv + r}Q${x0},${yv} ${x0 + r},${yv}H${x0 + bw - r}Q${x0 + bw},${yv} ${x0 + bw},${yv + r}V${y0}Z` : '';
+    svg += `<rect class="hit" x="${L + band * i}" y="${T}" width="${band}" height="${H - T - B}" tabindex="0" role="button" data-i="${i}" aria-label="${wd(x)} ${md(x)}: ${money(d.byDay[x].net)}, ${d.byDay[x].tx} sales"></rect><path class="bar" d="${path}"/>`;
+    if (i % every === 0) svg += `<text x="${cx}" y="${H - 8}" text-anchor="middle">${md(x)}</text>`;
+  });
+  svg += `<line class="base" x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}"/></svg><div class="tip hide" id="chartTip"></div>`;
+  box.innerHTML = svg;
+  const tip = $('chartTip');
+  const showTip = el => {
+    const i = +el.dataset.i, x = d.days[i], b = d.byDay[x];
+    tip.innerHTML = `<b>${money(b.net)}</b>${wd(x)} ${md(x)} · ${b.tx} sales${b.refunds ? ` · ${b.refunds} refund${b.refunds === 1 ? '' : 's'}` : ''}`;
+    const scale = box.clientWidth / W;
+    tip.style.left = `${(L + band * i + band / 2) * scale}px`;
+    tip.style.top = `${y(vals[i]) * scale - 6}px`;
+    tip.classList.remove('hide');
+  };
+  box.querySelectorAll('.hit').forEach(el => {
+    el.addEventListener('pointerenter', () => showTip(el));
+    el.addEventListener('focus', () => showTip(el));
+    el.addEventListener('pointerleave', () => tip.classList.add('hide'));
+    el.addEventListener('blur', () => tip.classList.add('hide'));
+    const go = () => openOrders({ day: d.days[+el.dataset.i], market: d.marketId || '' });
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+}
+let resizeT; addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (S.view === 'sales' && S.sales) drawChart(S.sales); }, 150); });
+
+/* ---------- RESTOCK ---------- */
+let SHOP_TEXT = '';
+async function loadRestock() {
+  $('restockMachines').innerHTML = '<div class="empty">Loading…</div>';
+  let d;
+  try { d = await api('/haha-api?view=restock'); } catch (e) { fail(e, $('restockMachines')); return; }
+  $('restockRule').textContent = `Low = under ${d.rule.percent}% of planogram capacity${d.rule.capacityKnown ? '' : ' (no capacity data yet)'}, or ${d.rule.units} units or fewer when capacity is unknown. Stock as of ${d.updated ? timeCT(d.updated) : '—'}.`;
+  const total = d.shopping.reduce((a, s) => a + s.units, 0);
+  $('shopList').innerHTML = d.shopping.length ? `<ul class="list-plain">${d.shopping.map(s => `<li><span>${esc(s.name)}<span class="muted" style="display:block;font-size:12px">${esc(s.machines.join(' · '))}</span></span><b class="num">${s.units ? s.units : ''}${s.unknown ? `${s.units ? ' + ' : ''}low ×${s.unknown}` : ''}</b></li>`).join('')}</ul><div class="lbl" style="margin-top:8px">${total} units to buy${d.shopping.some(s => s.unknown) ? ' + items with unknown capacity' : ''}</div>` : '<div class="empty">Nothing is due for a refill.</div>';
+  SHOP_TEXT = [`Costco list — ${md(dayCT())}`, ...d.shopping.map(s => `${s.name} × ${s.units || '?'}${s.unknown && s.units ? ' (+ top up)' : ''}`), `${total} units`].join('\n');
+  $('restockMachines').innerHTML = d.machines.map(m => `<div class="card${m.due ? ' strong' : ''}"><h2>${esc(m.name)} <span class="lbl">${m.due ? `${m.low} low` : 'ok'}</span></h2>${m.items.length ? `<table><thead><tr><th>Product</th><th>Stock</th><th>Capacity</th><th>Refill</th></tr></thead><tbody>${m.items.map(i => `<tr${i.low ? ' style="color:var(--red)"' : ''}><td>${esc(i.name)}${i.low ? ' <span class="badge red">low</span>' : ''}</td><td>${i.stock}</td><td>${i.capacity ?? '—'}</td><td>${i.need ?? (i.low ? '?' : '')}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">No stock data.</div>'}</div>`).join('') || '<div class="empty">No inventory yet.</div>';
+}
+$('btnShare').addEventListener('click', async () => {
+  if (!SHOP_TEXT) return;
+  try { if (navigator.share) { await navigator.share({ title: 'Costco list', text: SHOP_TEXT }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(SHOP_TEXT); $('btnShare').textContent = 'Copied'; setTimeout(() => $('btnShare').textContent = 'Copy / share', 1500); } catch (e) { prompt('Copy the list:', SHOP_TEXT); }
+});
+
+/* ---------- STATEMENTS ---------- */
+async function loadConfig(force) { if (force || !S.config) S.config = await api('/haha-api?view=config'); return S.config; }
+async function initStatements() {
+  try { await loadConfig(); } catch (e) { fail(e, $('stOut')); return; }
+  const sel = $('stHost'), cur = sel.value;
+  sel.innerHTML = S.config.hosts.map(h => `<option value="${esc(h.hostId)}">${esc(h.name)}</option>`).join('');
+  if (cur) sel.value = cur;
+  if (!$('stMonth').value) { const first = dayCT().slice(0, 8) + '01'; $('stMonth').value = addDays(first, -1).slice(0, 7); }
+}
+$('stGo').addEventListener('click', async () => {
+  $('stPrint').classList.add('hide');
+  $('stOut').innerHTML = '<div class="empty">Building…</div>';
+  let st;
+  try { st = await api(`/haha-api?view=statement&host=${encodeURIComponent($('stHost').value)}&month=${$('stMonth').value}`); }
+  catch (e) { $('stOut').innerHTML = `<div class="err">${esc(e.body?.error || e.message)}</div>`; if (e instanceof AuthError) showGate(); return; }
+  const monthName = new Date(st.month + '-15T12:00:00Z').toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  $('stOut').innerHTML = `
+    ${st.partial ? '<div class="warn">This month is still open — figures will change until it ends.</div>' : ''}
+    ${st.warnings.map(w => `<div class="warn">${esc(w)}</div>`).join('')}
+    <div class="sheet" id="stmtSheet">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><span class="logo">WRAPT</span><div class="meta" style="text-align:right">Disbursement notice<br>Generated ${esc(timeCT(st.generated_at))}</div></div>
+      <h3>${esc(st.host.name)}</h3>
+      <div class="meta">${esc(monthName)} · ${esc(md(st.from))}–${esc(md(st.to))} · ${st.tx} transactions · machines ${st.machines.map(m => esc(m.name)).join(', ')}</div>
+      <table style="margin-top:12px"><tbody>
+        ${st.lines.map(l => `<tr><td>${esc(l.label)}</td><td>${money(l.cents)}</td></tr>`).join('')}
+        <tr class="total"><td>Net Gross Revenue</td><td>${money(st.net)}</td></tr>
+        <tr><td>Commission rate</td><td>${esc(st.rateLabel)}</td></tr>
+      </tbody></table>
+      <div class="payout"><span>Payout to ${esc(st.host.name)}</span><b>${money(st.payout)}</b></div>
+      <table><thead><tr><th>Product</th><th>Units</th><th>Net sales</th><th>Refunded</th></tr></thead><tbody>
+        ${st.products.map(p => `<tr><td>${esc(p.name)}</td><td>${p.qty}</td><td>${money(p.sales)}</td><td>${p.refundedQty ? `${p.refundedQty} · ${money(p.refunds)}` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      <p class="fine">Sales are processed through Wrapt's merchant account; this notice shows the commission Wrapt pays the host. Net Gross Revenue = gross sales − sales tax − refunds − card processing fees − HAHA machine fee. Refunds are shown ex-tax; tax on refunded sales is removed in the sales-tax line.</p>
+    </div>`;
+  $('stPrint').classList.remove('hide');
+});
+$('stPrint').addEventListener('click', () => window.print());
+
+/* ---------- SETTINGS ---------- */
+async function loadSettings() {
+  let cfg, st, al;
+  try { [cfg, st, al] = await Promise.all([loadConfig(true), api('/haha-api?view=state'), api('/haha-api?view=alerts')]); }
+  catch (e) { fail(e, $('syncState')); return; }
+  renderSyncState(st);
+  renderHosts(); renderFees();
+  $('alertFeed').innerHTML = al.feed.length ? al.feed.slice(0, 40).map(e => `<div class="alert"><span class="mk ${e.type === 'cleared' ? 'ok' : e.level === 'red' ? 'red' : 'amber'}">${e.type === 'cleared' ? 'CLEARED' : e.level === 'red' ? 'URGENT' : 'CHECK'}</span><div>${esc(e.text)}<time>${esc(timeCT(e.at))}</time></div></div>`).join('') : '<div class="empty">No alerts yet.</div>';
+  $('webhookLog').innerHTML = st.webhooks.length ? `<ul class="list-plain">${st.webhooks.map(w => `<li><span>${esc(w.vdiType || '?')} <span class="muted" style="font-size:12px">${esc(w.requestId)}</span></span><span class="lbl">${esc(w.resource || 'stored only')} · ${esc(timeCT(w.at))}</span></li>`).join('')}</ul>${st.samples.length ? `<div class="muted" style="font-size:12px;margin-top:6px">Sample payloads kept for: ${st.samples.map(esc).join(', ')}</div>` : ''}` : '<div class="empty">No webhooks received yet.</div>';
+}
+function renderSyncState(d) {
+  const s = d.state || {}, c = d.configured;
+  $('cfgEnv').textContent = `${c.env.toUpperCase()} environment`;
+  const miss = [!c.appkey && 'HAHA_APPKEY', !c.appsecret && 'HAHA_APPSECRET', !c.webhookSecret && 'HAHA_WEBHOOK_SECRET', !c.alertTo && 'HAHA_ALERT_TO'].filter(Boolean);
+  const res = Object.entries(s.resources || {});
+  $('syncState').innerHTML = `
+    ${miss.length ? `<div class="warn">Not set on the site: ${miss.join(', ')}</div>` : ''}
+    <div style="font-size:14px">Last good sync: <b>${esc(s.lastOk ? ago(s.lastOk) : 'never')}</b>${s.lastRun ? ` · last run ${esc(ago(s.lastRun.at))} (${esc(s.lastRun.mode)}, ${s.lastRun.ok ? 'ok' : 'with errors'}, ${s.lastRun.ms} ms)` : ''}</div>
+    ${s.lastRun?.errors?.length ? s.lastRun.errors.map(e => `<div class="err">${esc(e)}</div>`).join('') : ''}
+    ${s.lastRun?.warnings?.length ? `<div class="warn">Shape warnings (field names to check against HAHA):<br>${s.lastRun.warnings.map(esc).join('<br>')}</div>` : ''}
+    ${res.length ? `<table style="margin-top:8px"><thead><tr><th>Resource</th><th>Last ok</th><th>Items</th><th>Error</th></tr></thead><tbody>${res.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v.ok_at ? ago(v.ok_at) : '—')}</td><td>${v.count ?? ''}</td><td style="white-space:normal;color:var(--red)">${esc(v.error?.message || '')}</td></tr>`).join('')}</tbody></table>` : ''}`;
+  if (s.backfill) renderBackfill(s.backfill);
+}
+function renderBackfill(b) {
+  if (!b || b.idle) { $('bfState').textContent = ''; return; }
+  $('bfState').textContent = `Backfill ${b.from} → ${b.to}: ${b.done}/${b.total} days${b.finished ? ` — finished ${ago(b.finished)}` : ' — running'}${b.failed?.length ? ` — ${b.failed.length} failed: ${b.failed.slice(0, 3).join('; ')}` : ''}`;
+}
+function renderHosts() {
+  const machines = S.config.machines || [];
+  $('hostList').innerHTML = (S.config.seeded ? '<div class="warn">Defaults — not saved yet. Assign machines and rates, then Save.</div>' : '') + S.config.hosts.map((h, i) => {
+    const ids = new Set(h.marketIds);
+    const known = new Set(machines.map(m => m.id));
+    const extra = h.marketIds.filter(id => !known.has(id));
+    return `<div class="host" data-i="${i}">
+      <div class="grid2"><label><span class="lbl">Name</span><input class="inp" data-f="name" value="${esc(h.name)}"></label><label><span class="lbl">Host id</span><input class="inp" data-f="hostId" value="${esc(h.hostId)}"></label></div>
+      <div class="grid2"><label><span class="lbl">Rate (0.10 = 10%)</span><input class="inp" data-f="rate" inputmode="decimal" value="${esc(h.rate ?? '')}" placeholder="enter rate"></label><label><span class="lbl">Type</span><select class="inp" data-f="type"><option value="net_gross"${h.type !== 'profit_split' ? ' selected' : ''}>% of Net Gross Revenue</option><option value="profit_split"${h.type === 'profit_split' ? ' selected' : ''}>Profit split (not built yet)</option></select></label></div>
+      <span class="lbl">Machines</span>
+      <div class="mlist">${machines.map(m => `<label><input type="checkbox" data-m="${esc(m.id)}"${ids.has(m.id) ? ' checked' : ''}>${esc(m.name)}</label>`).join('') || '<span class="muted" style="font-size:13px">No machines synced yet — type sticker numbers below.</span>'}</div>
+      <label><span class="lbl">Other sticker numbers (comma-separated)</span><input class="inp" data-f="extra" value="${esc(extra.join(', '))}"></label>
+      <div class="grid2"><label><span class="lbl">Contact</span><input class="inp" data-f="contact" value="${esc(h.contact)}"></label><label><span class="lbl">Notes / custom terms</span><input class="inp" data-f="notes" value="${esc(h.notes)}"></label></div>
+      <button class="ghost sm" data-del="${i}">Remove host</button>
+    </div>`;
+  }).join('');
+  $('hostList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => { collectHosts(); S.config.hosts.splice(+b.dataset.del, 1); renderHosts(); });
+}
+function collectHosts() {
+  S.config.hosts = [...$('hostList').querySelectorAll('.host')].map(el => {
+    const f = k => el.querySelector(`[data-f="${k}"]`).value.trim();
+    const marketIds = [...el.querySelectorAll('[data-m]:checked')].map(c => c.dataset.m).concat(f('extra').split(',').map(s => s.trim()).filter(Boolean));
+    return { hostId: f('hostId'), name: f('name'), rate: f('rate') || null, type: f('type'), marketIds, contact: f('contact'), notes: f('notes') };
+  });
+  return S.config.hosts;
+}
+$('btnAddHost').addEventListener('click', () => { if (!S.config) return; collectHosts(); S.config.hosts.push({ hostId: `host-${S.config.hosts.length + 1}`, name: 'New host', marketIds: [], rate: null, type: 'net_gross', contact: '', notes: '' }); renderHosts(); });
+function renderFees() {
+  const s = S.config.settings, machines = S.config.machines || [];
+  $('feeForm').innerHTML = `
+    <div class="grid3">
+      <label><span class="lbl">Card fee %</span><input class="inp" id="fPct" inputmode="decimal" placeholder="e.g. 2.9" value="${esc(s.cardPercent ?? '')}"></label>
+      <label><span class="lbl">Card fee per sale $</span><input class="inp" id="fFixed" inputmode="decimal" placeholder="e.g. 0.30" value="${esc(s.cardFixed ?? '')}"></label>
+      <label><span class="lbl">HAHA fee / machine / month $</span><input class="inp" id="fHaha" inputmode="decimal" placeholder="e.g. 25.00" value="${esc(s.hahaMonthlyDefault ?? '')}"></label>
+    </div>
+    ${machines.length ? `<details style="margin:4px 0 10px"><summary class="lbl" style="cursor:pointer">Per-machine HAHA fee overrides</summary><div class="grid3" style="margin-top:8px">${machines.map(m => `<label><span class="lbl">${esc(m.name)}</span><input class="inp" data-hm="${esc(m.id)}" inputmode="decimal" placeholder="default" value="${esc(s.hahaMonthly?.[m.id] ?? '')}"></label>`).join('')}</div></details>` : ''}
+    <div class="grid3">
+      <label><span class="lbl">Restock below % of capacity</span><input class="inp" id="fRp" type="number" min="1" max="99" value="${esc(s.restockPercent)}"></label>
+      <label><span class="lbl">…or at/below units (no capacity)</span><input class="inp" id="fRu" type="number" min="0" max="50" value="${esc(s.restockUnits)}"></label>
+    </div>`;
+}
+$('btnSaveCfg').addEventListener('click', async () => {
+  if (!S.config) return;
+  const hahaMonthly = {};
+  document.querySelectorAll('[data-hm]').forEach(i => { if (i.value.trim()) hahaMonthly[i.dataset.hm] = i.value.trim(); });
+  const body = {
+    base: S.config.updated, hosts: collectHosts(),
+    settings: { cardPercent: $('fPct').value.trim() || null, cardFixed: $('fFixed').value.trim() || null, hahaMonthlyDefault: $('fHaha').value.trim() || null, hahaMonthly, restockPercent: +$('fRp').value, restockUnits: +$('fRu').value },
+  };
+  $('cfgMsg').textContent = 'Saving…';
+  try {
+    const r = await api('/haha-api?view=config', { method: 'POST', body: JSON.stringify(body) });
+    S.config = { ...S.config, ...r }; renderHosts(); renderFees();
+    $('cfgMsg').textContent = 'Saved.';
+  } catch (e) {
+    if (e.status === 409) { S.config = { ...S.config, ...e.body }; renderHosts(); renderFees(); $('cfgMsg').textContent = 'Someone saved settings meanwhile — their version is loaded. Re-apply your change and save again.'; }
+    else { $('cfgMsg').textContent = e.body?.error || e.message; if (e instanceof AuthError) showGate(); }
+  }
+});
+$('btnSync').addEventListener('click', async () => {
+  const b = $('btnSync'); b.disabled = true; b.textContent = 'Syncing…';
+  try {
+    const { since } = await api('/haha-api?action=sync', { method: 'POST' });
+    for (let i = 0; i < 40; i++) { // a full pass usually takes 5–30 s
+      await new Promise(r => setTimeout(r, 3000));
+      const st = await api('/haha-api?view=state');
+      if (st.state?.lastRun?.at && st.state.lastRun.at >= since) { renderSyncState(st); break; }
+    }
+    S.summary = null;
+  } catch (e) { $('syncState').insertAdjacentHTML('afterbegin', `<div class="err">${esc(e.body?.error || e.message)}</div>`); }
+  b.disabled = false; b.textContent = 'Sync now';
+});
+$('btnBackfill').addEventListener('click', async () => {
+  const from = $('bfFrom').value;
+  if (!from) { $('bfState').textContent = 'Pick a start date.'; return; }
+  try {
+    const r = await api('/haha-backfill', { method: 'POST', body: JSON.stringify({ from }) });
+    $('bfState').textContent = `Queued ${r.days} days (${r.from} → ${r.to}).`;
+    for (let i = 0; i < 200; i++) {
+      await new Promise(res => setTimeout(res, 5000));
+      const b = await api('/haha-backfill');
+      renderBackfill(b);
+      if (b.finished && b.from === r.from) break;
+    }
+  } catch (e) { $('bfState').textContent = e.body?.error || e.message; }
+});
+
+/* ---------- start ---------- */
+(async () => {
+  const v = location.hash.slice(1);
+  if (!KEY) { showGate(); S.view = VIEWS.includes(v) ? v : 'today'; return; }
+  $('gate').style.display = 'none';
+  try { await loadSummary(); } catch (e) { if (e instanceof AuthError) { showGate('Wrong or expired key.'); return; } }
+  show(v);
+})();
+</script>
+</body>
+</html>
