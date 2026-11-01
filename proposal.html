@@ -84,7 +84,7 @@ li b{color:var(--cream);font-weight:500}
   <h2>Terms</h2>
   <div class="terms">
     <div class="trow"><span>Cost to you</span><b>Nothing — ever</b></div>
-    <div class="trow"><span>Your commission</span><b id="pShare">10% of NGR (net gross revenue: after tax, refunds and processing fees)</b></div>
+    <div class="trow"><span>Your commission</span><b id="pShare">A commission on NGR (net gross revenue: after tax, refunds and processing fees)</b></div>
     <div class="trow"><span>Commission starts</span><b>After a 90-day trial period</b></div>
     <div class="trow"><span>Monthly minimum</span><b>Paid for months with $1,000+ in sales</b></div>
     <div class="trow"><span>Payout</span><b>Monthly deposit + itemized statement</b></div>
@@ -121,7 +121,6 @@ li b{color:var(--cream);font-weight:500}
   }catch(e){}
   // the link is unsigned, so cap what it can put on the page and never let it change the commission
   ['name','co','city','venue','wants','grade','gross','annual'].forEach(k=>{if(d[k]!=null)d[k]=String(d[k]).slice(0,120);});
-  d.share='10%';
   if(d.name)$('pName').textContent=d.name;
   if(d.co)$('pCo').textContent=d.co; else $('pCoWrap').style.display='none';
   if(d.city)$('pCity').textContent=d.city; else $('pCityWrap').style.display='none';
