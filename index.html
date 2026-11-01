@@ -243,9 +243,6 @@ nav{
 .model .hw b{color:var(--gold-deep);font-weight:700;letter-spacing:.14em;display:block;margin-bottom:3px}
 .model .btn{justify-content:center}
 
-/* ROI */
-.roi{background:var(--panel2);border-block:2px solid var(--cream)}
-.roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
 .field{margin-bottom:26px}
 .field label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:10px}
 .field label output{color:var(--brass-hi);font-family:'Space Mono';font-weight:500}
@@ -257,17 +254,6 @@ select.inp,input.inp,textarea.inp{
   color:var(--cream);font:inherit;font-size:15px;padding:13px 15px;transition:.15s;
 }
 select.inp:focus,input.inp:focus,textarea.inp:focus{border-color:var(--gold);outline:none}
-.roi-out{background:#FFFFFF;border:2px solid var(--cream);padding:34px;position:sticky;top:90px}
-.roi-out .fh{font-family:'Space Mono';font-size:11px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:22px}
-.roi-row{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-bottom:1px dashed #D7D2C7;font-size:15px;color:var(--muted)}
-.roi-row b{font-family:'Archivo';font-size:26px;font-weight:700;color:var(--cream)}
-.roi-big{padding:22px 0 8px;text-align:left}
-.roi-big label{font-size:13px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-family:'Space Mono'}
-.roi-big b{color:var(--gold-deep)}
-.roi-out .btn{width:100%;justify-content:center;margin-top:22px}
-.roi-note{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
-.roi-alt{display:flex;gap:10px;margin-top:12px}
-.roi-alt .btn{margin-top:0;flex:1}
 .grade{
   font-family:'Archivo';font-weight:900;font-size:30px;line-height:1;
   color:var(--brass-hi);border:1px solid var(--brass);padding:4px 12px;
@@ -348,13 +334,12 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
 .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 
 @media(max-width:920px){
-  .hero-grid,.roi-grid,.funnel-grid{grid-template-columns:1fr;gap:44px}
+  .hero-grid,.funnel-grid{grid-template-columns:1fr;gap:44px}
   .steps,.models,.models.single{grid-template-columns:1fr}
   .models.single .visual{min-height:300px}
   .m-stats{grid-template-columns:repeat(3,1fr)}
   .nav-links{display:none}
   section{padding:76px 0}
-  .roi-out{position:static}
   .f2,.choice-grid{grid-template-columns:1fr}
   .hero{padding-top:130px}
   .hero-proof{flex-wrap:wrap;gap:22px}
@@ -443,7 +428,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
 .contact-bar .cb-btn{background:#FFFFFF}
 .cb-btn.gold{background:var(--gold);border-color:var(--gold);color:#221B0E}
 .cb-btn.gold:hover{background:var(--gold-hi)}
-.roi-big b{color:var(--gold-deep)}
 .grade.gA{color:var(--gold-deep);border-color:var(--gold);text-shadow:none}
 @media(max-width:640px){select.inp,input.inp,textarea.inp{font-size:16px}}
 </style>
@@ -456,7 +440,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
     <div class="nav-links">
       <a href="#how">How it works</a>
       <a href="#machines">Machines</a>
-      <a href="#roi">ROI</a>
       <a href="#faq">FAQ</a>
     </div>
     <a class="btn sm" href="#start">Become a host</a>
@@ -472,7 +455,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
       <p class="hero-sub">A modern market in three feet of wall space for gyms, offices, and apartment buildings across Franklin, Spring Hill &amp; Greater Nashville. No upfront cost. We place, stock and service the machine and pay you a commission on its sales, starting after a 90-day trial and paid for months of $1,000 or more; wrap fees are recovered from it.</p>
       <div class="hero-ctas">
         <a class="btn" href="#start">Become a host</a>
-        <a class="btn ghost" href="#roi">See what your space earns</a>
       </div>
       <div class="hero-proof">
         <div><b>Weekly</b><span>Stocked &amp; serviced by us</span></div>
@@ -579,69 +561,6 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
       <div class="eyebrow"><span class="slot">C2</span> The Name Isn't an Accident</div>
       <h2>Your brand. Our shelf.</h2>
       <p>Every machine we place can get a full vinyl wrap before install — your logo and colors, designed with you and approved before it ever arrives. We front the wrap and a $200 install fee and recover them from your commission. Prefer hands-off? Our clean, dark Wrapt design instead. Either way: no bare steel, no beverage-company billboards in your building.</p>
-    </div>
-  </div>
-</section>
-
-<!-- SITE VALUE ENGINE -->
-<section class="roi" id="roi">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow"><span class="slot">D1</span> Site Value Engine</div>
-      <h2>What is your location worth?</h2>
-      <p>Describe your space and we'll score it the way we score every placement — venue, traffic, and hours drive the number.</p>
-    </div>
-    <div class="roi-grid">
-      <div>
-        <div class="f2" style="margin-bottom:26px">
-          <div>
-            <label class="field-lbl" for="rVenue">Venue type</label>
-            <select id="rVenue" class="inp">
-              <option value="1.25" data-name="Gym / fitness studio">Gym / fitness studio</option>
-              <option value="1.00" data-name="Office / coworking" selected>Office / coworking</option>
-              <option value="0.85" data-name="Apartment / residential">Apartment / residential</option>
-              <option value="1.20" data-name="Hotel / hospitality">Hotel / hospitality</option>
-              <option value="1.15" data-name="School / campus">School / campus</option>
-              <option value="1.30" data-name="Golf / entertainment venue">Golf / entertainment venue</option>
-              <option value="0.95" data-name="Retail / other">Retail / other</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-lbl" for="rZip">ZIP / city</label>
-            <input id="rZip" class="inp" placeholder="37064 or Franklin, TN">
-          </div>
-        </div>
-        <div class="field">
-          <label>Daily foot traffic <output id="oTraffic">400</output></label>
-          <input type="range" id="rTraffic" min="50" max="2000" step="25" value="400" aria-label="Daily foot traffic">
-        </div>
-        <div class="field">
-          <label>Hours open per day <output id="oHours">14</output></label>
-          <input type="range" id="rHours" min="6" max="24" step="1" value="14" aria-label="Hours open per day">
-        </div>
-        <div class="field">
-          <label>Average sale price <output id="oPrice">$3.25</output></label>
-          <input type="range" id="rPrice" min="150" max="800" step="25" value="325" aria-label="Average sale price in cents">
-        </div>
-      </div>
-      <div class="roi-out" aria-live="polite">
-        <div class="fh" style="display:flex;justify-content:space-between;align-items:center">
-          <span>Site score</span>
-          <span class="grade" id="outGrade">B+</span>
-        </div>
-        <div class="roi-row"><span>Est. sales per day</span><b id="outDaily">$—</b></div>
-        <div class="roi-row"><span>Monthly gross sales</span><b id="outGross">$—</b></div>
-        <div class="roi-big">
-          <label id="bigLbl">Added value to your location / year</label>
-          <b id="outNet">$—</b>
-        </div>
-        <button class="btn" id="roiCta">Get the real number</button>
-        <div class="roi-alt">
-          <a href="tel:+16159482976" class="btn ghost sm">Call</a>
-          <a id="smsRoi" href="sms:+16159482976" class="btn ghost sm">Text us this quote</a>
-        </div>
-        <p class="roi-note">Estimate from typical-traffic assumptions, not measured results. Commission is paid under the terms above: only after the 90-day trial, and only in months with $1,000+ in sales. Your proposal uses your actual location.</p>
-      </div>
     </div>
   </div>
 </section>
@@ -1130,48 +1049,9 @@ setInterval(()=>{const d=new Date();document.getElementById('clock').textContent
   `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;},1000);
 
 
-/* ---------- Site Value Engine ---------- */
+/* ---------- helpers ---------- */
 const $=id=>document.getElementById(id);
 const fmt=n=>'$'+Math.round(n).toLocaleString();
-function calcROI(){
-  const traffic=+$('rTraffic').value, price=+$('rPrice').value/100, hours=+$('rHours').value;
-  const venueSel=$('rVenue'), mult=+venueSel.value;
-  const venueName=venueSel.options[venueSel.selectedIndex].dataset.name;
-  $('oTraffic').textContent=traffic;
-  $('oPrice').textContent='$'+price.toFixed(2);
-  $('oHours').textContent=hours;
-  // Base buy rate, scaled by venue multiplier and hours (14h = baseline)
-  const rate=.06*mult*Math.min(hours/14,1.35);
-  const daily=traffic*rate*price;
-  const gross=daily*30.4;
-  const hostMonthly=gross*(1-CONFIG.processingFee)*CONFIG.hostShare;
-  const net=hostMonthly*12;
-  // Site grade from projected monthly gross
-  const g=gross>=4500?'A+':gross>=3200?'A':gross>=2200?'A−':gross>=1500?'B+':gross>=1000?'B':gross>=600?'C+':'C';
-  const ge=$('outGrade');
-  ge.textContent=g;
-  ge.className='grade '+(g[0]==='A'?'gA':g[0]==='B'?'gB':'gC');
-  $('outDaily').textContent=fmt(daily);
-  $('outGross').textContent=fmt(gross);
-  $('outNet').textContent=fmt(Math.max(net,0));
-  const snap={venue:venueName,zip:$('rZip').value||'',traffic,hours,price:'$'+price.toFixed(2),grade:g,monthlyGross:fmt(gross),annualValue:fmt(net)};
-  // keep the "text us this quote" link loaded with their numbers
-  $('smsRoi').href='sms:'+CONFIG.phone+'?&body='+encodeURIComponent(
-    `Hey Wrapt — my ${venueName.toLowerCase()} (${snap.zip||'my area'}) scored ${g}: ~${snap.annualValue}/yr in added value. Let's talk.`);
-  return snap;
-}
-['rTraffic','rPrice','rHours','rVenue','rZip'].forEach(id=>$(id).addEventListener('input',()=>{sendEv('calc_used');calcROI();}));
-let roiSnap=calcROI();
-$('roiCta').addEventListener('click',()=>{
-  roiSnap=calcROI();
-  $('hRoi').value=JSON.stringify(roiSnap);
-  setLeadType('host');
-  // carry venue + city into the funnel so they don't re-type
-  const vOpt=[...$('fVenue').options].find(o=>o.text===roiSnap.venue);
-  if(vOpt)$('fVenue').value=vOpt.text;
-  if(roiSnap.zip)$('fCity').value=roiSnap.zip;
-  location.hash='#start';
-});
 
 /* ---------- Multi-step funnel (5 steps: who → where → needs → contact → done) ---------- */
 let step=1;
@@ -1268,12 +1148,9 @@ $('btnNext').addEventListener('click',async()=>{
     const cm=$('hContact').value;
     if(cm!=='Email only'&&$('fPhone').value.replace(/\D/g,'').length<10){$('err3').textContent='We need a phone number to '+(cm==='Call me'?'call':'text')+' you.';return;}
     $('hScore').value=scoreLead();
-    // ROI snapshot: prefer the calculator IF the visitor actually used it;
-    // otherwise estimate from their form answers; otherwise attach nothing
-    // (never grade a lead off untouched defaults).
-    if(EV_SENT.calc_used){
-      $('hRoi').value=JSON.stringify({...calcROI(),basis:'calculator'});
-    }else{
+    // Lead snapshot (internal, never shown to the visitor): estimated from their form answers;
+    // attach nothing when traffic is unknown (never grade a lead off untouched defaults).
+    {
       const MULT={'Gym / fitness studio':1.25,'Office / coworking':1.0,'Apartment / residential':0.85,'Hotel / hospitality':1.2,'School / campus':1.15,'Golf / entertainment venue':1.3};
       const TRAF={'Under 100':75,'100 – 300':200,'300 – 700':500,'700 – 1,500':1100,'1,500+':1800};
       const traffic=TRAF[$('fTraffic').value];
