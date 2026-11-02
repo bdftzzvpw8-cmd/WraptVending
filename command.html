@@ -1346,10 +1346,10 @@ Great talking with you about ${co}. Here's your proposal \u2014 it's built from 
 
 ${url}
 
-The short version: we place a smart cooler in your space at zero cost (wrapped in your branding if you want it), we stock and service it weekly, and from the first month ${co} keeps 10% of NGR \u2014 paid monthly with a statement.
+The short version: we place a smart cooler in your space at no upfront cost (custom wrap available at select locations), we stock and service it weekly, and from the first month ${co} keeps 10% of NGR \u2014 paid monthly with a statement.
 
 Two next steps if you like what you see:
-1. If you want the wrap, I'll send a mockup in your branding for approval.
+1. If a custom wrap interests you (available at select locations), tell me and we'll agree it before install.
 2. We pick an install window \u2014 it takes about an hour.
 
 Reply here or text me anytime at 615.948.2976.
@@ -1366,7 +1366,7 @@ function mailFollowup(l){
 
 Just circling back on the smart cooler for ${co}. Happy to answer anything \u2014 where it would go, what goes in it, or how the 10% gets paid.
 
-If it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.
+If it's easier, I can swing by for five minutes this week and walk you through it.
 
 Paige Fryer
 Owner, Wrapt
@@ -1379,7 +1379,7 @@ function introLine(vt){
   if(/Apartment|Senior/i.test(vt))return 'It works as a 24/7 resident amenity for the lobby or clubroom: tap a card, grab a drink or snack, done. Your team never handles money or restocking.';
   if(/Hotel/i.test(vt))return 'Guests can grab drinks and snacks any hour: tap a card, grab, auto-checkout. It reads as your amenity, and the front desk never has to touch it.';
   if(/Office|Corporate|coworking/i.test(vt))return 'Employees and tenants get cold drinks and snacks without leaving the building: tap a card, grab, auto-checkout. Nothing for your team to manage.';
-  if(/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt))return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better and costs you nothing.';
+  if(/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt))return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better.';
   if(/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt))return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
   return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
 }
@@ -1391,13 +1391,13 @@ function mailIntro(l){
   const subj=visited?'Following up from my visit \u2014 a smart cooler for '+co:'Cold drinks at '+co+' \u2014 10% of NGR to you';
   const body=`Hi ${firstOf(d,l)},
 
-${visited?`I stopped by ${co} ${lastTouchDays(l)===0?'today':'this week'} and wanted to follow up in writing. `:''}I'm Paige, owner of Wrapt here in Franklin. We place glass-front smart coolers in local businesses at no cost to the host, with an optional wrap in your branding so it looks like yours.
+${visited?`I stopped by ${co} ${lastTouchDays(l)===0?'today':'this week'} and wanted to follow up in writing. `:''}I'm Paige, owner of Wrapt here in Franklin. We place glass-front smart coolers in local businesses at no upfront cost to the host, with a custom wrap available at select locations.
 
 ${introLine(d.venue_type)}
 
 We install it, stock it and service it weekly. From the first month, ${co} keeps 10% of NGR, paid monthly with a statement. Nothing to buy, nothing to manage.
 
-Could I stop by for 10 minutes this week with a mockup in ${poss(co)} colors? Reply with a day that works, or tell me who I should ask for.
+Could I stop by for 10 minutes this week? Reply with a day that works, or tell me who I should ask for.
 
 Paige Fryer
 Owner, Wrapt
@@ -1406,20 +1406,20 @@ Owner, Wrapt
 }
 /* ---------- door scripts ---------- */
 const PITCH_MAP=[
- [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. We can wrap it in {co}'s branding so it looks like yours, you keep 10% of NGR, and we handle stocking and service. Costs you nothing. Where would members want cold drinks?`],
- [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a branded smart cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity — we can wrap it in {co}'s look — front desk never touches it, we stock and service everything, and the hotel keeps 10% of NGR. No cost to the hotel. Is the GM the right person to show a mockup to?`],
- [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity that costs the property nothing: a smart cooler in your clubhouse or mail room — tap, grab, go. We can wrap it in {co}'s branding so it photographs like part of the community, the property keeps 10% of NGR, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
- [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed — and we can wrap it in {co}'s branding so it looks factory. You keep 10% of NGR, we stock and service it, zero cost. Can I show you a mockup with your logo on it?`],
- [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons — and we can wrap it in {co}'s branding. You keep 10% of NGR, we do all the stocking and service. Free. Where do folks sit while the dryers run?`],
- [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler, wrapped in {co}'s branding if you like: tap, grab a water or tea, done. It upgrades the client experience, you keep 10% of NGR, and we stock and service it — costs you nothing. Want to see the wrap mockup with your logo?`],
- [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We place smart coolers — wrapped in {co}'s look if you want — where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 10% of NGR at no cost. Who owns workplace amenities here?`],
- [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, and we can wrap it to match {co}. We handle stocking and sanitation-friendly service, the facility keeps 10% of NGR, and there's no cost. Who would I talk to about placements?`],
- [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler, wrapped in {co}'s look if you like: tap, grab, go, no cash handling for your team. 10% of NGR goes back to the ministry, we stock and service it, zero cost. Who handles facilities decisions?`],
- [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. We can wrap it in {co}'s branding, you keep 10% of NGR, and we handle stocking and service. No cost to you. Where do people congregate between games?`],
- [/Public|civic|Library/i,`Hi, I'm Paige — I own Wrapt here in Franklin. We place a smart cooler for visitors and staff: tap a card, grab a drink or snack, no cash for your team to handle. Wrap it in {co}'s look if you like, 10% of NGR back to the facility, we stock and service it, and there's no cost or purchase order — we can provide a certificate of insurance. Who handles vendor placements here?`],
- [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. We can wrap it in {co}'s branding, you keep 10% of NGR, we stock and service everything. Free. Could I show you a mockup?`],
+ [/Gym|fitness/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. We place a smart cooler — tap your card, grab a protein shake or a recovery drink, walk off, no coins, no buttons. A custom wrap is available at select locations, you keep 10% of NGR, and we handle stocking and service. No upfront cost to you. Where would members want cold drinks?`],
+ [/Hotel/i,`Hi, I'm Paige with Wrapt — we're Franklin-based. We place a smart cooler for guests: tap a card, grab drinks and snacks, auto-checkout. It reads as YOUR amenity (custom wrap available at select locations) — front desk never touches it, we stock and service everything, and the hotel keeps 10% of NGR. No upfront cost to the hotel. Is the GM the right person to talk to?`],
+ [/Apartment/i,`Hi, I'm Paige with Wrapt. We add a resident amenity with no upfront cost to the property: a smart cooler in your clubhouse or mail room — tap, grab, go. A custom wrap is available at select locations, the property keeps 10% of NGR, and we handle all stocking and maintenance. Who handles amenity decisions — you or regional?`],
+ [/Dealership|Auto repair/i,`Hi, I'm Paige — I own Wrapt here in Franklin. Customers waiting on service get thirsty. We place a smart cooler in your waiting area — tap a card, grab a drink, no change needed (custom wrap available at select locations). You keep 10% of NGR, we stock and service it, no upfront cost. Can I stop by for ten minutes this week?`],
+ [/Laundromat/i,`Hi, I'm Paige — I own Wrapt, here in Franklin. Folks sit here 45 minutes a load — we place a smart cooler so they can tap a card and grab a cold drink or snack while they wait. No coins to jam, no buttons (custom wrap available at select locations). You keep 10% of NGR, we do all the stocking and service, no upfront cost. Where do folks sit while the dryers run?`],
+ [/Salon|barbershop|Beauty|spa|Tattoo/i,`Hi, I'm Paige with Wrapt. Clients sit with you an hour-plus — we place a sleek smart cooler (custom wrap available at select locations): tap, grab a water or tea, done. It upgrades the client experience, you keep 10% of NGR, and we stock and service it, no upfront cost. Want me to stop by and walk you through it?`],
+ [/Office|coworking|Corporate/i,`Hi, I'm Paige with Wrapt, a local placement company. We place smart coolers (custom wrap available at select locations) where staff tap a card, grab drinks or snacks, and go. No cash box, no vending contract headaches: we stock, service, and you keep 10% of NGR with no upfront cost. Who owns workplace amenities here?`],
+ [/Medical|hospital|clinic|Senior/i,`Hi, I'm Paige with Wrapt. Staff and visitors here don't always have time to leave for a drink — we place a smart cooler that's tap-card, grab, go, and a custom wrap is available at select locations. We handle stocking and sanitation-friendly service, the facility keeps 10% of NGR, and there's no upfront cost. Who would I talk to about placements?`],
+ [/Church|campus/i,`Hi, I'm Paige — I own Wrapt, we're a local family business. Between services and events, folks want a cold water or a snack — we place a smart cooler (custom wrap available at select locations): tap, grab, go, no cash handling for your team. 10% of NGR goes back to the ministry, we stock and service it, no upfront cost. Who handles facilities decisions?`],
+ [/Entertainment|Golf|Pickleball|Youth|Ice|skate|College/i,`Hi, I'm Paige with Wrapt. Players and parents want cold drinks right where the action is — we place a smart cooler: tap a card, grab, back to the game. A custom wrap is available at select locations, you keep 10% of NGR, and we handle stocking and service. No upfront cost to you. Where do people congregate between games?`],
+ [/Public|civic|Library/i,`Hi, I'm Paige — I own Wrapt here in Franklin. We place a smart cooler for visitors and staff: tap a card, grab a drink or snack, no cash for your team to handle. A custom wrap is available at select locations, 10% of NGR goes back to the facility, we stock and service it, and there's no upfront cost or purchase order — we can provide a certificate of insurance. Who handles vendor placements here?`],
+ [/Veterinary/i,`Hi, I'm Paige with Wrapt. Pet owners wait here longer than they plan to — we place a smart cooler: tap a card, grab a drink, no coins. A custom wrap is available at select locations, you keep 10% of NGR, we stock and service everything, no upfront cost. Could I stop by for ten minutes?`],
 ];
-const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. We can wrap it in {co}'s branding so it looks like yours, you keep 10% of NGR, and we handle all stocking and service. It costs you nothing. Where would this get the most traffic?`;
+const PITCH_DEFAULT=`Hi, I'm Paige — I own Wrapt, we're Franklin-based. We place smart coolers: tap your card, grab a drink or snack, walk away — no coins, no buttons. A custom wrap is available at select locations, you keep 10% of NGR, and we handle all stocking and service. No upfront cost. Where would this get the most traffic?`;
 function pitchFor(l){
   const vt=l.data.venue_type||'';
   const hit=PITCH_MAP.find(([re])=>re.test(vt));
@@ -1438,10 +1438,10 @@ function spotFor(vt){
 }
 function openerFor(l){
   const dm=dmOf(l);
-  return dm?`Hi — is ${dm.name} in? I'm Paige, I own Wrapt here in Franklin. Thirty seconds about a cooler for ${spotFor(l.data.venue_type)} — no cost to y'all.`
+  return dm?`Hi — is ${dm.name} in? I'm Paige, I own Wrapt here in Franklin. Thirty seconds about a cooler for ${spotFor(l.data.venue_type)} — no upfront cost to y'all.`
            :`Hi — who handles vendors here, is that you? I'm Paige with Wrapt, here in Franklin. Thirty seconds and I'm out of your hair.`;
 }
-const GATEKEEPER=`No problem — who should I ask for, and when are they usually in? I'll leave a mockup card.`;
+const GATEKEEPER=`No problem — who should I ask for, and when are they usually in? I'll leave a card.`;
 const OBJECTIONS=[
  [`"We already have a vending company."`,`Keep them. Ours is a cold cooler, not a snack machine — it goes where theirs isn't: the lobby, the second floor, the waiting area. When is their term up? I'll make a note.`],
  [`"No room."`,`Three feet of wall and a regular outlet — a hotel-room fridge stood on end. Show me the spot you think it won't fit.`],
@@ -1465,8 +1465,8 @@ function leadCard(l){
   const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
   const smsCo=d.company||'your location',smsCold=l.prospect&&['prospect','contacted'].includes(l.status);
   const smsBody=encodeURIComponent(smsCold
-    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place smart coolers at no cost to the host (wrapped in your branding if you like); ${smsCo} would keep 10% of NGR. Could I stop by for 10 min this week with a mockup?`
-    :`Hi ${firstOf(d,l)} — Paige with Wrapt, following up on the smart cooler for ${smsCo}. Any questions I can answer, or a good day to swing by with the mockup?`);
+    ?`Hi ${firstOf(d,l)} — Paige with Wrapt, here in Franklin. We place smart coolers at no upfront cost to the host (custom wrap available at select locations); ${smsCo} would keep 10% of NGR. Could I stop by for 10 min this week?`
+    :`Hi ${firstOf(d,l)} — Paige with Wrapt, following up on the smart cooler for ${smsCo}. Any questions I can answer, or a good day to swing by?`);
   const tags=[];
   const tier=tierOf(l);
   if(tier)tags.push(`<span class="tag" style="${tier==='A'?'color:var(--gold-deep);border-color:var(--gold);font-weight:700':tier==='B'?'color:var(--cream);border-color:var(--cream)':'color:var(--taupe);border-color:var(--line)'}">TIER ${tier}</span>`);
