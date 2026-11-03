@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Wrapt — Leave-behind</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111111;--muted:#55534E;--line:#D7D2C7;--gold:#B37922;--gold-deep:#8F5E16;--panel:#F6F4EF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.5;border-top:8px solid var(--gold)}
+.page{max-width:760px;margin:0 auto;padding:30px 28px 90px}
+h1,h2{font-family:'Archivo',system-ui,sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:1.05;font-weight:900}
+.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+.logo{font-family:'Archivo',sans-serif;font-weight:900;font-size:16px;text-transform:uppercase;display:inline-block;border:3px solid currentColor;padding:9px 14px 7px;line-height:1}
+.meta{text-align:right;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;line-height:1.8}
+h1{font-size:34px;margin-bottom:6px}
+.for{color:var(--muted);margin-bottom:20px}
+.for b{color:var(--ink)}
+h2{font-size:16px;margin:20px 0 8px;border-bottom:3px solid var(--gold);padding-bottom:4px;display:inline-block}
+ul{list-style:none}
+li{padding:6px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px;color:var(--muted)}
+li::before{content:"—";color:var(--gold);font-weight:700}
+li b{color:var(--ink);font-weight:600}
+.small{font-size:12px;color:var(--muted);margin-top:18px}
+.contact{margin-top:18px;border:1px solid var(--line);background:var(--panel);padding:14px 16px}
+.contact b{font-family:'Archivo',sans-serif;text-transform:uppercase}
+.warn{display:none;background:#FFF4D6;border:1px solid var(--gold);padding:10px 14px;margin-bottom:18px;font-size:13px}
+.bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:4px solid var(--gold);padding:12px;display:flex;gap:10px;justify-content:center}
+.btn{background:var(--gold);color:#221B0E;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-weight:700;padding:12px 20px;border:2px solid var(--gold);cursor:pointer;font-size:13px}
+@page{size:letter;margin:0.5in}
+@media print{
+  body{border-top:none;font-size:12.5px;line-height:1.4}
+  .page{padding:0;max-width:none}
+  .bar,.warn{display:none!important}
+  h1{font-size:28px}
+  li{padding:4px 0}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="warn" id="warn"></div>
+  <div class="top">
+    <span class="logo">WRAPT</span>
+    <div class="meta">WRAPT VENDING<br><span id="lDate"></span><br>wraptvending.com · 615.948.2976</div>
+  </div>
+
+  <h1>A smart cooler<br><span style="border-bottom:6px solid var(--gold)">for <span id="lCo">your location</span>.</span></h1>
+  <p class="for"><span id="lForWrap">Prepared for <b id="lName"></b><span id="lCityWrap"> · <span id="lCity"></span></span></span></p>
+
+  <h2>What it is</h2>
+  <ul>
+    <li><span>A glass-front, card-only smart cooler. Tap your card, open the door, take what you want, and it checks you out automatically. Drinks, snacks and fresh food, stocked to what your people buy.</span></li>
+    <li><span>It needs about three feet of wall space and a standard outlet. We install, stock and service it. It is owned and operated by Wrapt.</span></li>
+  </ul>
+
+  <h2>What it costs you</h2>
+  <ul>
+    <li><span><b>No upfront cost.</b> We place, stock and service the machine.</span></li>
+    <li><span id="lCommission"></span></li>
+    <li><span>A one-time <b>$200 install fee</b>, recovered out of your commission. You are not billed for it.</span></li>
+    <li><span>A custom wrap in your branding is available at select locations, agreed with you before install.</span></li>
+  </ul>
+
+  <h2>The agreement, in plain words</h2>
+  <ul>
+    <li><span>A short written agreement. You choose a 3, 4 or 5-year initial term. It renews yearly, with 90 days' notice if you do not want to renew.</span></li>
+    <li><span>Leaving early takes 60 days' notice and reimbursing the install cost.</span></li>
+    <li><span>Every sale runs through Wrapt's merchant account. You receive a monthly payout with an itemized statement.</span></li>
+    <li id="lResponse" style="display:none"><span></span></li>
+    <li id="lInsurance" style="display:none"><span></span></li>
+  </ul>
+
+  <div class="contact"><b>Paige Fryer</b> · Wrapt Vending<br>Call or text 615.948.2976 · paige@wraptvending.com · wraptvending.com</div>
+  <p class="small">This page summarizes the terms; the signed agreement governs.</p>
+</div>
+
+<div class="bar"><button class="btn" id="printBtn" type="button">Print / save as PDF</button></div>
+
+<script>
+(function(){
+  // Inputs sir supplies. A blank one prints nothing and shows a warning on screen only.
+  const RESPONSE_PROMISE = "";   // e.g. "We respond to any service request within 24 hours."
+  const INSURANCE_LINE   = "";   // exact wording only; no certificate is claimed until one exists
+
+  const $ = id => document.getElementById(id);
+  let d = {};
+  try { const h = location.hash.slice(1); if (h) d = JSON.parse(decodeURIComponent(escape(atob(h.replace(/-/g,'+').replace(/_/g,'/'))))); } catch (e) {}
+  // the link is unsigned, so cap what it can put on the page; it can never change the terms
+  ['name','co','city'].forEach(k => { d[k] = String(d[k] == null ? '' : d[k]).slice(0, 120); });
+  if (d.co) $('lCo').textContent = d.co;
+  if (d.name) $('lName').textContent = d.name; else if (d.co) { $('lName').textContent = d.co; } else $('lForWrap').style.display = 'none';
+  if (d.city) $('lCity').textContent = d.city; else $('lCityWrap').style.display = 'none';
+  $('lDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  // The rate stays off the page unless sir approves it for this host: add ?rate=10 to the link. Never above 10.
+  const rq = parseFloat(new URLSearchParams(location.search).get('rate'));
+  const rate = (rq > 0 && rq <= 10) ? (Math.round(rq * 10) / 10) : 0;
+  $('lCommission').innerHTML = '<b>' + (rate ? rate + '% of net revenue' : 'A commission on net revenue') + '</b> (sales less tax, refunds, chargebacks and processing fees), paid <b>every month from the first month</b>, with an itemized statement. There is no trial period and no monthly minimum.';
+
+  const missing = [];
+  if (RESPONSE_PROMISE) { $('lResponse').style.display = ''; $('lResponse').firstChild.textContent = RESPONSE_PROMISE; } else missing.push('service-response promise');
+  if (INSURANCE_LINE) { $('lInsurance').style.display = ''; $('lInsurance').firstChild.textContent = INSURANCE_LINE; } else missing.push('insurance line');
+  if (missing.length) { $('warn').style.display = 'block'; $('warn').textContent = 'Not on the printed page yet (waiting for wording): ' + missing.join(' and ') + '.' + (rate ? '' : ' The commission rate is also left off; add ?rate=10 to the link only if approved for this host.'); }
+  $('printBtn').addEventListener('click', () => window.print());
+})();
+</script>
+</body>
+</html>

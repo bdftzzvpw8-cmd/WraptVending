@@ -83,6 +83,12 @@ for = "/proposal.html"
   X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
+for = "/leave-behind.html"
+
+  [headers.values]
+  X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
 for = "/wrap-studio.html"
 
   [headers.values]
