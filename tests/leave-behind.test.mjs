@@ -17,7 +17,7 @@ test('page is noindex and has print CSS', () => {
 });
 
 test('no banned claims anywhere in the visible copy', () => {
-  const banned = /\bfree\b|zero cost|costs? you nothing|nothing to pay|mockup|wrapped|every machine|90.day (?:trial|wait)|trial period(?<!no trial period)|\$1,000|per cent|guarantee|commission|payout|\bNGR\b/i;
+  const banned = /\bfree\b|zero cost|costs? you nothing|nothing to pay|mockup|wrapped|every machine|90.day (?:trial|wait)|trial period(?<!no trial period)|\$1,000|per cent|guarantee|commission|payout|\bNGR\b|install fee/i;
   const hit = visible.match(banned);
   assert.equal(hit, null, 'found: ' + (hit && hit[0]));
 });
@@ -33,7 +33,7 @@ test('the response and insurance lines are exactly sir\'s wording', () => {
 });
 
 test('states the settled terms', () => {
-  for (const s of ['No upfront cost', '$200 install fee', 'select locations']) {
+  for (const s of ['No upfront cost', '$200 fee', 'only if you choose a custom wrap', 'select locations']) {
     assert.ok(html.includes(s), 'missing: ' + s);
   }
 });
