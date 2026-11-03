@@ -1543,6 +1543,7 @@ function leadCard(l){
           ${l.prospect&&d.website?`<a class="act" target="_blank" rel="noopener" href="https://${esc(d.website)}">Site</a>`:''}
           <a class="act" href="proposal.html#${pd}" target="_blank" rel="noopener">Proposal</a>
           <a class="act" href="wrap-studio.html?biz=${encodeURIComponent((isReferral(l)&&d.referred_business)||d.company||d.name||'')}" target="_blank" rel="noopener">See wrap</a>
+          <a class="act" href="leave-behind.html#${pd}" target="_blank" rel="noopener">Leave-behind</a>
           ${l.field?`<button class="act" data-act="editfield">Edit details</button>`:''}
           ${l.prospect?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent((d.company||'')+' '+(d.city||'')+' TN phone')}">Find #</a>`:''}
           ${l.prospect&&/Apartment|Office|Corporate|Senior/.test(d.venue_type||'')?`<a class="act" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent('"'+(d.company||'')+'" '+(d.city||'')+' "property manager" OR "community manager" OR "leasing"')}">Find PM</a>`:''}
