@@ -41,3 +41,8 @@ test('states the settled terms', () => {
 test('no placed-host names, machine counts or wrap dollar figures', () => {
   assert.equal(/Firestone|Quick Cash|machines? (placed|installed)|\d+ machines/i.test(visible), false);
 });
+
+test('removal is 30 days notice, not the old 60-day exit wording', () => {
+  assert.ok(html.includes("30 days' notice"));
+  assert.equal(/60 days|reimburs/i.test(visible), false);
+});
