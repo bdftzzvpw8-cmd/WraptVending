@@ -17,13 +17,14 @@ test('page is noindex and has print CSS', () => {
 });
 
 test('no banned claims anywhere in the visible copy', () => {
-  const banned = /\bfree\b|zero cost|costs? you nothing|nothing to pay|mockup|wrapped|every machine|90.day (?:trial|wait)|trial period(?<!no trial period)|\$1,000|per cent|guarantee/i;
+  const banned = /\bfree\b|zero cost|costs? you nothing|nothing to pay|mockup|wrapped|every machine|90.day (?:trial|wait)|trial period(?<!no trial period)|\$1,000|per cent|guarantee|commission|payout|\bNGR\b/i;
   const hit = visible.match(banned);
   assert.equal(hit, null, 'found: ' + (hit && hit[0]));
 });
 
-test('no percentage on the page by default', () => {
+test('no percentage and no commission details on the page', () => {
   assert.equal(/\d+(\.\d+)?\s*%/.test(visible), false);
+  assert.equal(/commission|rate=/i.test(html), false);
 });
 
 test('the two inputs stay blank until sir supplies them', () => {
@@ -31,12 +32,8 @@ test('the two inputs stay blank until sir supplies them', () => {
   assert.match(script, /const INSURANCE_LINE   = "";/);
 });
 
-test('rate is capped at 10 and ignored otherwise', () => {
-  assert.match(script, /rq > 0 && rq <= 10/);
-});
-
 test('states the settled terms', () => {
-  for (const s of ['No upfront cost', '$200 install fee', 'every month from the first month', 'no monthly minimum', 'select locations']) {
+  for (const s of ['No upfront cost', '$200 install fee', 'select locations']) {
     assert.ok(html.includes(s), 'missing: ' + s);
   }
 });

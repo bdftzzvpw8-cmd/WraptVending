@@ -59,8 +59,7 @@ li b{color:var(--ink);font-weight:600}
   <h2>What it costs you</h2>
   <ul>
     <li><span><b>No upfront cost.</b> We place, stock and service the machine.</span></li>
-    <li><span id="lCommission"></span></li>
-    <li><span>A one-time <b>$200 install fee</b>, recovered out of your commission. You are not billed for it.</span></li>
+    <li><span>A one-time <b>$200 install fee</b>, not billed up front.</span></li>
     <li><span>A custom wrap in your branding is available at select locations, agreed with you before install.</span></li>
   </ul>
 
@@ -68,7 +67,6 @@ li b{color:var(--ink);font-weight:600}
   <ul>
     <li><span>A short written agreement. You choose a 3, 4 or 5-year initial term. It renews yearly, with 90 days' notice if you do not want to renew.</span></li>
     <li><span>Leaving early takes 60 days' notice and reimbursing the install cost.</span></li>
-    <li><span>Every sale runs through Wrapt's merchant account. You receive a monthly payout with an itemized statement.</span></li>
     <li id="lResponse" style="display:none"><span></span></li>
     <li id="lInsurance" style="display:none"><span></span></li>
   </ul>
@@ -95,15 +93,10 @@ li b{color:var(--ink);font-weight:600}
   if (d.city) $('lCity').textContent = d.city; else $('lCityWrap').style.display = 'none';
   $('lDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  // The rate stays off the page unless sir approves it for this host: add ?rate=10 to the link. Never above 10.
-  const rq = parseFloat(new URLSearchParams(location.search).get('rate'));
-  const rate = (rq > 0 && rq <= 10) ? (Math.round(rq * 10) / 10) : 0;
-  $('lCommission').innerHTML = '<b>' + (rate ? rate + '% of net revenue' : 'A commission on net revenue') + '</b> (sales less tax, refunds, chargebacks and processing fees), paid <b>every month from the first month</b>, with an itemized statement. There is no trial period and no monthly minimum.';
-
   const missing = [];
   if (RESPONSE_PROMISE) { $('lResponse').style.display = ''; $('lResponse').firstChild.textContent = RESPONSE_PROMISE; } else missing.push('service-response promise');
   if (INSURANCE_LINE) { $('lInsurance').style.display = ''; $('lInsurance').firstChild.textContent = INSURANCE_LINE; } else missing.push('insurance line');
-  if (missing.length) { $('warn').style.display = 'block'; $('warn').textContent = 'Not on the printed page yet (waiting for wording): ' + missing.join(' and ') + '.' + (rate ? '' : ' The commission rate is also left off; add ?rate=10 to the link only if approved for this host.'); }
+  if (missing.length) { $('warn').style.display = 'block'; $('warn').textContent = 'Not on the printed page yet (waiting for wording): ' + missing.join(' and ') + '.'; }
   $('printBtn').addEventListener('click', () => window.print());
 })();
 </script>
