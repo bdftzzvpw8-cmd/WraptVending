@@ -27,9 +27,9 @@ test('no percentage and no commission details on the page', () => {
   assert.equal(/commission|rate=/i.test(html), false);
 });
 
-test('the response line is exactly the approved wording; insurance stays blank until supplied', () => {
+test('the response and insurance lines are exactly sir\'s wording', () => {
   assert.ok(script.includes('const RESPONSE_PROMISE = "We respond to any service request within 24 hours.";'));
-  assert.match(script, /const INSURANCE_LINE   = "";/);
+  assert.ok(script.includes('const INSURANCE_LINE   = "We provide insurance within 48 hours after install.";'));
 });
 
 test('states the settled terms', () => {
