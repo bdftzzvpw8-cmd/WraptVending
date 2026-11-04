@@ -8,6 +8,21 @@
 //   ALERT_TO             your cell, e.g. +16155559876
 //                        (comma-separate multiple: +1615...,+1629...)
 
+// Pure string builders (exported for tests). annualValue is no longer captured by the homepage
+// (commission is private); leads that still carry it (old data) keep showing it.
+const roiSms = (r) =>
+  ` | Site ${r.grade || "?"}: ${r.monthlyGross || "?"}/mo${r.annualValue ? `, ${r.annualValue}/yr` : ""}`;
+const roiRowText = (r) =>
+  `${r.grade || "?"} · ${r.monthlyGross || "?"}/mo gross${r.annualValue ? ` · ${r.annualValue}/yr to host` : ""}${r.basis === "form estimate" ? " (estimated from form answers)" : ""}`;
+// Proposal deep-link payload (same format command.html builds). No annual/share: the host sees this URL.
+const proposalPayload = (d, r) => ({
+  name: d.name || "", co: d.company || "", city: d.city || "", venue: d.venue_type || "",
+  wants: d.product_interests || "", grade: r?.grade || "", gross: r?.monthlyGross || "",
+});
+exports.roiSms = roiSms;
+exports.roiRowText = roiRowText;
+exports.proposalPayload = proposalPayload;
+
 exports.handler = async (event) => {
   const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM, ALERT_TO } = process.env;
   const SMS_OK = !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM && ALERT_TO);
@@ -20,7 +35,7 @@ exports.handler = async (event) => {
   try {
     if (d.roi_snapshot) {
       const r = JSON.parse(d.roi_snapshot);
-      roi = ` | Site ${r.grade || "?"}: ${r.monthlyGross || "?"}/mo, ${r.annualValue || "?"}/yr`;
+      roi = roiSms(r);
     }
   } catch (_) {}
 
@@ -121,11 +136,7 @@ exports.handler = async (event) => {
       const btn = (href, label, solid) => `<a href="${href}" style="display:inline-block;margin:0 8px 8px 0;padding:11px 18px;font:700 12px 'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;${solid ? "background:#B37922;color:#221B0E;border:2px solid #B37922" : "color:#111;border:2px solid #111"}">${label}</a>`;
 
       // proposal deep link (same payload format command.html builds)
-      const pd = Buffer.from(JSON.stringify({
-        name: d.name || "", co: d.company || "", city: d.city || "", venue: d.venue_type || "",
-        wants: d.product_interests || "", grade: roiObj?.grade || "", gross: roiObj?.monthlyGross || "",
-        annual: roiObj?.annualValue || "", share: "10%",
-      }), "utf8").toString("base64");
+      const pd = Buffer.from(JSON.stringify(proposalPayload(d, roiObj)), "utf8").toString("base64");
 
       const html = `
 <div style="max-width:600px;margin:0 auto;border-top:8px solid #B37922;background:#fff">
@@ -147,7 +158,7 @@ exports.handler = async (event) => {
       ${row("Timeline", d.timeline)}
       ${row("Today", d.current_vending)}
       ${row("Wants", d.product_interests)}
-      ${roiObj ? row("Site score", `${roiObj.grade || "?"} · ${roiObj.monthlyGross || "?"}/mo gross · ${roiObj.annualValue || "?"}/yr to host${roiObj.basis === "form estimate" ? " (estimated from form answers)" : ""}`) : ""}
+      ${roiObj ? row("Site score", roiRowText(roiObj)) : ""}
       ${row("Reach them", [d.contact_method, d.contact_method === "Call me" && d.best_time && d.best_time !== "Anytime" ? d.best_time : ""].filter(Boolean).join(" · "))}
       ${row("Phone", d.phone)}
       ${row("Email", d.email)}
