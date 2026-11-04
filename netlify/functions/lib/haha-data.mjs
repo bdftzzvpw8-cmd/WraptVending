@@ -144,8 +144,23 @@ export function saleFigures(s) {
   const itemRefund = s.items.some(i => i.refund);
   const refunded = s.refund || itemRefund;
   const counted = s.status === 'PAID' || refunded;
-  const refundNet = !counted ? 0 : itemRefund ? s.items.filter(i => i.refund).reduce((a, i) => a + i.final, 0) : s.refund ? s.net : 0;
-  return { counted, refunded, refundNet, gross: counted ? s.gross : 0, tax: counted ? s.tax : 0, net: counted ? s.net - refundNet : 0 };
+  const t = saleTotals(s);
+  const refundNet = !counted ? 0 : itemRefund ? s.items.filter(i => i.refund).reduce((a, i) => a + i.final, 0) : s.refund ? t.net : 0;
+  return { counted, refunded, refundNet, gross: counted ? t.gross : 0, tax: counted ? t.tax : 0, net: counted ? t.net - refundNet : 0, derived: counted && t.derived };
+}
+
+/* HAHA has sent paid sales whose sale-level totals (saleGrossTotal, saleTotal, saleTaxes) are all 0 while saleTenders holds the
+   real card amount (seen on every order from Oct 31, 2026; the card money did land). When all three totals are 0 and the tenders
+   are positive, fall back to what the sale itself carries: gross = the tenders, net = the items at list price (never more than the
+   tenders), tax = the difference. A discount is not visible, so then net is overstated and tax understated. Marked derived.
+   Anything HAHA does fill in is used exactly as sent. */
+function saleTotals(s) {
+  if (s.gross || s.net || s.tax) return { gross: s.gross, net: s.net, tax: s.tax, derived: false };
+  const tendered = (s.tenders || []).reduce((a, t) => a + t.amount, 0);
+  if (tendered <= 0) return { gross: 0, net: 0, tax: 0, derived: false };
+  const list = s.items.reduce((a, i) => a + i.price * i.qty, 0);
+  const net = list > 0 ? Math.min(list, tendered) : tendered;
+  return { gross: tendered, net, tax: tendered - net, derived: true };
 }
 
 /* ---------- restocks: records kept as HAHA sends them, keyed by opLogId / id ---------- */

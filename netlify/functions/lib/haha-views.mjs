@@ -104,6 +104,13 @@ export function salesRange({ from, to, days, markets, marketId = '' }) {
   };
 }
 
+/* The sale as the views show it: HAHA's own totals, replaced by the derived ones only when HAHA sent all three as 0
+   (see saleTotals in haha-data.mjs), so an order's gross, net and tax agree with the day and machine totals. */
+function withFigures(s) {
+  const f = saleFigures(s);
+  return { ...s, ...(f.derived ? { gross: f.gross, net: f.net + f.refundNet, tax: f.tax } : {}), figures: f };
+}
+
 export function orders({ day, days, marketId = '', productId = '', refundsOnly = false }) {
   const out = [];
   for (const s of Object.values(days[day] || {})) {
@@ -111,7 +118,7 @@ export function orders({ day, days, marketId = '', productId = '', refundsOnly =
     if (productId && !s.items.some(i => i.productId === productId)) continue;
     const f = saleFigures(s);
     if (refundsOnly && !f.refunded) continue;
-    out.push({ ...s, figures: f });
+    out.push(withFigures(s));
   }
   return out.sort((a, b) => (a.at < b.at ? 1 : -1));
 }
@@ -166,7 +173,7 @@ export function machine({ id, now = new Date(), markets, inventory, planograms, 
       if (s.marketId !== id) continue;
       if (day === today) add(totals.today, s);
       add(totals.week, s);
-      recent.push({ ...s, figures: saleFigures(s) });
+      recent.push(withFigures(s));
     }
   }
   return {
