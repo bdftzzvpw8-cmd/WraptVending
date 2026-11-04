@@ -308,7 +308,6 @@ header{padding-top:calc(12px + env(safe-area-inset-top))}
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
         <button class="refresh" id="machClose">← Back</button>
         <span class="mono" style="font-size:11px;letter-spacing:.14em;color:var(--taupe);flex:1">MACHINES · HAHA 440</span>
-        <a class="refresh" href="machines.html" style="text-decoration:none;display:inline-flex;align-items:center">Full dashboard →</a>
       </div>
       <div id="machBody" aria-live="polite"></div>
     </div>
@@ -2603,7 +2602,7 @@ $('btnOps').addEventListener('click',async()=>{
 });
 $('opsClose').addEventListener('click',()=>{closeDlg('opsView');}); // a running trip keeps tracking in the background
 
-/* ---------- machines (HAHA 440 fleet) — summary from haha-api; the full dashboard is machines.html ---------- */
+/* ---------- machines (HAHA 440 fleet) — summary from haha-api; no sales figures here (sir, 2026-11-04) ---------- */
 const mAgo=iso=>{if(!iso)return 'never';const m=Math.round((Date.now()-new Date(iso))/60e3);if(m<1)return 'just now';if(m<60)return m+' min ago';const h=Math.floor(m/60);return h<48?h+'h '+(m%60)+'m ago':Math.floor(h/24)+' days ago'};
 async function machLoad(){
   const box=$('machBody');box.innerHTML='<div class="skel"></div>';

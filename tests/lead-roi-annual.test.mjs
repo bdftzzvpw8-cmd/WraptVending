@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const fn = require('../netlify/functions/submission-created.js');
@@ -57,4 +57,11 @@ test('command.html shows no sales figures: no ROI tag, no money formatter, no sa
   const m = command.match(/const pd=b64u\(JSON\.stringify\(\{([\s\S]*?)\}\)\);/);
   assert.ok(m, 'proposal payload block not found');
   assert.ok(!/grade|gross/.test(m[1]), m[1]);
+});
+
+test('the machines.html dashboard is gone and nothing links to it (sir, 2026-11-04)', () => {
+  assert.ok(!existsSync(new URL('../machines.html', import.meta.url)));
+  for (const f of ['../command.html', '../netlify.toml', '../netlify/functions/lib/haha-alerts.mjs']) {
+    assert.ok(!readFileSync(new URL(f, import.meta.url), 'utf8').includes('machines.html'), f);
+  }
 });

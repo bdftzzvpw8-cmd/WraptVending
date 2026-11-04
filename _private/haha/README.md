@@ -22,14 +22,13 @@ session that built this. Field names come from the roadmap. Every point that sti
 | `haha-backfill.mjs` | `POST {from, to?}` starts a day-by-day sales backfill; `GET` returns progress |
 | `haha-webhook.mjs` | Webhook receiver (see below) |
 | `haha-api.mjs` | JSON for the UI. `?view=summary` (add `&format=text` for plain text) is the JARVIS endpoint |
-| `machines.html` | The dashboard: Today, Sales (+ order drill-down), Restock (+ Costco list), Statements (print / PDF), Settings |
-| `command.html` | New **Machines** button: fleet summary + alerts, link to the full dashboard |
+| ~~`machines.html`~~ | Removed 2026-11-04 (sir). It was the dashboard: Today, Sales, Restock + Costco list, Statements, Settings (host rates, Sync now, Backfill). Nothing replaces those screens; the API views still exist |
+| `command.html` | New **Machines** button: fleet status + alerts (no sales figures, sir 2026-11-04) |
 | `tests/` | `npm test`: 38 unit/integration tests against a fake HAHA built from the roadmap's shapes |
 | `scripts/haha-probe.mjs` | First contact: saves one page of every read endpoint to `.haha-samples/` and lists missing fields |
 | `scripts/haha-webhook-send.mjs` | Signs a sample webhook and POSTs it (`--replay`, `--bad-signature`, `--stale`, `--file`) |
 
-All access needs the existing `DASH_KEY` (`X-Dash-Key` header). `machines.html` reuses the key Command already saved on the
-phone. The webhook is the exception: HAHA signs it instead.
+All access needs the existing `DASH_KEY` (`X-Dash-Key` header). The webhook is the exception: HAHA signs it instead.
 
 ## Turn it on
 
@@ -41,7 +40,7 @@ phone. The webhook is the exception: HAHA signs it instead.
    - `HAHA_ALERT_TO`: comma-separated emails for the alert digest. Uses the existing `SMTP_*` / `BRIEF_FROM` settings
 3. Locally: `npm ci && npm test`, then put the same vars in `.env` and run
    `node --env-file=.env scripts/haha-probe.mjs`. Read the `!` lines and the files in `.haha-samples/`.
-4. `netlify dev` → open `http://localhost:8888/machines.html` → Settings → **Sync now**. Run it a second time: the
+4. (The dashboard page was removed 2026-11-04, so there is no Sync now button: use the Netlify UI's Run now on `haha-sync`.) Run it a second time: the
    "Shape warnings" box should be empty and nothing should change. Then **Backfill** from the first install date.
 5. Settings → Hosts: tick each host's machines and enter rates. Fees: card % and per-sale fee, HAHA monthly fee.
 6. Phase 3: give HAHA support `https://wraptvending.com/.netlify/functions/haha-webhook`, the secret, `api_version: v2`
@@ -89,7 +88,7 @@ addition in `haha-webhook.mjs`. The poke model already keeps the dashboard withi
 - `.mjs` functions and `lib/` helpers follow the repo's newer convention, e.g. `ops.js` → the agents' `.mjs` files.
 - The 15-minute schedule kicks a background worker, as `agents-daily` does, because a scheduled function only gets
   30 seconds. The backfill also runs in that worker.
-- **robots.txt is not given a Disallow** for `machines.html`. The repo's rule (see robots.txt) is noindex via header +
+- **robots.txt is not given a Disallow** for private pages (`machines.html` was one until 2026-11-04). The repo's rule (see robots.txt) is noindex via header +
   meta, because a disallowed URL never gets its noindex read and can still be listed. Both the header and the meta are in
   place.
 - Blobs keys have no `.json` suffix (`markets/latest`, `sales/2026-10-31`), matching the other stores.

@@ -19,7 +19,7 @@ wording comes from sir or from that file's "Approved public wording", verbatim. 
 A claim repeats in `<title>`, the meta description, og/twitter tags, JSON-LD (`priceRange`, offers, FAQ answers),
 the hero, the visible FAQ, lead-form option text, the footer, and every templated city/venue landing page. Also check
 `proposal.html`, `brand-guide.html` and `leave-behind.html` (public, noindex). `command.html` (key-gated CRM; its
-AI email/SMS templates quote terms to hosts) and `machines.html` (token-gated host statement) are internal. A term
+AI email/SMS templates quote terms to hosts) is internal. A term
 change is one sweep across all of them in one PR, not a homepage fix.
 
 ## Public copy rules (enforced in part by `tests/no-commission-public.test.mjs`)
