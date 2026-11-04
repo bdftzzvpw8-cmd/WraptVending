@@ -1488,7 +1488,7 @@ function leadCard(l){
   if(isReferral(l))tags.push('<span class="tag pain">REFERRAL</span>');
   if(d.current_vending)tags.push(`<span class="tag${d.current_vending.includes('underperform')?' pain':''}">${esc(d.current_vending)}</span>`);
   if(d.product_interests)tags.push(`<span class="tag">${esc(d.product_interests)}</span>`);
-  if(roi&&roi.grade)tags.push(`<span class="tag roi">Site ${esc(roi.grade)}${roi.basis==='form estimate'?' (est.)':''} · ${esc(roi.annualValue||'')}/yr</span>`);
+  if(roi&&roi.grade)tags.push(`<span class="tag roi">Site ${esc(roi.grade)}${roi.basis==='form estimate'?' (est.)':''}${roi.annualValue?` · ${esc(roi.annualValue)}/yr`:''}</span>`);
   if(d.lead_source&&d.lead_source!=='direct')tags.push(`<span class="tag">via ${esc(d.lead_source)}</span>`);
   if(d.contact_method)tags.push(`<span class="tag">${esc(d.contact_method)}${d.contact_method==='Call me'&&d.best_time&&d.best_time!=='Anytime'?' · '+esc(d.best_time):''}</span>`);
   // stale flag: New/Contacted and older than 48h
@@ -1498,7 +1498,7 @@ function leadCard(l){
   // proposal link payload
   const pd=b64u(JSON.stringify({
     name:d.name||'',co:d.company||'',city:d.city||'',venue:d.venue_type||'',wants:d.product_interests||'',
-    grade:roi?.grade||'',gross:roi?.monthlyGross||'',annual:roi?.annualValue||'',share:'10%'
+    grade:roi?.grade||'',gross:roi?.monthlyGross||''
   }));
   const mapsQ=d.address||`${(isReferral(l)&&d.referred_business)||d.company||''} ${d.city||''} TN`;
   const urgency=fuDue(l)?' u-due':(!l.prospect&&s>=70&&['new','contacted'].includes(l.status)?' u-hot':'');
