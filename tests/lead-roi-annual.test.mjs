@@ -50,7 +50,11 @@ test('command.html proposal link payload has no annual or share', () => {
   assert.ok(!/annual|share/.test(m[1]), m[1]);
 });
 
-test('command.html lead tag only prints /yr when annualValue exists', () => {
-  assert.ok(!command.includes("esc(roi.annualValue||'')}/yr"));
-  assert.ok(command.includes("roi.annualValue?` · ${esc(roi.annualValue)}/yr`:''"));
+test('command.html shows no sales figures: no ROI tag, no money formatter, no sales tiles, no grade or gross in the proposal link (sir, 2026-11-04)', () => {
+  assert.ok(!/roi_snapshot|roi\.annualValue|roi\?\.monthlyGross|\.tag\.roi/.test(command));
+  assert.ok(!/mMoney|tile\('(Today|7 days|Month)'/.test(command));
+  assert.ok(!/\.today\.net|\.week\.net|\.mtd\.net|s\.totals/.test(command));
+  const m = command.match(/const pd=b64u\(JSON\.stringify\(\{([\s\S]*?)\}\)\);/);
+  assert.ok(m, 'proposal payload block not found');
+  assert.ok(!/grade|gross/.test(m[1]), m[1]);
 });
