@@ -136,7 +136,6 @@ header{position:sticky;top:0;z-index:50;border-top:6px solid var(--gold);backgro
 .l-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .tag{font-family:'Space Mono';font-size:11px;color:var(--muted);background:var(--panel);border:2px solid var(--line);padding:3px 8px}
 .tag.pain{color:var(--gold-deep);border-color:var(--gold);font-weight:700}
-.tag.roi{color:var(--gold-deep);border-color:var(--gold)}
 .l-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act{
   display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:2px solid var(--line);
@@ -262,7 +261,7 @@ header{padding-top:calc(12px + env(safe-area-inset-top))}
   </div>
 </header>
 <!-- primary actions: a toolbar on desktop, a thumb bar at the bottom on phones (lives outside the header: its backdrop-filter would trap position:fixed) -->
-<nav class="hdr-actions wrap" aria-label="Command"><button class="refresh" id="btnAdd" title="Add a prospect you found in the field"><span class="ic" aria-hidden="true">+</span>Add</button><button class="refresh" id="btnBlitz"><span class="ic" aria-hidden="true">⇢</span>Door Run</button><button class="refresh" id="btnMap"><span class="ic" aria-hidden="true">◎</span>Map</button><button class="refresh" id="btnOps"><span class="ic" aria-hidden="true">≡</span>Ops</button><button class="refresh" id="btnMach" title="HAHA machines: sales, stock, alerts"><span class="ic" aria-hidden="true">◉</span>Machines</button></nav>
+<nav class="hdr-actions wrap" aria-label="Command"><button class="refresh" id="btnAdd" title="Add a prospect you found in the field"><span class="ic" aria-hidden="true">+</span>Add</button><button class="refresh" id="btnBlitz"><span class="ic" aria-hidden="true">⇢</span>Door Run</button><button class="refresh" id="btnMap"><span class="ic" aria-hidden="true">◎</span>Map</button><button class="refresh" id="btnOps"><span class="ic" aria-hidden="true">≡</span>Ops</button><button class="refresh" id="btnMach" title="HAHA machines: status, stock, alerts"><span class="ic" aria-hidden="true">◉</span>Machines</button></nav>
 
 <main class="wrap">
   <div id="offBanner" role="status" aria-live="polite" style="display:none;background:var(--red);color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 12px;border-radius:8px;margin-bottom:10px"></div>
@@ -1459,7 +1458,6 @@ function installDaysLeft(l){if(!l.signed_at)return null;return 14-Math.floor((Da
 function isToday(l){return fuDue(l)||(l.status==='signed'&&l.signed_at&&installDaysLeft(l)<=4)||(!l.prospect&&(+l.data.lead_score||0)>=70&&['new','contacted'].includes(l.status))}
 function leadCard(l){
   const d=l.data, s=+d.lead_score||0;
-  let roi=null;try{roi=d.roi_snapshot?JSON.parse(d.roi_snapshot):null}catch(e){}
   const telN=n=>{n=(n||'').replace(/\D/g,'');return n?'+1'+n.replace(/^1/,''):''};
   const direct=telN(l.metaPhone),main=telN(d.phone);
   const tel=direct||main, tel2=(direct&&main&&direct!==main)?main:'';
@@ -1488,7 +1486,6 @@ function leadCard(l){
   if(isReferral(l))tags.push('<span class="tag pain">REFERRAL</span>');
   if(d.current_vending)tags.push(`<span class="tag${d.current_vending.includes('underperform')?' pain':''}">${esc(d.current_vending)}</span>`);
   if(d.product_interests)tags.push(`<span class="tag">${esc(d.product_interests)}</span>`);
-  if(roi&&roi.grade)tags.push(`<span class="tag roi">Site ${esc(roi.grade)}${roi.basis==='form estimate'?' (est.)':''}${roi.annualValue?` · ${esc(roi.annualValue)}/yr`:''}</span>`);
   if(d.lead_source&&d.lead_source!=='direct')tags.push(`<span class="tag">via ${esc(d.lead_source)}</span>`);
   if(d.contact_method)tags.push(`<span class="tag">${esc(d.contact_method)}${d.contact_method==='Call me'&&d.best_time&&d.best_time!=='Anytime'?' · '+esc(d.best_time):''}</span>`);
   // stale flag: New/Contacted and older than 48h
@@ -1497,8 +1494,7 @@ function leadCard(l){
     tags.push(`<span class="age-flag">${Math.round(ageH/24)}D UNTOUCHED</span>`);
   // proposal link payload
   const pd=b64u(JSON.stringify({
-    name:d.name||'',co:d.company||'',city:d.city||'',venue:d.venue_type||'',wants:d.product_interests||'',
-    grade:roi?.grade||'',gross:roi?.monthlyGross||''
+    name:d.name||'',co:d.company||'',city:d.city||'',venue:d.venue_type||'',wants:d.product_interests||''
   }));
   const mapsQ=d.address||`${(isReferral(l)&&d.referred_business)||d.company||''} ${d.city||''} TN`;
   const urgency=fuDue(l)?' u-due':(!l.prospect&&s>=70&&['new','contacted'].includes(l.status)?' u-hot':'');
@@ -2608,18 +2604,15 @@ $('btnOps').addEventListener('click',async()=>{
 $('opsClose').addEventListener('click',()=>{closeDlg('opsView');}); // a running trip keeps tracking in the background
 
 /* ---------- machines (HAHA 440 fleet) — summary from haha-api; the full dashboard is machines.html ---------- */
-const mMoney=c=>{const n=Math.round(+c||0),a=Math.abs(n);return (n<0?'-':'')+'$'+Math.floor(a/100).toLocaleString('en-US')+'.'+String(a%100).padStart(2,'0')};
 const mAgo=iso=>{if(!iso)return 'never';const m=Math.round((Date.now()-new Date(iso))/60e3);if(m<1)return 'just now';if(m<60)return m+' min ago';const h=Math.floor(m/60);return h<48?h+'h '+(m%60)+'m ago':Math.floor(h/24)+' days ago'};
 async function machLoad(){
   const box=$('machBody');box.innerHTML='<div class="skel"></div>';
   let s;
   try{const r=await fetch(FN+'/haha-api?view=summary',{headers:{'X-Dash-Key':KEY},signal:tmo(12000)});if(!r.ok)throw new Error(r.status===401?'Key refused.':'HTTP '+r.status);s=await r.json();}
   catch(e){box.innerHTML='<p style="color:var(--red);font-size:14px">Could not load machines: '+esc(e.message)+'</p>';return;}
-  const t=s.totals,tile=(l,v,sub)=>'<div style="flex:1;min-width:96px;background:var(--panel);border:2px solid var(--line);padding:10px 12px"><div class="mono" style="font-size:10.5px;letter-spacing:.14em;color:var(--taupe);text-transform:uppercase">'+l+'</div><div style="font-weight:600;font-size:18px;white-space:nowrap">'+v+'</div><div style="font-size:12px;color:var(--muted)">'+sub+'</div></div>';
   let h='<div class="mono" style="font-size:12px;margin-bottom:10px;color:'+(s.sync.stale?'var(--red)':'var(--muted)')+'">'+(s.sync.lastOk?'Synced '+esc(mAgo(s.sync.lastOk)):'Never synced')+(s.env?' · '+esc(String(s.env).toUpperCase()):'')+'</div>';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'+tile('Today',mMoney(t.today.net),t.today.tx+' sales')+tile('7 days',mMoney(t.week.net),t.week.tx+' sales')+tile('Month',mMoney(t.mtd.net),t.mtd.tx+' sales')+'</div>';
   if(s.alerts.length)h+='<div style="border:2px solid var(--cream);padding:10px 12px;margin-bottom:14px;background:var(--panel)"><b style="font-family:Archivo;text-transform:uppercase">Alerts</b>'+s.alerts.map(a=>'<div style="padding:6px 0;border-top:1px solid var(--line);font-size:14px"><span class="mono" style="font-size:10px;font-weight:700;border:1px solid currentColor;padding:1px 5px;margin-right:6px;color:'+(a.level==='red'?'var(--red)':'var(--gold-deep)')+'">'+(a.level==='red'?'URGENT':'CHECK')+'</span>'+esc(a.text)+'</div>').join('')+'</div>';
-  h+='<div style="background:var(--panel);border:2px solid var(--line);padding:4px 12px">'+(s.machines.length?s.machines.map((m,i)=>{const on=m.online,act=!m.status||m.status==='ACTIVE';return '<div style="display:flex;gap:10px;align-items:center;padding:9px 0;'+(i?'border-top:1px solid var(--line)':'')+'"><span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:'+(!act?'var(--muted)':on?'#3E8E5A':'var(--red)')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name)+'</div><div style="font-size:12px;color:var(--muted)">'+(!act?esc(m.status):on?'Online':'Offline since '+esc(new Date(m.since).toLocaleString('en-US',{timeZone:'America/Chicago',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'})))+' · '+(m.stockPct!=null?m.stockPct+'% stocked':m.units+' units')+(m.outOfStock?' · '+m.outOfStock+' out':'')+'</div></div><b style="font-weight:600">'+mMoney(m.today.net)+'</b></div>';}).join(''):'<p style="font-size:14px;color:var(--muted);padding:10px 0">No machines synced yet.</p>')+'</div>';
+  h+='<div style="background:var(--panel);border:2px solid var(--line);padding:4px 12px">'+(s.machines.length?s.machines.map((m,i)=>{const on=m.online,act=!m.status||m.status==='ACTIVE';return '<div style="display:flex;gap:10px;align-items:center;padding:9px 0;'+(i?'border-top:1px solid var(--line)':'')+'"><span aria-hidden="true" style="width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:'+(!act?'var(--muted)':on?'#3E8E5A':'var(--red)')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name)+'</div><div style="font-size:12px;color:var(--muted)">'+(!act?esc(m.status):on?'Online':'Offline since '+esc(new Date(m.since).toLocaleString('en-US',{timeZone:'America/Chicago',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'})))+' · '+(m.stockPct!=null?m.stockPct+'% stocked':m.units+' units')+(m.outOfStock?' · '+m.outOfStock+' out':'')+'</div></div></div>';}).join(''):'<p style="font-size:14px;color:var(--muted);padding:10px 0">No machines synced yet.</p>')+'</div>';
   box.innerHTML=h;
 }
 $('btnMach').addEventListener('click',()=>{openDlg('machView');machLoad();});
