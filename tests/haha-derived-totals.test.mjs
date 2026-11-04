@@ -100,4 +100,13 @@ test('sales range and orders show the derived totals and flag them', () => {
   assert.equal(r.totals.tx, 1);
   const o = orders({ day: '2026-11-03', days })[0];
   assert.equal(o.figures.derived, true);
+  // the order record itself agrees with the totals, so nothing downstream still sees a $0 order
+  assert.deepEqual([o.gross, o.net, o.tax], [274, 250, 24]);
+});
+
+test('an order HAHA filled in keeps its own gross, net and tax in the order list', () => {
+  const s = norm(sale({ id: 'N', at: '2026-11-03T18:34:00Z' }));
+  const o = orders({ day: s.day, days: byDay([s]) })[0];
+  assert.equal(o.figures.derived, false);
+  assert.deepEqual([o.gross, o.net, o.tax], [s.gross, s.net, s.tax]);
 });
