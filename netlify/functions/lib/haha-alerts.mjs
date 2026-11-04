@@ -132,7 +132,7 @@ export async function emailAlerts({ store, now = new Date(), events = [], transp
     const tr = transport || (await agents.makeTransport());
     const lines = mail.map(e => `${e.type === 'cleared' ? '✓' : e.level === 'red' ? '●' : '○'} ${e.text}`);
     const site = (process.env.URL || 'https://wraptvending.com').replace(/\/$/, '');
-    const text = [...lines, '', `Dashboard: ${site}/machines.html`, `Sent ${now.toLocaleString('en-US', { timeZone: 'America/Chicago' })} Central.`].join('\n');
+    const text = [...lines, '', `Command: ${site}/command.html`, `Sent ${now.toLocaleString('en-US', { timeZone: 'America/Chicago' })} Central.`].join('\n');
     await tr.sendMail({
       from: from || agents.smtpConfig().from, to,
       subject: `Wrapt machines — ${mail.length === 1 ? mail[0].text : `${mail.length} alerts: ${mail[0].text}`}`.slice(0, 140),

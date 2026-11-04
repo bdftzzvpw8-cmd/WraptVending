@@ -2,7 +2,7 @@
    Kicks the background worker (haha-sync-background) so the 30-second scheduled-function limit never matters;
    if the kick fails it runs a light sync inline (machines + today's sales).
    Does nothing until HAHA_APPKEY is set, so the schedule stays quiet before Open Platform access exists.
-   Scheduled functions can't be hit by URL — use "Sync now" on /machines.html or the Netlify UI's Run now. */
+   Scheduled functions can't be hit by URL — use the Netlify UI's Run now (the machines.html dashboard was removed 2026-11-04). */
 import { runSync, kickWorker, siteOf } from './lib/haha-sync-core.mjs';
 
 export default async (req, context) => {

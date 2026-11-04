@@ -1,4 +1,4 @@
-/* HAHA machines API — what /machines.html, Command and JARVIS read. Everything comes from Blobs; nothing calls HAHA.
+/* HAHA machines API — what Command and JARVIS read. Everything comes from Blobs; nothing calls HAHA.
      GET  ?view=summary[&format=text]                      fleet status, revenue today / 7 days / month, active alerts
      GET  ?view=sales&from=&to=[&market=]                  per machine × day, top products, refunds (≤ 93 days)
      GET  ?view=orders&day=[&market=][&product=][&refunds=1]  the raw sales behind any number

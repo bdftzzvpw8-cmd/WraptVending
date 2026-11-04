@@ -10,9 +10,8 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 
 // Mirrors build.mjs: every root entry that is not in SKIP gets published to dist/.
 const BUILD_SKIP = new Set(['dist', 'netlify', 'node_modules', '_private', 'tests', 'scripts', 'package.json', 'package-lock.json', 'netlify.toml', 'build.mjs']);
-// Published but out of scope by sir's instruction: command.html is the key-gated internal CRM,
-// machines.html is the token-gated per-host statement (it has to show that host's own terms).
-const PRIVATE_PAGES = new Set(['command.html', 'machines.html']);
+// Published but out of scope by sir's instruction: command.html is the key-gated internal CRM.
+const PRIVATE_PAGES = new Set(['command.html']);
 const TEXT_EXT = new Set(['.html', '.htm', '.js', '.mjs', '.json', '.webmanifest', '.xml', '.txt', '.svg', '.css', '.md']);
 
 function walk(dir, rel = '') {
