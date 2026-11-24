@@ -98,7 +98,7 @@ addition in `haha-webhook.mjs`. The poke model already keeps the dashboard withi
 
 1. Card processing fee (percent + per-transaction) and HAHA's monthly fee per machine. Until set, statements show
    "not configured" and count $0.
-2. Commission rates for the two Tennessee Quick Cash stores. Seeded as hosts with no rate; their statements refuse to
-   build until one is entered.
+2. Each host's terms, saved in config/hosts through `haha-api?view=config` (no host is built into the code). A host with no rate set gets
+   no statement until one is entered.
 3. Restock threshold: default under 30% of capacity, or ≤ 2 units when capacity is unknown. Both are editable.
 4. Alert digest recipients: `HAHA_ALERT_TO`.

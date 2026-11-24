@@ -35,7 +35,7 @@ test('statement: every line of the formula, refunds and tax, integer cents', () 
     sale({ id: 'S6', at: '2026-10-21T15:00:00Z', marketId: '440002' }),
     sale({ id: 'S7', at: '2026-11-01T15:00:00Z' }),
   ]);
-  const host = { hostId: 'firestone', name: 'Firestone', marketIds: ['440001'], rate: '0.10', type: 'net_gross' };
+  const host = { hostId: 'host-a', name: 'Host A', marketIds: ['440001'], rate: '0.10', type: 'net_gross' };
   const st = buildStatement({ host, month: '2026-10', days, settings: { cardPercent: '2.9', cardFixed: '0.30', hahaMonthlyDefault: '5.00', hahaMonthly: {} } });
   const line = k => st.lines.find(l => l.key === k).cents;
   assert.equal(line('gross'), 549 + 412 + 274 + 686);
@@ -67,7 +67,7 @@ test('statement: unset fees are flagged, never silent; negative net pays nothing
 });
 
 test('config validation', () => {
-  assert.ok(validateHosts([{ hostId: 'firestone', name: 'Firestone', marketIds: ['1'], rate: '0.10' }]).hosts);
+  assert.ok(validateHosts([{ hostId: 'host-a', name: 'Host A', marketIds: ['1'], rate: '0.10' }]).hosts);
   assert.match(validateHosts([{ hostId: 'a', name: 'A', rate: '1.5' }]).error, /between 0 and 1/);
   assert.match(validateHosts([{ hostId: 'a', name: 'A', marketIds: ['9'] }, { hostId: 'b', name: 'B', marketIds: ['9'] }]).error, /both/);
   assert.match(validateHosts([{ hostId: 'Bad Id', name: 'A' }]).error, /bad hostId/);
@@ -87,8 +87,8 @@ const minsAgo = m => new Date(NOW.getTime() - m * 60e3).toISOString();
 function fleetState() {
   return {
     markets: { machines: {
-      440001: { id: '440001', name: 'Firestone', status: 'ACTIVE', online: true, since: minsAgo(3000), firstSeen: minsAgo(4000) },
-      440002: { id: '440002', name: 'TQC Spring Hill', status: 'ACTIVE', online: false, since: minsAgo(45), firstSeen: minsAgo(4000) },
+      440001: { id: '440001', name: 'Site A', status: 'ACTIVE', online: true, since: minsAgo(3000), firstSeen: minsAgo(4000) },
+      440002: { id: '440002', name: 'Site B Spring Hill', status: 'ACTIVE', online: false, since: minsAgo(45), firstSeen: minsAgo(4000) },
       440003: { id: '440003', name: 'Returned unit', status: 'RETURNED', online: false, since: minsAgo(9000), firstSeen: minsAgo(9000) },
     } },
     inventory: { machines: { 440001: { products: { p1: { stock: 2 }, p2: { stock: 0 } } } } },
@@ -121,7 +121,7 @@ test('alerts fire once per condition, clear, and email only what is new', async 
   const transport = { sendMail: async m => { sent.push(m); } };
   const m1 = await emailAlerts({ store, now: NOW, events: a1.events, transport, from: 'alerts@example.com' });
   assert.equal(m1.sent, true);
-  assert.match(sent[0].text, /TQC Spring Hill offline/);
+  assert.match(sent[0].text, /Site B Spring Hill offline/);
 
   const a2 = await runAlerts({ store, now: new Date(NOW.getTime() + 15 * 60e3), syncState: s.syncState });
   assert.equal(a2.raised.length, 0, 'an open condition notified again');
@@ -132,7 +132,7 @@ test('alerts fire once per condition, clear, and email only what is new', async 
   await store.setJSON('markets/latest', back);
   const a3 = await runAlerts({ store, now: new Date(NOW.getTime() + 30 * 60e3), syncState: { ...s.syncState, lastOk: new Date(NOW.getTime() + 30 * 60e3).toISOString() } });
   const texts = a3.events.map(e => e.text);
-  assert.ok(texts.some(t => /TQC Spring Hill back online/.test(t)));
+  assert.ok(texts.some(t => /Site B Spring Hill back online/.test(t)));
   assert.ok(texts.includes('HAHA sync recovered'));
   assert.equal(store.json('alerts/feed').events.length, a1.events.length + a3.events.length);
 }));
