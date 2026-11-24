@@ -310,6 +310,9 @@ select.inp:focus,input.inp:focus,textarea.inp:focus{border-color:var(--gold);out
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .field-lbl{display:block;font-size:13px;color:var(--muted);margin:0 0 7px;letter-spacing:.04em}
 .fnav{display:flex;justify-content:space-between;margin-top:28px;gap:12px}
+/* the last step's label is long: let it wrap instead of pushing the card wider than a phone */
+.fnav .btn{white-space:normal;justify-content:center;text-align:center}
+.funnel-grid>*{min-width:0}
 .form-done{text-align:center;padding:30px 10px}
 .form-done .big{font-size:44px;color:var(--brass-hi)}
 .form-done p{color:var(--muted);margin:12px 0 24px}
@@ -598,9 +601,8 @@ footer{border-top:1px solid var(--line);padding:38px 0;font-size:13.5px;color:va
     <div class="funnel-side">
       <div class="eyebrow"><span class="slot">E1</span> Start a Deal</div>
       <h2 style="font-size:clamp(36px,4.5vw,52px)">Sixty seconds to a proposal.</h2>
-      <p>Tell us where the machine goes. You get a proposal with real numbers for your location, then a fifteen-minute call.</p>
+      <p>Tell us where the machine goes. You get a proposal for your location, then a fifteen-minute call.</p>
       <div class="checkline">Site scored within 24 hours</div>
-      <div class="checkline">A proposal with projected monthly numbers</div>
       <div class="checkline">No upfront cost to host</div>
       <div class="checkline">Install in as little as 2 weeks</div>
     </div>
@@ -1169,7 +1171,7 @@ $('btnNext').addEventListener('click',async()=>{
       const res=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data});
       status=res.status;sent=res.ok;
     }catch(e){status=-1;}
-    $('btnNext').disabled=false;$('btnNext').textContent='Send my request';
+    $('btnNext').disabled=false;$('btnNext').textContent='Send my proposal request';
     if(!sent&&location.protocol!=='file:'){
       console.warn('Lead submit failed, HTTP',status);
       $('err3').textContent='That didn\u2019t go through (code '+status+'). Text us at 615.948.2976 and we\u2019ll take it from there.';
@@ -1181,7 +1183,7 @@ $('btnNext').addEventListener('click',async()=>{
     } else $('doneMsg').innerHTML=cm==='Call me'
       ? `Got it — expect our call ${$('fBestTime').value==='Anytime'?'shortly':$('fBestTime').value.toLowerCase()}.<br>Want to lock a time instead?`
       : cm==='Text me'
-      ? `Got it — we'll text you shortly with your site score.<br>Or start the thread yourself:`
+      ? `Got it — we'll text you shortly.<br>Or start the thread yourself:`
       : `Your proposal is in the queue — expect it within 24 hours.<br>Want a time on the calendar?`;
     show(DONE);
   }

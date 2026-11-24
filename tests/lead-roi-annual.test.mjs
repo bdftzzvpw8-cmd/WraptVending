@@ -36,11 +36,11 @@ test('email Site score row keeps annualValue for old leads', () => {
   );
 });
 
-test('proposal payload carries no annual or share, with or without annualValue', () => {
+test('proposal payload carries no figures (no grade, gross, annual or share), whatever the lead holds', () => {
   const d = { name: 'Pat', company: 'Acme', city: 'Franklin', venue_type: 'Gym', product_interests: 'Snacks' };
   for (const r of [null, { grade: 'A', monthlyGross: '$1,200' }, { grade: 'A', monthlyGross: '$1,200', annualValue: '$1,440' }]) {
     const p = fn.proposalPayload(d, r);
-    assert.deepEqual(Object.keys(p).sort(), ['city', 'co', 'grade', 'gross', 'name', 'venue', 'wants']);
+    assert.deepEqual(Object.keys(p).sort(), ['city', 'co', 'name', 'venue', 'wants']);
   }
 });
 

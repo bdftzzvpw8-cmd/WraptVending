@@ -14,10 +14,10 @@ const roiSms = (r) =>
   ` | Site ${r.grade || "?"}: ${r.monthlyGross || "?"}/mo${r.annualValue ? `, ${r.annualValue}/yr` : ""}`;
 const roiRowText = (r) =>
   `${r.grade || "?"} · ${r.monthlyGross || "?"}/mo gross${r.annualValue ? ` · ${r.annualValue}/yr to host` : ""}${r.basis === "form estimate" ? " (estimated from form answers)" : ""}`;
-// Proposal deep-link payload (same format command.html builds). No annual/share: the host sees this URL.
+// Proposal deep-link payload (same format command.html builds). No figures (sir, 2026-11-04): the host sees this URL.
 const proposalPayload = (d, r) => ({
   name: d.name || "", co: d.company || "", city: d.city || "", venue: d.venue_type || "",
-  wants: d.product_interests || "", grade: r?.grade || "", gross: r?.monthlyGross || "",
+  wants: d.product_interests || "",
 });
 exports.roiSms = roiSms;
 exports.roiRowText = roiRowText;
