@@ -1,7 +1,10 @@
-// POST /.netlify/functions/lead-status  { id, status?, note?, append?, payout?, followup?, phone?, email? }
+// POST /.netlify/functions/lead-status  { id, status?, note?, base?, append?, payout?, followup?, phone?, email? }
 // Persists pipeline status + note per submission id in Netlify Blobs.
-// `append` adds lines to the note as stored right now (agents use it so they never overwrite a newer note);
+// `append` adds lines to the note as stored right now (agents and Command's loggers use it so they never overwrite a newer note);
 // notes keep their newest 5000 chars, since every writer adds at the end.
+// `note` replaces the whole note. With `base` (the card's `updated` the phone last saw) it is refused with
+// 409 { error: "conflict", meta } if the card changed since, so the phone merges instead of overwriting.
+// Without `base` it replaces as before (older cached copies of Command).
 // Auth: X-Dash-Key header must match DASH_KEY env var (no default: unset = refused).
 //
 // Each lead's meta lives in its own blob ("m:<id>") so concurrent saves from
@@ -26,24 +29,31 @@ export default async (req) => {
   } catch {
     return Response.json({ error: "bad json" }, { status: 400 });
   }
-  const { id, status, note, append, payout, followup, phone, email, signed_at, coi } = body || {};
+  // strong: an edge-cached read can be a minute stale, and the write below is built on it
+  return saveCard(getStore({ name: "wrapt-command", consistency: "strong" }), body);
+};
+
+// the save itself, store injected (tests run it on a memory store)
+export async function saveCard(store, body) {
+  const { id, status, note, base, append, payout, followup, phone, email, signed_at, coi } = body || {};
   if (!id || typeof id !== "string" || id.length > 80) return Response.json({ error: "id required" }, { status: 400 });
   if (status !== undefined && !STATUSES.includes(status))
     return Response.json({ error: "bad status" }, { status: 400 });
   if (payout !== undefined && !PAYOUTS.includes(payout))
     return Response.json({ error: "bad payout" }, { status: 400 });
 
-  const store = getStore("wrapt-command");
-
-  // base: this lead's own blob, else its entry in the legacy shared blob
-  let cur = null;
-  try { cur = await store.get("m:" + id, { type: "json" }); } catch (e) {}
-  if (!cur) {
-    try {
-      const legacy = (await store.get("meta", { type: "json" })) || {};
-      cur = legacy[id] || {};
-    } catch (e) { cur = {}; }
+  // base: this lead's own blob, else its entry in the legacy shared blob. Only null means "new card":
+  // a read that throws would otherwise write this patch over the whole card (status, follow-up, note).
+  let cur;
+  try {
+    cur = await store.get("m:" + id, { type: "json" });
+    if (!cur) cur = ((await store.get("meta", { type: "json" })) || {})[id] || {};
+  } catch (e) {
+    console.error("lead-status read failed", id, e);
+    return Response.json({ error: "couldn't read the card — nothing saved, try again" }, { status: 503 });
   }
+  if (note !== undefined && base !== undefined && cur.updated && cur.updated !== String(base))
+    return Response.json({ error: "conflict", meta: cur }, { status: 409 });
 
   if (status !== undefined) cur.status = status;
   if (note !== undefined) cur.note = String(note).slice(-5000);
@@ -65,4 +75,4 @@ export default async (req) => {
   await store.setJSON("m:" + id, cur);
 
   return Response.json({ ok: true, meta: cur });
-};
+}
