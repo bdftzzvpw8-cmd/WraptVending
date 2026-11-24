@@ -952,10 +952,11 @@ function dLocal(s){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new 
 let FIELD={items:[]},FIELD_LOCAL=false;
 // start from the phone's copy: a cold offline open never runs loadField(), and a sync from an empty FIELD would wipe unsynced prospects
 try{const f=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');if(f&&Array.isArray(f.items))FIELD=f;}catch(_){}
-/* agents (inbox, ack) write to lead-status under the same id: the phone's copy leads, server note lines it lacks are appended, blanks filled */
-function mergeFieldMeta(pm,sm){
-  const m=Object.assign({},sm,pm),have=new Set(String(pm.note||'').split('\n'));
-  const extra=String(sm.note||'').split('\n').filter(x=>x.trim()&&!have.has(x));
+/* agents (inbox, ack) write to lead-status under the same id: the phone's copy leads, server note lines it lacks are appended, blanks filled.
+   A 409 on a whole-note save merges the same way; drop = lines she deleted, so they stay deleted */
+function mergeFieldMeta(pm,sm,drop){
+  const m=Object.assign({},sm,pm),have=new Set(String(pm.note||'').split('\n')),sn=String(sm.note||'');
+  const extra=(sn.length>=5000?sn.slice(sn.indexOf('\n')+1):sn).split('\n').filter(x=>x.trim()&&!have.has(x)&&!(drop&&drop.has(x))); // a note at lead-status's 5000-char cap starts mid-line: skip that fragment
   m.note=extra.length?(pm.note?pm.note+'\n':'')+extra.join('\n'):(pm.note||'');
   for(const k of ['followup','email','phone','coi'])m[k]=pm[k]||sm[k]||'';
   return m;
@@ -1023,6 +1024,7 @@ function refreshFieldLeads(){
 function buildFrom(j){
     const meta=j.meta||{};
     const inbound=(j.leads||[]).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    inbound.forEach(l=>{l.updated=meta[l.id]?.updated||'';}); // the server stamp this copy of the note is; a whole-note save names it as base
     const pros=PROSPECTS.map(p=>({
       id:p.id,created_at:null,prospect:true,
       data:{name:'',company:(RENAMES[p.id]?.[0]||p.company),venue_type:p.venue_type,city:p.city,address:p.address||'',phone:p.phone||'',website:p.website||'',size:p.size||'',brand:p.brand||'',intel:(RENAMES[p.id]?'Formerly '+RENAMES[p.id][1]+'. ':'')+(p.intel||''),lead_type:'Prospect'},
@@ -1033,7 +1035,7 @@ function buildFrom(j){
       metaPhone:meta[p.id]?.phone||'',metaEmail:meta[p.id]?.email||'',
       signed_at:meta[p.id]?.signed_at||'',
       coi:meta[p.id]?.coi||'',
-      note:meta[p.id]?.note||''
+      note:meta[p.id]?.note||'',updated:meta[p.id]?.updated||''
     }));
     LEADS=[...inbound,...fieldLeads(meta),...pros];
     fillSelects();
@@ -1048,9 +1050,48 @@ function fillSelects(){
 function getQ(){try{return JSON.parse(localStorage.getItem('w_q')||'[]')}catch(e){return[]}}
 function setQ(q){try{localStorage.setItem('w_q',JSON.stringify(q))}catch(e){}}
 const META_KEYS={phone:'metaPhone',email:'metaEmail'};
-function applyPatch(l,p){for(const k in p)l[META_KEYS[k]||k]=p[k];}
-function cacheMeta(id,p){try{const c=JSON.parse(localStorage.getItem('w_cache')||'null');if(!c||!c.j)return;c.j.meta=c.j.meta||{};c.j.meta[id]=Object.assign(c.j.meta[id]||{},p);localStorage.setItem('w_cache',JSON.stringify(c));}catch(e){}}
-function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(l)applyPatch(l,it.patch);});}
+/* A logged line is sent as {append}: lead-status adds it to the note as stored right now, so lines the agents wrote since
+   this phone loaded survive. addLine is the server's own rule, so the phone's copy matches. A whole-note edit is
+   {note, base, drop}: base = the server stamp its text was built on (the server refuses it with 409 if the card moved on),
+   drop = the lines it takes out (never sent; keeps them deleted when a 409 merges). */
+const LOCAL_KEYS=/^(append|base|drop)$/;
+function addLine(n,s){return ((n||'').replace(/\s+$/,'')+(n?'\n':'')+String(s).trim()).slice(-5000);}
+function gone(was,now){const k=new Set(String(now||'').split('\n'));return String(was||'').split('\n').filter(x=>x.trim()&&!k.has(x));}
+function applyPatch(l,p){for(const k in p)if(!LOCAL_KEYS.test(k))l[META_KEYS[k]||k]=p[k];if(p.note!==undefined)l.updated=p.base||'';if(p.append)l.note=addLine(l.note,p.append);}
+function toMeta(m,p){for(const k in p)if(!LOCAL_KEYS.test(k))m[k]=p[k];if(p.append)m.note=addLine(m.note,p.append);return m;}
+function cacheMeta(id,p){try{const c=JSON.parse(localStorage.getItem('w_cache')||'null');if(!c||!c.j)return;c.j.meta=c.j.meta||{};c.j.meta[id]=toMeta(c.j.meta[id]||{},p);localStorage.setItem('w_cache',JSON.stringify(c));}catch(e){}}
+/* a queued line may already show (the saved list has it, or the server took its first lines before this reload): add only the rest */
+function addMissing(n,s){const a=String(s).trim().split('\n'),t=(n||'').replace(/\s+$/,'');for(let k=a.length;k>0;k--){const h=a.slice(0,k).join('\n');if(t===h||t.endsWith('\n'+h))return k<a.length?addLine(n,a.slice(k).join('\n')):n;}return addLine(n,s);}
+function applyQueuedLocally(){getQ().forEach(it=>{const l=LEADS.find(x=>x.id===it.id);if(!l)return;const {append,...p}=it.patch;applyPatch(l,p);if(append)l.note=addMissing(l.note,append);});}
+/* one queued patch per card, kept in order: newest field wins, lines ride after one another, a whole note replaces the lines before it (it holds them) */
+function combine(a,b){
+  const p=Object.assign({},a,b);
+  if(b.note!==undefined){p.base=b.base;if(!b.append)delete p.append;const k=new Set(String(b.note).split('\n'));p.drop=[...new Set([...(a.drop||[]),...(b.drop||[])])].filter(x=>!k.has(x));}
+  else if(a.append&&b.append)p.append=a.append+'\n'+b.append;
+  return p;
+}
+/* after a send: take out what the server now has, keep what was added while it was in flight */
+function strip(p,s){
+  for(const k in s){if(k==='append'){if(p.append===s.append)delete p.append;else if(p.append&&p.append.startsWith(s.append+'\n'))p.append=p.append.slice(s.append.length+1);}else if(k!=='base'&&JSON.stringify(p[k])===JSON.stringify(s[k]))delete p[k];}
+  if(p.note===undefined){delete p.base;delete p.drop;}
+}
+let QLAST=0;const qt=()=>QLAST=Math.max(Date.now(),QLAST+1); // unique, so a reply is matched to the exact queued patch it answered
+function enqueue(id,p){const q=getQ(),it=q.find(x=>x.id===id);if(it){it.patch=combine(it.patch,p);if(p.note!==undefined)it.t=qt();}else q.push({id,patch:p,t:qt()});setQ(q);} // a new whole note is a new request: what was in flight no longer counts against it
+function putFirst(id,p){const q=getQ(),it=q.find(x=>x.id===id);if(it)it.patch=combine(p,it.patch);else q.push({id,patch:p,t:qt()});setQ(q);} // a save that didn't land goes ahead of what queued behind it
+/* 409: the card moved on since this edit's base (an agent wrote, another phone saved). Her text leads; server lines she lacks are kept */
+function retryOf(s,drop,sm){const {append,...p}=s;return Object.assign(p,{note:mergeFieldMeta({note:append?addLine(s.note,append):s.note},sm,new Set(drop||[])).note,base:sm.updated||'',drop:drop||[]});}
+function showClash(id,drop,sm){
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  flushNote(id); // unsaved typing queues first, on the copy it was typed over
+  const was=l.note||'';l.note=mergeFieldMeta({note:was},sm,new Set(drop||[])).note;l.updated=sm.updated||'';
+  cacheMeta(id,{note:l.note});syncNoteBox(id);
+  if(l.note!==was){toast(`${l.data.company||l.data.name||'This card'} changed elsewhere — both versions are kept in its note. Check it.`);bgRender();}
+}
+/* the server's copy matches the phone's again: later whole-note edits build on its stamp */
+function seen(id,j){
+  const l=LEADS.find(x=>x.id===id),m=j&&j.meta;if(!l||!m||(m.note||'')!==(l.note||''))return;
+  l.updated=m.updated||'';const ta=noteBox(id);if(ta&&!NOTE_PEND[id]&&ta.value===l.note){ta._was=l.note;ta._base=l.updated;}
+}
 function updateBanner(cachedAt){
   const q=getQ(),b=$('offBanner');
   if(OFFLINE){b.style.display='block';b.textContent='OFFLINE — showing saved list'+(cachedAt?' from '+ago(cachedAt):'')+(q.length?` · ${q.length} update${q.length>1?'s':''} queued`:'')+'. Changes will sync when signal returns.';}
@@ -1061,18 +1102,26 @@ let FLUSHING=false;
 async function flushQueue(){
   if(FLUSHING)return;FLUSHING=true;
   try{
-    let net=true;const rej=[];
+    let net=true,clash=0;const rej=[];
     for(let it;(it=getQ()[0]);){
-      const sent=Object.assign({},it.patch);
+      if(SAVING[it.id]){await SAVING[it.id];continue;} // that card's own save is still in flight: go after it
+      const {drop,...sent}=it.patch;
+      if(sent.note!==undefined&&sent.base===undefined)sent.base=''; // queued by a Command from before base: if the card moved on, merge instead of overwriting
       const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id:it.id,...sent}),signal:tmo(8000)}).catch(()=>null);
       if(!r){net=false;break;}           // no signal: try again later
       if(r.status===401){forgetKey();net=false;break;}
-      if(!r.ok&&r.status>=500){net=false;break;}
-      if(!r.ok)rej.push(it.id);
+      const j=await r.json().catch(()=>null);
+      if(r.status===409&&j&&j.meta&&clash++<5){ // merge, then send the merge on the server's stamp
+        const q=getQ(),cur=q.find(x=>x.id===it.id&&x.t===it.t);
+        if(cur){strip(cur.patch,sent);cur.patch=combine(retryOf(sent,drop,j.meta),cur.patch);setQ(q);}
+        showClash(it.id,drop,j.meta);continue;
+      }
+      if(!r.ok&&![400,413,422].includes(r.status)){net=false;break;} // 404/408/429/5xx are passing: keep it for the next try
+      if(!r.ok)rej.push(it.id);else seen(it.id,j);
       // sent (or rejected: drop, don't wedge the queue). Re-read — edits made while this was in flight stay queued.
       const q=getQ(),cur=q.find(x=>x.id===it.id&&x.t===it.t);
-      if(cur){for(const k in sent)if(JSON.stringify(cur.patch[k])===JSON.stringify(sent[k]))delete cur.patch[k];if(!Object.keys(cur.patch).length)q.splice(q.indexOf(cur),1);setQ(q);}
-      else break; // queue was cleared under us (Lock / bad key)
+      if(cur){strip(cur.patch,sent);if(!Object.keys(cur.patch).length)q.splice(q.indexOf(cur),1);setQ(q);}
+      else if(!q.some(x=>x.id===it.id))break; // queue was cleared under us (Lock / bad key)
     }
     if(net){ // signal's good: push any whole docs that only saved on the phone
       if(isDirty('prospects')){if(!FIELD.items.length)try{const f=JSON.parse(localStorage.getItem('w_ops_prospects')||'null');if(f&&Array.isArray(f.items))FIELD=f;}catch(_){}if(FIELD.items.length)saveField();} // never push an empty list over unsynced work
@@ -1099,44 +1148,47 @@ function forgetKey(){
   try{localStorage.removeItem('w_key');localStorage.removeItem('w_cache');}catch(e){}
   $('gate').style.display='';$('gateErr').textContent='Key no longer valid — enter the current key.';
 }
+const SAVING={}; // id → that card's save in flight. One request per card at a time: two at once both read the card and the later write drops the other's line
 async function saveMeta(id,patch,hintEl){
   const l=LEADS.find(x=>x.id===id);
-  const prev={};if(l)for(const k in patch)prev[k]=l[META_KEYS[k]||k];
+  if(patch.note!==undefined)patch=Object.assign({base:l?l.updated||'':'',drop:l?gone(l.note,patch.note):[]},patch);
+  const prev={};if(l){for(const k in patch)if(!LOCAL_KEYS.test(k))prev[k]=l[META_KEYS[k]||k];if(patch.note!==undefined||patch.append)Object.assign(prev,{note:l.note,base:l.updated});}
   if(l)applyPatch(l,patch); // apply once, up front: the UI never waits on the network and late responses can't clobber newer edits
   if(!(l&&l.field))cacheMeta(id,patch); // the saved list must match, or an offline reopen writes stale notes back
   if(l&&l.field){ // a field-added prospect carries its own status/notes inside the ops doc
     const it=(FIELD.items||[]).find(x=>x.id===id);
-    if(it){it.meta=Object.assign(it.meta||{},patch);if(hintEl)hintEl.textContent='saved';renderStats();renderFilters();saveField();return;}
+    if(it){toMeta(it.meta=it.meta||{},patch);if(hintEl)hintEl.textContent='saved';renderStats();renderFilters();saveField();return;}
   }
-  // an older change for this card is still queued: ride behind it in order, never past it
-  {const q=getQ(),qi=q.find(it=>it.id===id);if(qi){Object.assign(qi.patch,patch);setQ(q);if(hintEl)hintEl.textContent='queued — will sync';updateBanner();renderStats();renderFilters();flushQueue();return;}}
+  // an older change for this card is still queued or in flight: ride behind it in order, never past it
+  if(SAVING[id]||getQ().some(it=>it.id===id)){enqueue(id,patch);if(hintEl)hintEl.textContent='queued — will sync';updateBanner();renderStats();renderFilters();flushQueue();return;}
   if(hintEl)hintEl.textContent='saving…';
+  let done;SAVING[id]=new Promise(r=>{done=r;});
+  const {drop,...sent}=patch;
   try{
-    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...patch}),signal:tmo(8000)});
+    const r=await fetch(FN+'/lead-status',{method:'POST',headers:{'X-Dash-Key':KEY,'Content-Type':'application/json'},body:JSON.stringify({id,...sent}),signal:tmo(8000)});
+    const j=await r.json().catch(()=>null);
+    if(r.status===401){putFirst(id,patch);forgetKey();return;} // the edit stays queued and syncs once the current key is in
+    if(r.status===409&&j&&j.meta){putFirst(id,retryOf(sent,drop,j.meta));showClash(id,drop,j.meta);if(hintEl)hintEl.textContent='queued — will sync';flushQueue();return;}
     if(!r.ok){
-      if(r.status===401){forgetKey();return;}
-      if(r.status<500){ // the server said no: put the card back the way it was and say so
+      if([400,413,422].includes(r.status)){ // the server said no: put the card back the way it was and say so
         if(l)applyPatch(l,prev);cacheMeta(id,prev);
         if(hintEl)hintEl.textContent='not saved';
         toast('Not saved — the server rejected that change ('+r.status+').');
         render();return;
       }
-      throw new Error(r.status);
+      throw new Error(r.status); // 404/408/429/5xx are passing: queue it like no signal
     }
+    seen(id,j);
     if(hintEl)hintEl.textContent='saved';
     renderStats();renderFilters();
+    if(getQ().some(it=>it.id===id))flushQueue(); // edits made while this was in flight
   }catch(e){
-    // no signal — keep the local change and queue it for sync
-    // queue only what a newer edit hasn't already superseded
-    const live={};for(const k in patch)if(!l||l[META_KEYS[k]||k]===patch[k])live[k]=patch[k];
-    const q=getQ();
-    const prev=q.find(it=>it.id===id);
-    if(Object.keys(live).length){if(prev)Object.assign(prev.patch,live);else q.push({id,patch:live,t:Date.now()});}
-    setQ(q);
+    // no signal — keep the local change and queue it for sync, ahead of anything queued behind it
+    putFirst(id,patch);
     if(hintEl)hintEl.textContent='queued — will sync';
     OFFLINE=true;updateBanner();
     renderStats();renderFilters();
-  }
+  }finally{delete SAVING[id];done();}
 }
 
 /* ---------- location & distance ---------- */
@@ -1165,19 +1217,25 @@ function lastTouchDays(l){
 }
 /* typed-but-not-yet-saved notes (700ms debounce): every logger flushes first, so a late save can't erase the new line */
 const NOTE_PEND={};
+// the box remembers the text and stamp it was filled from (_was/_base): a refresh under her typing can't make her edit look current
 function flushNote(id){
   const p=NOTE_PEND[id];if(!p)return;clearTimeout(p.t);delete NOTE_PEND[id];
-  const l=LEADS.find(x=>x.id===id);if(l&&p.ta.value!==(l.note||''))saveMeta(id,{note:p.ta.value},p.hint);
+  const l=LEADS.find(x=>x.id===id),ta=p.ta;
+  if(l&&ta.value!==(l.note||'')){saveMeta(id,ta._was===undefined?{note:ta.value}:{note:ta.value,base:ta._base,drop:gone(ta._was,ta.value)},p.hint);ta._was=ta.value;}
 }
-function syncNoteBox(id){const l=LEADS.find(x=>x.id===id),ta=document.querySelector(`.lead[data-id="${CSS.escape(id)}"] [data-act="notetext"]`);if(l&&ta)ta.value=l.note||'';}
+function noteBox(id){return document.querySelector(`.lead[data-id="${CSS.escape(id)}"] [data-act="notetext"]`);}
+function syncNoteBox(id){const l=LEADS.find(x=>x.id===id),ta=noteBox(id);if(l&&ta){ta.value=l.note||'';ta._was=ta.value;ta._base=l.updated||'';}}
 function autoLog(id,kind){
   flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
   const line=`[${stamp()}] ${kind}`;
   if((l.note||'').split('\n').pop()===line)return;
-  saveMeta(id,{note:(l.note?l.note+'\n':'')+line});
+  saveMeta(id,{append:line});
   syncNoteBox(id); // no re-render here, so the open card's box must show the new line or the next keystroke saves over it
 }
+/* undo of a logged line takes that line back out of the note as it is now; a snapshot from before would drop lines written since */
+function unAppend(n,s){const a=(n||'').split('\n');String(s).trim().split('\n').filter(Boolean).reverse().forEach(x=>{const i=a.lastIndexOf(x);if(i>=0)a.splice(i,1);});return a.join('\n');}
+function undoLine(id,line,prev){return ()=>{const l=LEADS.find(x=>x.id===id);saveMeta(id,l&&String(line).trim()?{...prev,note:unAppend(l.note,line)}:prev);};}
 
 /* ---------- render ---------- */
 function scoreTier(s){s=+s||0;return s>=70?'hot':s>=40?'warm':'cool'}
@@ -1601,15 +1659,15 @@ function prevOf(l,patch){const p={};for(const k in patch)p[k]=l[META_KEYS[k]||k]
 function logDoor(id,label,extra){
   flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
-  const prev={note:l.note||'',status:l.status,followup:l.followup||''};
-  const updates={note:(l.note?l.note+'\n':'')+`[${stamp()}] ${label}${extra?' — '+extra:''}`};
+  const prev={status:l.status,followup:l.followup||''},line=`[${stamp()}] ${label}${extra?' — '+extra:''}`;
+  const updates={append:line};
   RECENT.add(id);
   const o=OUTCOMES[label]||{};
   if(o.status&&['prospect','new','contacted'].includes(l.status))updates.status=o.status;
   else if(label!=='No answer'&&['prospect','new'].includes(l.status))updates.status='contacted'; // nobody answered → nobody was contacted
   if(o.fu&&(!l.followup||l.followup<=todayISO()))updates.followup=isoDays(o.fu); // overdue → reset, or Follow-ups due never empties
   saveMeta(id,updates);
-  showUndo(`${label.replace(/ — .*/,'')} logged${updates.followup?' · follow-up '+updates.followup.slice(5).replace('-','/'):''}`,()=>saveMeta(id,prev));
+  showUndo(`${label.replace(/ — .*/,'')} logged${updates.followup?' · follow-up '+updates.followup.slice(5).replace('-','/'):''}`,undoLine(id,line,prev));
 }
 /* Today: a logged door closes its card and hands focus to the next row (no reaching for ▴ one-handed) */
 function afterLog(id){
@@ -1622,13 +1680,13 @@ function afterLog(id){
 function logNotNow(id,reason){
   flushNote(id);
   const l=LEADS.find(x=>x.id===id);if(!l)return;
-  const prev={note:l.note||'',status:l.status,followup:l.followup||''};
+  const prev={status:l.status,followup:l.followup||''},line=`[${stamp()}] NOT NOW — ${reason}`;
   RECENT.add(id);
-  const updates={note:(l.note?l.note+'\n':'')+`[${stamp()}] NOT NOW — ${reason}`};
+  const updates={append:line};
   if(/Not interested|Closed/.test(reason))updates.status='dead';
   else{if(['prospect','new'].includes(l.status))updates.status='contacted';updates.followup=isoDays(90);}
   saveMeta(id,updates);
-  showUndo(`Not now — ${reason}`,()=>saveMeta(id,prev));
+  showUndo(`Not now — ${reason}`,undoLine(id,line,prev));
 }
 function snooze(id,days,withUndo){
   const l=LEADS.find(x=>x.id===id);if(!l)return;
@@ -2040,7 +2098,7 @@ async function smartFile(id,text){
 function smartPlain(id){
   const r=SMART_RESULT[id],l=LEADS.find(x=>x.id===id);if(!r||!r.text||!l)return;
   flushNote(id);
-  saveMeta(id,{note:(l.note?l.note+'\n':'')+`[${stamp()}] Note: ${r.text.replace(/\s+/g,' ').trim()}`});
+  saveMeta(id,{append:`[${stamp()}] Note: ${r.text.replace(/\s+/g,' ').trim()}`});
   delete SMART_RESULT[id];SMART_OPEN.delete(id);RECENT.add(id);render();
   toast(OFFLINE||!navigator.onLine?'Saved as a plain note — syncs when you have signal':'Saved as a plain note');
 }
@@ -2059,14 +2117,15 @@ async function smartPhotos(id){
 }
 function smartSave(id,status){
   const r=SMART_RESULT[id],l=LEADS.find(x=>x.id===id);if(!r||!r.patch||!l)return;
-  const patch={...r.patch};
+  const {note,...patch}=r.patch,add=(r.lines||[]).join('\n'); // its note was built from the card as it was then: send only the new lines
   if(status){patch.status=status;if(status==='signed'&&!l.signed_at)patch.signed_at=todayISO();}
   if(patch.status==='signed'&&!l.signed_at&&!patch.signed_at)patch.signed_at=todayISO();
   flushNote(id);
   const prev=prevOf(l,patch); // signed_at / coi / phone / email too, or Undo leaves a stale install clock behind
+  if(add.trim())patch.append=add;
   saveMeta(id,patch);
   delete SMART_RESULT[id];SMART_OPEN.delete(id);RECENT.add(id);render();
-  showUndo('Filed'+(patch.followup?' · follow-up '+patch.followup.slice(5).replace('-','/'):'')+(patch.status?' · '+(SLABEL[patch.status]||patch.status):''),()=>{saveMeta(id,prev);render();});
+  showUndo('Filed'+(patch.followup?' · follow-up '+patch.followup.slice(5).replace('-','/'):'')+(patch.status?' · '+(SLABEL[patch.status]||patch.status):''),()=>{undoLine(id,add,prev)();render();});
 }
 /* one delegated handler: survives every re-render */
 $('list').addEventListener('click',e=>{
@@ -2223,6 +2282,7 @@ function render(){
       saveMeta(id,{payout:l.payout==='paid'?'unpaid':'paid'});render();
     });
     const ta=card.querySelector('[data-act="notetext"]');
+    ta._was=ta.value;ta._base=(LEADS.find(x=>x.id===id)||{}).updated||'';
     ta.addEventListener('input',()=>{
       if(NOTE_PEND[id])clearTimeout(NOTE_PEND[id].t);
       NOTE_PEND[id]={ta,hint:card.querySelector('.save-hint'),t:setTimeout(()=>flushNote(id),700)};
