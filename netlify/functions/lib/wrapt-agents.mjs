@@ -367,10 +367,10 @@ export function dealWatchAgent(leads, { now = new Date() } = {}) {
   });
   D.waitlist.sort((a, b) => ((b.touch_days ?? 0) - (a.touch_days ?? 0)));
 
-  // 5. Month start: host statements + 10% disbursements for every installed location (days 1–3 Central)
+  // 5. Month start: host statements + disbursements for every installed location (days 1–3 Central)
   const dom = centralParts(now).d;
   if (dom <= 3) {
-    leads.filter(l => l.status === 'installed').forEach(l => D.statements.push(item(l, 'Monthly statement + 10% host disbursement due for last month')));
+    leads.filter(l => l.status === 'installed').forEach(l => D.statements.push(item(l, 'Monthly statement + host disbursement due for last month')));
   }
   return { sections: D, month_start: dom <= 3 };
 }
@@ -389,32 +389,33 @@ export function templateDraft(it) {
     return {
       sms: `${hi} Paige with Wrapt here in Franklin — thanks for reaching out about a cooler at ${co}. Is there a good time this week for a quick call or a five-minute visit? ${SIGN_SMS}`,
       email_subject: `Your smart cooler at ${co}`,
-      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a custom-wrapped smart cooler in your space at zero cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes with a mockup in your colors?\n\n${SIGN_EMAIL}`,
+      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a smart cooler in your space at no upfront cost (custom wrap available at select locations), and we stock and service it weekly.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes?\n\n${SIGN_EMAIL}`,
     };
   }
   if (it.status === 'proposal') {
     return {
-      sms: `${hi} Paige with Wrapt — checking in on the proposal for ${co}. Happy to answer anything: where it would go, what goes in it, or how the 10% gets paid. Want me to swing by this week? ${SIGN_SMS}`,
+      sms: `${hi} Paige with Wrapt — checking in on the proposal for ${co}. Happy to answer anything: where it would go or what goes in it. Want me to swing by this week? ${SIGN_SMS}`,
       email_subject: `Following up — Wrapt at ${co}`,
-      email_body: `${hi}\n\nChecking in on the proposal for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.\n\n${SIGN_EMAIL}`,
+      email_body: `${hi}\n\nChecking in on the proposal for ${co}. Happy to answer anything — where it would go or what goes in it.\n\nIf it's easier, I can swing by for five minutes this week and walk you through it.\n\n${SIGN_EMAIL}`,
     };
   }
   const visited = /\] (No answer|Left card|Come back|Interested|NOT NOW)/.test(it.note_full || it.note_tail || '');
   return {
-    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. It's free to the host, wrapped in your branding, and ${co} keeps 10% of net sales. Could I show you a quick mockup this week? ${SIGN_SMS}`,
+    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. We place it at no upfront cost (custom wrap available at select locations) and stock and service it weekly. Could I stop by for five minutes this week? ${SIGN_SMS}`,
     email_subject: `Following up — Wrapt at ${co}`,
-    email_body: `${hi}\n\nJust circling back on the smart cooler for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.\n\n${SIGN_EMAIL}`,
+    email_body: `${hi}\n\nJust circling back on the smart cooler for ${co}. Happy to answer anything — where it would go or what goes in it.\n\nIf it's easier, I can swing by for five minutes this week and walk you through it.\n\n${SIGN_EMAIL}`,
   };
 }
 
-const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places free, custom-wrapped smart coolers in local businesses. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
+const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places smart coolers in local businesses at no upfront cost to the host. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
 
 FACTS YOU MAY USE — never invent others:
-- Zero cost to the host. Wrapt installs, stocks and services the cooler weekly.
-- The host keeps 10% of net sales, paid monthly with a statement.
-- The cooler is wrapped in the host's branding so it looks like theirs. A custom wrap is a premium perk for select locations — mention it as a mockup Paige can show, never as a guarantee.
-- The agreement is two pages. It is a multi-year placement (host chooses 3, 4 or 5 years). NEVER mention a trial, a 30-day out, referral payments, or any dollar figure.
+- No upfront cost to the host. Wrapt installs, stocks and services the cooler weekly.
+- A custom wrap is available at select locations. If you mention it, use exactly "(custom wrap available at select locations)". Never promise a wrap or a mockup, and never say or imply the cooler is wrapped or branded.
+- It is a multi-year placement (host chooses 3, 4 or 5 years).
 - Install takes about an hour and needs three feet of wall plus a standard outlet.
+- NEVER mention commission, a percentage, revenue share, NGR, money paid to the host, any fee or dollar figure, a trial, a 30-day out, referral payments, the agreement's length, installed machines, other hosts, results or testimonials. If the notes show the lead asked about money, say Paige will go over terms with them directly.
+- NEVER use the words "free", "zero cost", "costs you nothing" or "nothing to pay".
 - Paige: 615.948.2976 · paige@wraptvending.com.
 
 VOICE: Paige's. Warm, plain, short sentences, local ("here in Franklin"). Never salesy or corporate. No exclamation marks, no emojis, no "I hope this finds you well", no "touching base". Use the lead's note history (who she spoke with, what they said, what she promised, whether she stopped by or got no answer) when it exists — and never invent a prior conversation that is not in the notes. Address the person by first name only when a name is given.
@@ -438,9 +439,15 @@ export async function draftWithClaude(items) {
   if (!m) throw new Error('claude: no JSON array in reply');
   const arr = JSON.parse(m[0]);
   const out = {};
-  arr.forEach(d => { if (d && d.id && (d.sms || d.email_body)) out[d.id] = { sms: String(d.sms || ''), email_subject: String(d.email_subject || ''), email_body: String(d.email_body || '') }; });
+  arr.forEach(d => {
+    if (!d || !d.id || !(d.sms || d.email_body)) return;
+    const draft = { sms: String(d.sms || ''), email_subject: String(d.email_subject || ''), email_body: String(d.email_body || '') };
+    if (!OFF_TERMS.test(Object.values(draft).join('\n'))) out[d.id] = draft; // off-terms → the template draft stays
+  });
   return out;
 }
+// wording a host draft must never carry (commission is private; no "free"; no wrap promise); a model draft that slips is dropped
+export const OFF_TERMS = /\bfree\b|zero cost|costs? you nothing|nothing to pay|commission|\bNGR\b|net sales|\d+\s*%|payout|mockup|custom-wrapped|wrapped in|two pages|page agreement|\btrial\b|install fee/i;
 
 /* pick who gets a draft this morning, in priority order, capped */
 export function pickDraftTargets(pipe, deal, leads, max) {

@@ -62,7 +62,7 @@ export function leadFromClient(c = {}) {
 }
 
 /* ---------- the extractor ---------- */
-const EXTRACT_SYSTEM = `You turn raw field communication for Wrapt (Franklin, TN — places free custom-wrapped smart coolers in local businesses; host keeps 10% of net sales) into one structured CRM note. Paige Fryer is the owner doing the outreach.
+const EXTRACT_SYSTEM = `You turn raw field communication for Wrapt (Franklin, TN — places smart coolers in local businesses at no upfront cost to the host) into one structured CRM note. Paige Fryer is the owner doing the outreach.
 
 Return ONLY a JSON object:
 {
@@ -160,7 +160,7 @@ export function buildPatch(lead, ex, { kind = 'dictation', direction = 'in', who
 }
 
 /* ---------- photo reading ---------- */
-const PHOTO_SYSTEM = `You read photos taken in the field by Paige (owner of Wrapt, Franklin TN — free custom-wrapped smart coolers placed in local businesses; needs ~3 ft of wall and a standard outlet). For EACH image return an object in a JSON array, in order:
+const PHOTO_SYSTEM = `You read photos taken in the field by Paige (owner of Wrapt, Franklin TN — smart coolers placed in local businesses at no upfront cost; needs ~3 ft of wall and a standard outlet). For EACH image return an object in a JSON array, in order:
 {
  "type": "business_card"|"site"|"competitor_machine"|"receipt"|"wrap"|"other",
  "note": "<= 150 chars of what matters for the placement, past tense, specific>",
