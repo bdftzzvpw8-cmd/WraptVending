@@ -80,9 +80,9 @@ test('api: unusable without the dashboard key', async () => {
 test('api: config round trip, validation, and conflict', async () => {
   const c0 = await (await call('?view=config')).json();
   assert.equal(c0.seeded, true);
-  assert.equal(c0.hosts[0].hostId, 'firestone');
+  assert.deepEqual(c0.hosts, []); // no hosts are built in: they live only in the saved config
   assert.equal((await call('?view=config', { method: 'POST', body: { hosts: [{ hostId: 'x', name: 'X', rate: '7' }] } })).status, 400);
-  const saved = await (await call('?view=config', { method: 'POST', body: { base: c0.updated, hosts: [{ hostId: 'firestone', name: 'Firestone', marketIds: ['440001'], rate: '0.10' }], settings: { cardPercent: '2.9', cardFixed: '0.30', hahaMonthlyDefault: '5.00' } } })).json();
+  const saved = await (await call('?view=config', { method: 'POST', body: { base: c0.updated, hosts: [{ hostId: 'host-a', name: 'Host A', marketIds: ['440001'], rate: '0.10' }], settings: { cardPercent: '2.9', cardFixed: '0.30', hahaMonthlyDefault: '5.00' } } })).json();
   assert.equal(saved.ok, true);
   assert.equal(saved.seeded, false);
   const stale = await call('?view=config', { method: 'POST', body: { base: '2020-01-01T00:00:00.000Z', settings: {} } });
@@ -90,14 +90,14 @@ test('api: config round trip, validation, and conflict', async () => {
   // a bad fee rejects the whole save: the hosts in the same request are not written
   const half = await call('?view=config', { method: 'POST', body: { hosts: [{ hostId: 'other', name: 'Other' }], settings: { cardFixed: 'abc' } } });
   assert.equal(half.status, 400);
-  assert.equal((await (await call('?view=config')).json()).hosts[0].hostId, 'firestone');
+  assert.equal((await (await call('?view=config')).json()).hosts[0].hostId, 'host-a');
 });
 
 test('api: statement and orders read what the sync stored', async () => {
-  await call('?view=config', { method: 'POST', body: { hosts: [{ hostId: 'firestone', name: 'Firestone', marketIds: ['440001'], rate: '0.10' }], settings: { cardPercent: '2.9', cardFixed: '0.30', hahaMonthlyDefault: '5.00' } } });
+  await call('?view=config', { method: 'POST', body: { hosts: [{ hostId: 'host-a', name: 'Host A', marketIds: ['440001'], rate: '0.10' }], settings: { cardPercent: '2.9', cardFixed: '0.30', hahaMonthlyDefault: '5.00' } } });
   const s = normalizeSale(sale({ id: 'Z1', at: '2026-10-03T15:00:00Z', items: [['p1', 'Coke', 4, '2.50']] }), makeWarn());
   await store.setJSON(`sales/${s.day}`, { day: s.day, sales: { Z1: s } });
-  const st = await (await call('?view=statement&host=firestone&month=2026-10')).json();
+  const st = await (await call('?view=statement&host=host-a&month=2026-10')).json();
   assert.equal(st.lines[0].cents, 1098);
   assert.equal(st.tx, 1);
   const o = await (await call(`?view=orders&day=${s.day}`)).json();

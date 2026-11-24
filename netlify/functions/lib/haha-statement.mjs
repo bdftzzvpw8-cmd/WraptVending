@@ -6,7 +6,7 @@
    Gross / tax / refunds come from the stored sales (see saleFigures). Card fees and the HAHA fee
    are not in the API: they come from config/settings. All math is integer cents.
 
-   config/hosts     [{ hostId, name, marketIds: [sticker no.], rate: "0.10", type: "net_gross", contact, notes }]
+   config/hosts     [{ hostId, name, marketIds: [sticker no.], rate: "<decimal, e.g. 0.05>", type: "net_gross", contact, notes }]
    config/settings  { cardPercent: "2.9", cardFixed: "0.30", hahaMonthlyDefault: "0.00",
                       hahaMonthly: { [marketId]: "0.00" }, restockPercent: 30, restockUnits: 2 }
                     A blank fee is shown on the statement as "not configured", never silently as $0.
@@ -14,11 +14,8 @@
 import { money, decimalToScaled, mulRate, monthDays, fmt } from './haha.mjs';
 import { saleFigures } from './haha-data.mjs';
 
-export const DEFAULT_HOSTS = [
-  { hostId: 'firestone', name: 'Firestone', marketIds: [], rate: '0.10', type: 'net_gross', contact: '', notes: '' },
-  { hostId: 'tqc-1', name: 'Tennessee Quick Cash #1', marketIds: [], rate: null, type: 'net_gross', contact: '', notes: 'Rate to be entered' },
-  { hostId: 'tqc-2', name: 'Tennessee Quick Cash #2', marketIds: [], rate: null, type: 'net_gross', contact: '', notes: 'Rate to be entered' },
-];
+// No hosts are built in: this repo is public, so host names and terms live only in the saved config/hosts (POST ?view=config).
+export const DEFAULT_HOSTS = [];
 export const DEFAULT_SETTINGS = { cardPercent: null, cardFixed: null, hahaMonthlyDefault: null, hahaMonthly: {}, restockPercent: 30, restockUnits: 2 };
 export const HOST_TYPES = ['net_gross', 'profit_split'];
 

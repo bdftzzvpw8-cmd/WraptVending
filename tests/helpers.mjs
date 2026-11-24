@@ -23,8 +23,8 @@ const ok = data => new Response(JSON.stringify({ code: 0, message: 'success', da
 export function fixture() {
   return {
     markets: [
-      { marketId: '440001', marketName: 'Firestone Franklin', marketLocation: 'Franklin, TN', timeZone: 'America/Chicago', status: 'ACTIVE', isOnline: true, deviceType: 'HAHA440', activationDate: '2026-09-01' },
-      { marketId: '440002', marketName: 'TQC Spring Hill', marketLocation: 'Spring Hill, TN', timeZone: 'America/Chicago', status: 'ACTIVE', isOnline: false, deviceType: 'HAHA440', activationDate: '2026-09-15' },
+      { marketId: '440001', marketName: 'Site A Franklin', marketLocation: 'Franklin, TN', timeZone: 'America/Chicago', status: 'ACTIVE', isOnline: true, deviceType: 'HAHA440', activationDate: '2026-09-01' },
+      { marketId: '440002', marketName: 'Site B Spring Hill', marketLocation: 'Spring Hill, TN', timeZone: 'America/Chicago', status: 'ACTIVE', isOnline: false, deviceType: 'HAHA440', activationDate: '2026-09-15' },
     ],
     products: [
       { productId: 'p1', productName: 'Coke 20oz', price: '2.50', cost: '1.10' },
@@ -32,11 +32,11 @@ export function fixture() {
     ],
     inventory: [
       { productId: 'p1', productName: 'Coke 20oz', totalStock: 9, markets: [
-        { marketId: '440001', marketName: 'Firestone Franklin', stock: 7, racks: [{ name: 'Door 1 · Shelf 2', stock: 7 }] },
-        { marketId: '440002', marketName: 'TQC Spring Hill', stock: 2, racks: [{ name: 'Door 1 · Shelf 1', stock: 2 }] },
+        { marketId: '440001', marketName: 'Site A Franklin', stock: 7, racks: [{ name: 'Door 1 · Shelf 2', stock: 7 }] },
+        { marketId: '440002', marketName: 'Site B Spring Hill', stock: 2, racks: [{ name: 'Door 1 · Shelf 1', stock: 2 }] },
       ] },
       { productId: 'p2', productName: 'Red Bull 12oz', totalStock: 0, markets: [
-        { marketId: '440001', marketName: 'Firestone Franklin', stock: 0, racks: [{ name: 'Door 1 · Shelf 3', stock: 0 }] },
+        { marketId: '440001', marketName: 'Site A Franklin', stock: 0, racks: [{ name: 'Door 1 · Shelf 3', stock: 0 }] },
       ] },
     ],
     planograms: {

@@ -39,7 +39,10 @@ test('states the settled terms', () => {
 });
 
 test('no placed-host names, machine counts or wrap dollar figures', () => {
-  assert.equal(/Firestone|Quick Cash|machines? (placed|installed)|\d+ machines/i.test(visible), false);
+  assert.equal(/machines? (placed|installed)|\d+ machines/i.test(visible), false);
+  // the repo is public, so placed-host names are not written here: list them in WRAPT_HOST_NAMES (comma-separated) to check them
+  for (const name of (process.env.WRAPT_HOST_NAMES || '').split(',').map(s => s.trim()).filter(Boolean))
+    assert.equal(visible.toLowerCase().includes(name.toLowerCase()), false, 'host name on the leave-behind');
 });
 
 test('removal is 30 days notice, not the old 60-day exit wording', () => {

@@ -82,7 +82,7 @@ test('statement: Net Gross Revenue and the host payout are no longer $0.00 for z
     zeroed({ id: 'A', at: '2026-11-03T18:34:00Z' }),
     zeroed({ id: 'B', at: '2026-11-03T18:51:00Z', items: [['p2', 'Doritos', 1, '2.00'], ['p3', 'Sprite', 1, '2.50']] }),
   ]);
-  const host = { hostId: 'firestone', name: 'Firestone', marketIds: ['440001'], rate: '0.10', type: 'net_gross' };
+  const host = { hostId: 'host-a', name: 'Host A', marketIds: ['440001'], rate: '0.10', type: 'net_gross' };
   const st = buildStatement({ host, month: '2026-11', days, settings: { cardPercent: '0', cardFixed: '0', hahaMonthlyDefault: '0', hahaMonthly: {} } });
   const line = k => st.lines.find(l => l.key === k).cents;
   assert.equal(line('gross'), 274 + 494);   // each tender is the fixture's net plus 9.75% tax: 2.50 -> 2.74, 4.50 -> 4.94

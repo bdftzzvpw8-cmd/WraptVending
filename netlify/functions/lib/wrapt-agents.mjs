@@ -43,8 +43,8 @@ export const CFG = {
   model: process.env.AGENT_MODEL || 'claude-sonnet-5-5',
   inboxModel: process.env.INBOX_MODEL || 'claude-haiku-4-5',
   maxDrafts: Math.max(0, +(process.env.AGENT_MAX_DRAFTS || 8)),
-  // Home base for door-run ranking. Default ≈ Legacy Cool Springs, 2000 Aureum Dr, Franklin — set HOME_LATLNG to pin it.
-  home: parseLatLng(process.env.HOME_LATLNG) || [35.9125, -86.8140],
+  // Home base for door-run ranking: set HOME_LATLNG. Without it, downtown Franklin (the site's public geo point).
+  home: parseLatLng(process.env.HOME_LATLNG) || [35.9251, -86.8689],
   tz: 'America/Chicago',
   storeName: 'wrapt-agents',
   paige: { name: 'Paige Fryer', first: 'Paige', phone: '615.948.2976', email: 'paige@wraptvending.com' },
