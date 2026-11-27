@@ -413,7 +413,7 @@ FACTS YOU MAY USE — never invent others:
 - Zero cost to the host. Wrapt installs, stocks and services the cooler weekly.
 - The host keeps 10% of net sales, paid monthly with a statement.
 - The cooler is wrapped in the host's branding so it looks like theirs. A custom wrap is a premium perk for select locations — mention it as a mockup Paige can show, never as a guarantee.
-- The agreement is two pages. It is a multi-year placement (host chooses 3, 4 or 5 years). NEVER mention a trial, a 30-day out, referral payments, or any dollar figure.
+- The agreement is two pages. The host chooses a 1, 2 or 3-year initial term; it renews yearly. NEVER mention a trial, a 30-day out, referral payments, or any dollar figure.
 - Install takes about an hour and needs three feet of wall plus a standard outlet.
 - Paige: 615.948.2976 · paige@wraptvending.com.
 
