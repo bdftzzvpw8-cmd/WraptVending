@@ -17,7 +17,7 @@ export function introLine(vt) { // mirrors Command's introLine()
   if (/Apartment|Senior/i.test(vt)) return 'It works as a 24/7 resident amenity for the lobby or clubroom: tap a card, grab a drink or snack, done. Your team never handles money or restocking.';
   if (/Hotel/i.test(vt)) return 'Guests can grab drinks and snacks any hour: tap a card, grab, auto-checkout. It reads as your amenity, and the front desk never has to touch it.';
   if (/Office|Corporate|coworking/i.test(vt)) return 'Employees and tenants get cold drinks and snacks without leaving the building: tap a card, grab, auto-checkout. Nothing for your team to manage.';
-  if (/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt)) return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better and costs you nothing.';
+  if (/Dealership|Auto repair|Laundromat|Health clinic|Veterinary|Medical|Beauty|Salon|Tattoo/i.test(vt)) return 'Customers waiting on you can grab a drink or snack themselves: tap a card, grab, auto-checkout. It makes the wait better, with no upfront cost to you.';
   if (/Church|College|Youth|Public|Entertainment|Golf|skate/i.test(vt)) return 'Visitors and families can grab a drink or snack anytime: tap a card, grab, auto-checkout. No staff time, no cash handling.';
   return 'Customers and staff can grab a cold drink or snack anytime: tap a card, grab, auto-checkout.';
 }
@@ -34,12 +34,12 @@ export function ackEmail(l) {
 
 Thanks for reaching out about a cooler at ${co} — I'm Paige, owner of Wrapt here in Franklin.
 
-The short version: we place a custom-wrapped smart cooler in your space at zero cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement. ${introLine(d.venue_type)}
+The short version: we place a smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement. ${introLine(d.venue_type)}
 
 Here's a proposal built from what you shared:
 ${link}
 
-I'll follow up personally within a day to find a time to stop by for five minutes with a mockup in your colors. If a day already works for you, reply here or text me at ${CFG.paige.phone}.
+I'll follow up personally within a day to find a time to stop by for five minutes and show you how it works. If a day already works for you, reply here or text me at ${CFG.paige.phone}.
 
 ${CFG.paige.name}
 Owner, Wrapt
