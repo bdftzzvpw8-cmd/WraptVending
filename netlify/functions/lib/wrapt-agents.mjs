@@ -389,7 +389,7 @@ export function templateDraft(it) {
     return {
       sms: `${hi} Paige with Wrapt here in Franklin — thanks for reaching out about a cooler at ${co}. Is there a good time this week for a quick call or a five-minute visit? ${SIGN_SMS}`,
       email_subject: `Your smart cooler at ${co}`,
-      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a custom-wrapped smart cooler in your space at zero cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes with a mockup in your colors?\n\n${SIGN_EMAIL}`,
+      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a custom-wrapped smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes with a mockup in your colors?\n\n${SIGN_EMAIL}`,
     };
   }
   if (it.status === 'proposal') {
@@ -401,16 +401,16 @@ export function templateDraft(it) {
   }
   const visited = /\] (No answer|Left card|Come back|Interested|NOT NOW)/.test(it.note_full || it.note_tail || '');
   return {
-    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. It's free to the host, wrapped in your branding, and ${co} keeps 10% of net sales. Could I show you a quick mockup this week? ${SIGN_SMS}`,
+    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. There's no upfront cost to the host, it's wrapped in your branding, and ${co} keeps 10% of net sales. Could I show you a quick mockup this week? ${SIGN_SMS}`,
     email_subject: `Following up — Wrapt at ${co}`,
     email_body: `${hi}\n\nJust circling back on the smart cooler for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.\n\n${SIGN_EMAIL}`,
   };
 }
 
-const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places free, custom-wrapped smart coolers in local businesses. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
+const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places custom-wrapped smart coolers, at no upfront cost to the host, in local businesses. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
 
 FACTS YOU MAY USE — never invent others:
-- Zero cost to the host. Wrapt installs, stocks and services the cooler weekly.
+- No upfront cost to the host (say exactly "no upfront cost"; NEVER "free", "zero cost", "costs you nothing" or "nothing to pay"). Wrapt installs, stocks and services the cooler weekly.
 - The host keeps 10% of net sales, paid monthly with a statement.
 - The cooler is wrapped in the host's branding so it looks like theirs. A custom wrap is a premium perk for select locations — mention it as a mockup Paige can show, never as a guarantee.
 - The agreement is two pages. It is a multi-year placement (host chooses 3, 4 or 5 years). NEVER mention a trial, a 30-day out, referral payments, or any dollar figure.
