@@ -389,30 +389,30 @@ export function templateDraft(it) {
     return {
       sms: `${hi} Paige with Wrapt here in Franklin — thanks for reaching out about a cooler at ${co}. Is there a good time this week for a quick call or a five-minute visit? ${SIGN_SMS}`,
       email_subject: `Your smart cooler at ${co}`,
-      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a custom-wrapped smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes with a mockup in your colors?\n\n${SIGN_EMAIL}`,
+      email_body: `${hi}\n\nThanks for reaching out about a cooler at ${co}. The short version: we place a smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement.\n\nIs there a good time this week for a quick call, or could I stop by for five minutes and show you how it works?\n\n${SIGN_EMAIL}`,
     };
   }
   if (it.status === 'proposal') {
     return {
       sms: `${hi} Paige with Wrapt — checking in on the proposal for ${co}. Happy to answer anything: where it would go, what goes in it, or how the 10% gets paid. Want me to swing by this week? ${SIGN_SMS}`,
       email_subject: `Following up — Wrapt at ${co}`,
-      email_body: `${hi}\n\nChecking in on the proposal for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.\n\n${SIGN_EMAIL}`,
+      email_body: `${hi}\n\nChecking in on the proposal for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you how it works.\n\n${SIGN_EMAIL}`,
     };
   }
   const visited = /\] (No answer|Left card|Come back|Interested|NOT NOW)/.test(it.note_full || it.note_tail || '');
   return {
-    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. There's no upfront cost to the host, it's wrapped in your branding, and ${co} keeps 10% of net sales. Could I show you a quick mockup this week? ${SIGN_SMS}`,
+    sms: `${hi} Paige with Wrapt here in Franklin — ${visited ? `I stopped by ${co} recently` : `circling back on the smart cooler for ${co}`}. There's no upfront cost to the host, and ${co} keeps 10% of net sales. Could I stop by for five minutes this week? ${SIGN_SMS}`,
     email_subject: `Following up — Wrapt at ${co}`,
-    email_body: `${hi}\n\nJust circling back on the smart cooler for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you the wrap mockup with your logo on it.\n\n${SIGN_EMAIL}`,
+    email_body: `${hi}\n\nJust circling back on the smart cooler for ${co}. Happy to answer anything — where it would go, what goes in it, or how the 10% gets paid.\n\nIf it's easier, I can swing by for five minutes this week and show you how it works.\n\n${SIGN_EMAIL}`,
   };
 }
 
-const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places custom-wrapped smart coolers, at no upfront cost to the host, in local businesses. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
+const DRAFT_SYSTEM = `You draft outreach messages for Paige Fryer, owner of Wrapt (wraptvending.com), a Franklin, Tennessee company that places smart coolers, at no upfront cost to the host, in local businesses. The cooler is a grab-and-go AI cooler: tap a card, grab, auto-checkout. No coins, no buttons.
 
 FACTS YOU MAY USE — never invent others:
 - No upfront cost to the host (say exactly "no upfront cost"; NEVER "free", "zero cost", "costs you nothing" or "nothing to pay"). Wrapt installs, stocks and services the cooler weekly.
 - The host keeps 10% of net sales, paid monthly with a statement.
-- The cooler is wrapped in the host's branding so it looks like theirs. A custom wrap is a premium perk for select locations — mention it as a mockup Paige can show, never as a guarantee.
+- NEVER mention a custom wrap, the host's branding or logo, a mockup or a wrap fee: the name Wrapt already says it (sir, 2026-11-27).
 - The agreement is two pages. The host chooses a 1, 2 or 3-year initial term; it renews yearly. NEVER mention a trial, a 30-day out, referral payments, or any dollar figure.
 - Install takes about an hour and needs three feet of wall plus a standard outlet.
 - Paige: 615.948.2976 · paige@wraptvending.com.

@@ -35,6 +35,12 @@ const BANNED = [
   /free (to|for) the host/i,
   /\bfree\b,?\s+(custom|smart|cooler|vending|machine|placement|install)/i,
   /(places|place|placing)\s+(a\s+)?free\b/i,
+  // Outreach never mentions a custom wrap, the host's branding, a mockup or a wrap fee (sir, 2026-11-27: "we don't
+  // need to mention custom wraps. its in our name").
+  /custom[- ]wrap/i,
+  /wrapped (in|with) (your|the host'?s?|their)/i,
+  /mock-?up/i,
+  /(your|the host'?s?) (branding|logo|colou?rs)\b/i,
 ];
 
 test('the scan covers the auto-ack email, the drafting prompts and Command', () => {
@@ -44,7 +50,7 @@ test('the scan covers the auto-ack email, the drafting prompts and Command', () 
 });
 
 for (const f of files) {
-  test(`no "free" or "zero cost" host wording in ${f}`, () => {
+  test(`no "free", "zero cost" or custom-wrap wording in ${f}`, () => {
     const hits = [];
     readFileSync(join(ROOT, f), 'utf8').split('\n').forEach((line, i) => {
       if (/\bNEVER\b/.test(line)) return;

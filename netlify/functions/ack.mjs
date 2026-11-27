@@ -34,12 +34,12 @@ export function ackEmail(l) {
 
 Thanks for reaching out about a cooler at ${co} — I'm Paige, owner of Wrapt here in Franklin.
 
-The short version: we place a custom-wrapped smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement. ${introLine(d.venue_type)}
+The short version: we place a smart cooler in your space at no upfront cost, we stock and service it weekly, and ${co} keeps 10% of net sales, paid monthly with a statement. ${introLine(d.venue_type)}
 
 Here's a proposal built from what you shared:
 ${link}
 
-I'll follow up personally within a day to find a time to stop by for five minutes with a mockup in your colors. If a day already works for you, reply here or text me at ${CFG.paige.phone}.
+I'll follow up personally within a day to find a time to stop by for five minutes and show you how it works. If a day already works for you, reply here or text me at ${CFG.paige.phone}.
 
 ${CFG.paige.name}
 Owner, Wrapt
